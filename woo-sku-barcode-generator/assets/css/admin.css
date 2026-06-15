@@ -1,0 +1,16 @@
+.wsbg-barcode-preview svg {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 6px 0;
+}
+.wsbg-add-to-queue {
+    font-size: 18px;
+    text-decoration: none;
+    cursor: pointer;
+}
+#wsbg_regen_result,
+#wsbg_ean_import_result {
+    color: #0a7c00;
+    font-weight: 600;
+}

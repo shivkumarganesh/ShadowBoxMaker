@@ -1,0 +1,8 @@
+.wsbg-barcode {
+    margin: 10px 0;
+}
+.wsbg-barcode svg {
+    max-width: 200px;
+    height: auto;
+    display: block;
+}
