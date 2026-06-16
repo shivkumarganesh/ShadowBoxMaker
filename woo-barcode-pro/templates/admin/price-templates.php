@@ -15,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
 	   class="page-title-action"><?php esc_html_e( '+ New Template', 'woo-barcode-pro' ); ?></a>
 	<hr class="wp-header-end">
 
-	<p class="description"><?php esc_html_e( 'Create one template per price point. On the Quick Add page, scan a template's barcode and the price fills in automatically.', 'woo-barcode-pro' ); ?></p>
+	<p class="description"><?php esc_html_e( 'Create one template per price point. On the Quick Add page, scan a template barcode and the price fills in automatically.', 'woo-barcode-pro' ); ?></p>
 
 	<?php if ( isset( $_GET['saved'] ) ) : ?>
 		<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Template saved.', 'woo-barcode-pro' ); ?></p></div>
