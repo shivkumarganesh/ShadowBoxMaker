@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WooBarcode Pro — Full Product Specification</title>
+<style>
+:root {
+  --purple:#7c3aed; --purple-l:#a78bfa; --purple-d:#4c1d95;
+  --green:#10b981;  --green-l:#34d399;
+  --amber:#f59e0b;  --red:#ef4444; --blue:#3b82f6;
+  --dark:#0f172a;   --card:#1e293b; --card2:#162032;
+  --border:rgba(255,255,255,0.07);
+  --text:#e2e8f0;   --muted:#94a3b8;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--dark);color:var(--text);line-height:1.65;font-size:15px}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;background:rgba(15,23,42,0.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:.6rem 1.5rem;display:flex;gap:.4rem;flex-wrap:wrap}
+nav a{color:var(--muted);text-decoration:none;font-size:.78rem;font-weight:600;padding:.3rem .7rem;border-radius:6px;transition:all .15s}
+nav a:hover{color:var(--text);background:rgba(255,255,255,.05)}
+
+/* HEADER */
+header{background:linear-gradient(135deg,var(--purple-d),var(--purple));padding:3.5rem 2rem 3rem;text-align:center}
+header h1{font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;letter-spacing:-.02em}
+header p{color:rgba(255,255,255,.75);margin-top:.5rem;font-size:1rem}
+.header-meta{margin-top:1.2rem;display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap}
+.chip{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:99px;padding:.25rem .8rem;font-size:.75rem;font-weight:600}
+
+/* LAYOUT */
+.wrap{max-width:1300px;margin:0 auto;padding:2.5rem 1.5rem}
+.section{margin-bottom:4rem;scroll-margin-top:4rem}
+.section-head{display:flex;align-items:center;gap:.8rem;margin-bottom:.5rem}
+.snum{width:2rem;height:2rem;background:var(--purple);border-radius:8px;display:grid;place-items:center;font-weight:800;font-size:.85rem;flex-shrink:0}
+.stitle{font-size:clamp(1.1rem,2.5vw,1.5rem);font-weight:700}
+.sdesc{color:var(--muted);font-size:.875rem;margin-bottom:1.5rem;padding-left:2.8rem}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:1.2rem;overflow:hidden}
+.card-h{padding:.8rem 1.2rem;border-bottom:1px solid var(--border);font-weight:700;font-size:.85rem;display:flex;align-items:center;gap:.5rem;color:var(--green-l)}
+.card-h .dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0}
+.card-b{padding:1.2rem}
+
+/* TABLES */
+table{width:100%;border-collapse:collapse;font-size:.825rem}
+th{padding:.7rem 1rem;text-align:left;border-bottom:2px solid var(--border);font-weight:700;color:var(--muted);text-transform:uppercase;font-size:.72rem;letter-spacing:.06em;white-space:nowrap}
+td{padding:.65rem 1rem;border-bottom:1px solid var(--border);vertical-align:top}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+.cat-row td{background:rgba(124,58,237,.18);color:var(--purple-l);font-weight:700;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;padding:.45rem 1rem}
+
+/* BADGES */
+.b{display:inline-flex;align-items:center;gap:.25rem;padding:.18rem .6rem;border-radius:99px;font-size:.72rem;font-weight:700;white-space:nowrap}
+.b-p0{background:rgba(239,68,68,.15);color:#f87171}
+.b-p1{background:rgba(245,158,11,.15);color:#fbbf24}
+.b-p2{background:rgba(59,130,246,.15);color:#93c5fd}
+.b-p3{background:rgba(100,116,139,.15);color:#94a3b8}
+.b-pass{background:rgba(16,185,129,.15);color:#34d399}
+.b-fail{background:rgba(239,68,68,.15);color:#f87171}
+.b-warn{background:rgba(245,158,11,.15);color:#fbbf24}
+.b-yes{background:rgba(16,185,129,.15);color:#34d399}
+.b-no{background:rgba(239,68,68,.15);color:#f87171}
+.b-role{background:rgba(124,58,237,.2);color:#c4b5fd}
+
+/* CALLOUTS */
+.note{border-radius:10px;padding:1rem 1.3rem;margin:1rem 0;font-size:.85rem;display:flex;gap:.75rem}
+.note-icon{font-size:1rem;flex-shrink:0;line-height:1.7}
+.note-green{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);color:#6ee7b7}
+.note-amber{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);color:#fde68a}
+.note-red{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#fca5a5}
+.note-blue{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);color:#bfdbfe}
+.note strong{display:block;margin-bottom:.15rem;font-weight:700}
+
+/* WORKFLOW STEPS */
+.steps{counter-reset:step;list-style:none;padding:0}
+.steps li{counter-increment:step;display:flex;gap:.9rem;margin-bottom:.8rem;font-size:.875rem}
+.steps li::before{content:counter(step);width:1.6rem;height:1.6rem;background:var(--purple);border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:.75rem;flex-shrink:0;margin-top:.1rem}
+
+/* FLOW BOX */
+.flow{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;padding:1rem;background:#0c1424;border-radius:8px;margin:.8rem 0}
+.fbox{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:.4rem .8rem;font-size:.8rem;text-align:center}
+.fbox-purple{border-color:var(--purple);color:var(--purple-l)}
+.fbox-green{border-color:var(--green);color:var(--green-l)}
+.fbox-amber{border-color:var(--amber);color:var(--amber)}
+.arrow{color:var(--muted);font-size:1rem}
+.decision{background:rgba(245,158,11,.1);border:1px solid var(--amber);border-radius:8px;padding:.4rem .8rem;font-size:.8rem;color:var(--amber)}
+
+/* CODE BLOCK */
+pre{background:#0c1424;border:1px solid var(--border);border-radius:8px;padding:1.2rem;font-size:.8rem;overflow-x:auto;color:#e2e8f0;font-family:'Courier New',monospace;line-height:1.6}
+code{background:#0c1424;padding:.1rem .35rem;border-radius:4px;font-size:.8rem;font-family:'Courier New',monospace;color:var(--purple-l)}
+
+/* PHASE TIMELINE */
+.phases{display:grid;gap:1rem}
+.phase{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:1.2rem;display:grid;grid-template-columns:auto 1fr;gap:1rem;align-start}
+.phase-num{width:3rem;height:3rem;border-radius:10px;display:grid;place-items:center;font-weight:800;font-size:1.1rem;flex-shrink:0}
+.ph1{background:rgba(239,68,68,.2);color:#f87171}
+.ph2{background:rgba(245,158,11,.2);color:#fbbf24}
+.ph3{background:rgba(16,185,129,.2);color:#34d399}
+.ph4{background:rgba(59,130,246,.2);color:#93c5fd}
+.ph5{background:rgba(124,58,237,.2);color:#c4b5fd}
+.ph6{background:rgba(20,184,166,.2);color:#5eead4}
+.ph7{background:rgba(236,72,153,.2);color:#f9a8d4}
+.phase-title{font-weight:700;font-size:.95rem;margin-bottom:.3rem}
+.phase-week{font-size:.75rem;color:var(--muted)}
+.phase-items{margin-top:.5rem;font-size:.825rem;color:var(--muted);display:flex;flex-wrap:wrap;gap:.4rem}
+.phase-item{background:rgba(255,255,255,.05);border-radius:6px;padding:.2rem .6rem}
+
+/* SCHEMA */
+.schema-col{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+@media(max-width:800px){.schema-col{grid-template-columns:1fr}}
+
+footer{text-align:center;padding:2rem;color:var(--muted);font-size:.8rem;border-top:1px solid var(--border)}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="#scope">1. Scope</a>
+  <a href="#roles">2. Roles</a>
+  <a href="#features">3. Features</a>
+  <a href="#workflows">4. Workflows</a>
+  <a href="#tests">5. Logic Tests</a>
+  <a href="#arch">6. Architecture</a>
+  <a href="#schema">7. DB Schema</a>
+  <a href="#phases">8. Phases</a>
+</nav>
+
+<header>
+  <h1>WooBarcode Pro</h1>
+  <p>Full Product Specification — Pre-Code Blueprint</p>
+  <div class="header-meta">
+    <span class="chip">WooCommerce 9.1+</span>
+    <span class="chip">WordPress 6.3+</span>
+    <span class="chip">PHP 8.0+</span>
+    <span class="chip">Mobile-First Quick Add</span>
+    <span class="chip">v1.0 Spec</span>
+  </div>
+</header>
+
+<div class="wrap">
+
+<!-- ═══════════════════════════════════════════
+     1. SCOPE
+════════════════════════════════════════════ -->
+<div class="section" id="scope">
+  <div class="section-head"><div class="snum">1</div><div class="stitle">Application Scope & Definition</div></div>
+  <p class="sdesc">What we are building, why, and the boundaries of v1.0.</p>
+
+  <div class="card">
+    <div class="card-h"><span class="dot"></span>What WooBarcode Pro Is</div>
+    <div class="card-b">
+      <p style="margin-bottom:1rem;font-size:.875rem">A WooCommerce plugin with two distinct but connected purposes:</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div style="background:#0c1424;border-radius:8px;padding:1.2rem;border-left:3px solid var(--green)">
+          <div style="font-weight:700;color:var(--green-l);margin-bottom:.5rem">Operations Tool (Admin)</div>
+          <div style="font-size:.825rem;color:var(--muted);line-height:1.7">Generate, design, and print barcode labels for any product or variation. Manage a print queue. Bulk import EAN codes. Export barcode images. Trigger printing from order events.</div>
+        </div>
+        <div style="background:#0c1424;border-radius:8px;padding:1.2rem;border-left:3px solid var(--purple)">
+          <div style="font-weight:700;color:var(--purple-l);margin-bottom:.5rem">Quick Add Tool (Mobile)</div>
+          <div style="font-size:.825rem;color:var(--muted);line-height:1.7">A mobile-optimised page that lets a staff member scan a Price Template barcode, type a product name, take a photo, and save a new WooCommerce product — all in under 20 seconds, from a phone.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><span class="dot"></span>Scope Boundaries for v1.0</div>
+    <div class="card-b">
+      <table>
+        <thead><tr><th>In Scope</th><th>Out of Scope (v2+)</th></tr></thead>
+        <tbody>
+          <tr><td>Code 128, EAN-13, QR Code, UPC-A, ITF-14</td><td>Data Matrix, PDF417, Aztec</td></tr>
+          <tr><td>Server-side PHP barcode rendering</td><td>Zebra / thermal printer direct integration</td></tr>
+          <tr><td>PDF label sheet download</td><td>Native Android/iOS app (we use mobile web)</td></tr>
+          <tr><td>Multiple named label templates</td><td>Barcode scanner stock receiving workflow</td></tr>
+          <tr><td>Price Template + mobile Quick Add</td><td>Multi-currency per-template pricing</td></tr>
+          <tr><td>Print queue (DB-backed)</td><td>Barcode analytics / scan tracking</td></tr>
+          <tr><td>Order-triggered auto-queue</td><td>Subscription-based pricing on labels</td></tr>
+          <tr><td>REST API (read barcode by product ID)</td><td>Full POS mode (separate product)</td></tr>
+          <tr><td>Bulk EAN CSV import + export</td><td>WP Multisite network admin</td></tr>
+          <tr><td>i18n, WPCS, PHPUnit, HPOS</td><td>Barcode scanner hardware firmware config</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     2. ROLES
+════════════════════════════════════════════ -->
+<div class="section" id="roles">
+  <div class="section-head"><div class="snum">2</div><div class="stitle">User Roles & Permissions</div></div>
+  <p class="sdesc">Who uses the plugin and what each role can do.</p>
+
+  <div class="card">
+    <div class="card-b">
+      <table>
+        <thead>
+          <tr>
+            <th>Role</th>
+            <th>WP Capability</th>
+            <th>Quick Add</th>
+            <th>Print Queue</th>
+            <th>Label Templates</th>
+            <th>Price Templates</th>
+            <th>Plugin Settings</th>
+            <th>Bulk Import</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Administrator</strong></td>
+            <td><code>manage_options</code></td>
+            <td><span class="b b-yes">Full</span></td>
+            <td><span class="b b-yes">Full</span></td>
+            <td><span class="b b-yes">CRUD</span></td>
+            <td><span class="b b-yes">CRUD</span></td>
+            <td><span class="b b-yes">Full</span></td>
+            <td><span class="b b-yes">Yes</span></td>
+          </tr>
+          <tr>
+            <td><strong>Shop Manager</strong></td>
+            <td><code>manage_woocommerce</code></td>
+            <td><span class="b b-yes">Full</span></td>
+            <td><span class="b b-yes">Full</span></td>
+            <td><span class="b b-yes">CRUD</span></td>
+            <td><span class="b b-yes">CRUD</span></td>
+            <td><span class="b b-no">No</span></td>
+            <td><span class="b b-yes">Yes</span></td>
+          </tr>
+          <tr>
+            <td><strong>Staff (custom role)</strong></td>
+            <td><code>wcbp_quick_add</code></td>
+            <td><span class="b b-yes">Yes</span></td>
+            <td><span class="b b-warn">View+Print</span></td>
+            <td><span class="b b-no">No</span></td>
+            <td><span class="b b-no">No</span></td>
+            <td><span class="b b-no">No</span></td>
+            <td><span class="b b-no">No</span></td>
+          </tr>
+          <tr>
+            <td><strong>Customer / Public</strong></td>
+            <td>—</td>
+            <td><span class="b b-no">No</span></td>
+            <td><span class="b b-no">No</span></td>
+            <td><span class="b b-no">No</span></td>
+            <td><span class="b b-no">No</span></td>
+            <td><span class="b b-no">No</span></td>
+            <td><span class="b b-no">No</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="note note-amber"><div class="note-icon">⚠</div><div><strong>Security Rule</strong>Every admin action validates a nonce. Every AJAX and REST endpoint checks the user capability before execution. No capability = 403 returned immediately.</div></div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     3. FEATURES
+════════════════════════════════════════════ -->
+<div class="section" id="features">
+  <div class="section-head"><div class="snum">3</div><div class="stitle">Full Feature Catalog</div></div>
+  <p class="sdesc">Every feature, its priority, and which module owns it.</p>
+
+  <div class="card"><div class="card-b">
+    <table>
+      <thead><tr><th>Feature</th><th>Module</th><th>Priority</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr class="cat-row"><td colspan="4">Barcode Engine</td></tr>
+        <tr><td>Code 128 generation</td><td>Barcode</td><td><span class="b b-p0">P0</span></td><td>All ASCII, variable length</td></tr>
+        <tr><td>EAN-13 with auto checksum</td><td>Barcode</td><td><span class="b b-p0">P0</span></td><td>Pad to 12 digits, compute digit 13</td></tr>
+        <tr><td>QR Code (URL or text)</td><td>Barcode</td><td><span class="b b-p1">P1</span></td><td>Encode product URL or custom data</td></tr>
+        <tr><td>UPC-A</td><td>Barcode</td><td><span class="b b-p1">P1</span></td><td>11-digit numeric</td></tr>
+        <tr><td>ITF-14 / GTIN-14</td><td>Barcode</td><td><span class="b b-p1">P1</span></td><td>Shipping/outer carton use</td></tr>
+        <tr><td>Server-side PHP rendering (SVG/PNG)</td><td>Barcode</td><td><span class="b b-p0">P0</span></td><td>Via picqer/php-barcode-generator</td></tr>
+        <tr><td>Client-side rendering (JsBarcode, bundled)</td><td>Barcode</td><td><span class="b b-p0">P0</span></td><td>For live preview only, no CDN</td></tr>
+        <tr><td>PNG download per product</td><td>Barcode</td><td><span class="b b-p1">P1</span></td><td>Single-product barcode image</td></tr>
+
+        <tr class="cat-row"><td colspan="4">SKU & EAN Management</td></tr>
+        <tr><td>Auto-SKU generation (prefix + ID)</td><td>SKU Manager</td><td><span class="b b-p0">P0</span></td><td>On product save if SKU empty</td></tr>
+        <tr><td>Configurable SKU prefix</td><td>SKU Manager</td><td><span class="b b-p0">P0</span></td><td>Setting: e.g. "SBM-"</td></tr>
+        <tr><td>Force-regen SKUs across catalog</td><td>SKU Manager</td><td><span class="b b-p1">P1</span></td><td>Batch WP-CLI or admin button</td></tr>
+        <tr><td>Per-variation EAN field</td><td>EAN Manager</td><td><span class="b b-p0">P0</span></td><td>Stored as _wcbp_ean post meta</td></tr>
+        <tr><td>Bulk EAN CSV import</td><td>EAN Manager</td><td><span class="b b-p0">P0</span></td><td>Columns: SKU or ID, EAN</td></tr>
+        <tr><td>Bulk EAN/SKU CSV export</td><td>EAN Manager</td><td><span class="b b-p1">P1</span></td><td>All products + variations</td></tr>
+        <tr><td>GS1 EAN-13 format validation</td><td>EAN Manager</td><td><span class="b b-p1">P1</span></td><td>Validate on save, warn if invalid</td></tr>
+        <tr><td>EAN preference toggle (over SKU)</td><td>EAN Manager</td><td><span class="b b-p0">P0</span></td><td>Global setting</td></tr>
+
+        <tr class="cat-row"><td colspan="4">Label Designer</td></tr>
+        <tr><td>Multiple named label templates (CRUD)</td><td>Label Designer</td><td><span class="b b-p0">P0</span></td><td>Stored in DB table, not option</td></tr>
+        <tr><td>Avery 5160 / 8160 / 5260 presets</td><td>Label Designer</td><td><span class="b b-p0">P0</span></td><td>Pre-fill dimensions on select</td></tr>
+        <tr><td>A4 65-up preset</td><td>Label Designer</td><td><span class="b b-p0">P0</span></td><td>38.1 × 21.2 mm, 5 cols × 13 rows</td></tr>
+        <tr><td>Custom dimensions (in or mm)</td><td>Label Designer</td><td><span class="b b-p0">P0</span></td><td>Width, height, cols, gap, page margin</td></tr>
+        <tr><td>Vertical / horizontal layout</td><td>Label Designer</td><td><span class="b b-p0">P0</span></td><td>Toggle, live preview updates</td></tr>
+        <tr><td>Barcode height ratio slider (30–80%)</td><td>Label Designer</td><td><span class="b b-p0">P0</span></td><td>% of label height for barcode graphic</td></tr>
+        <tr><td>Field toggles: name, price, SKU, attrs, logo, custom meta</td><td>Label Designer</td><td><span class="b b-p0">P0</span></td><td>Each independently on/off</td></tr>
+        <tr><td>Logo upload (WP Media Library)</td><td>Label Designer</td><td><span class="b b-p0">P0</span></td><td>Stored as logo_id</td></tr>
+        <tr><td>Live preview (instant JS)</td><td>Label Designer</td><td><span class="b b-p0">P0</span></td><td>No page reload required</td></tr>
+        <tr><td>Set default template</td><td>Label Designer</td><td><span class="b b-p0">P0</span></td><td>Used when no template selected</td></tr>
+
+        <tr class="cat-row"><td colspan="4">Print Queue</td></tr>
+        <tr><td>DB-backed queue (custom table)</td><td>Print Queue</td><td><span class="b b-p0">P0</span></td><td>Not WP option — scales to 10k+ items</td></tr>
+        <tr><td>Add from product edit metabox</td><td>Print Queue</td><td><span class="b b-p0">P0</span></td><td>Single product or all variations</td></tr>
+        <tr><td>Add from products list bulk action</td><td>Print Queue</td><td><span class="b b-p0">P0</span></td><td>Select multiple, add all</td></tr>
+        <tr><td>Add from Quick Add (auto on save)</td><td>Print Queue</td><td><span class="b b-p0">P0</span></td><td>Optional — user can toggle</td></tr>
+        <tr><td>Order-triggered auto-add</td><td>Print Queue</td><td><span class="b b-p1">P1</span></td><td>Configurable trigger status</td></tr>
+        <tr><td>Category batch add</td><td>Print Queue</td><td><span class="b b-p1">P1</span></td><td>Select category → all products queued</td></tr>
+        <tr><td>Per-item quantity management</td><td>Print Queue</td><td><span class="b b-p0">P0</span></td><td>Edit quantity inline</td></tr>
+        <tr><td>Queue manager page (admin)</td><td>Print Queue</td><td><span class="b b-p0">P0</span></td><td>View, edit qty, remove, clear all</td></tr>
+        <tr><td>Mark items as printed</td><td>Print Queue</td><td><span class="b b-p1">P1</span></td><td>Status: pending → printed → archived</td></tr>
+
+        <tr class="cat-row"><td colspan="4">Print Output</td></tr>
+        <tr><td>Browser print page (full-screen, no chrome)</td><td>Print</td><td><span class="b b-p0">P0</span></td><td>print.css hides everything else</td></tr>
+        <tr><td>PDF label sheet download</td><td>Print</td><td><span class="b b-p1">P1</span></td><td>Server-side via mPDF</td></tr>
+        <tr><td>Quick print by ID+Qty shorthand</td><td>Print</td><td><span class="b b-p0">P0</span></td><td>Input: "42x5" = product 42, qty 5</td></tr>
+        <tr><td>ZIP of PNG barcodes</td><td>Print</td><td><span class="b b-p2">P2</span></td><td>One PNG per product, bulk download</td></tr>
+        <tr><td>Barcode in WooCommerce order emails</td><td>Print</td><td><span class="b b-p2">P2</span></td><td>Inline base64 PNG</td></tr>
+
+        <tr class="cat-row"><td colspan="4">Quick Add (Mobile)</td></tr>
+        <tr><td>Price Template CRUD</td><td>Quick Add</td><td><span class="b b-p0">P0</span></td><td>Name, price, category, label template</td></tr>
+        <tr><td>Price Template barcode auto-generated</td><td>Quick Add</td><td><span class="b b-p0">P0</span></td><td>Internal code, not a for-sale product</td></tr>
+        <tr><td>Mobile Quick Add page (no sidebar)</td><td>Quick Add</td><td><span class="b b-p0">P0</span></td><td>Full-screen, large touch targets</td></tr>
+        <tr><td>Scan or type template barcode</td><td>Quick Add</td><td><span class="b b-p0">P0</span></td><td>Bluetooth scanner or camera or typed</td></tr>
+        <tr><td>Form pre-fills from template</td><td>Quick Add</td><td><span class="b b-p0">P0</span></td><td>Price, category, attributes auto-filled</td></tr>
+        <tr><td>Camera capture for product image</td><td>Quick Add</td><td><span class="b b-p0">P0</span></td><td>input[type=file accept="image/*" capture]</td></tr>
+        <tr><td>Client-side image resize before upload</td><td>Quick Add</td><td><span class="b b-p0">P0</span></td><td>Max 1200px, JPEG compress to &lt;500KB</td></tr>
+        <tr><td>Save & Next (clears form, ready)</td><td>Quick Add</td><td><span class="b b-p0">P0</span></td><td>Fastest repeat-add flow</td></tr>
+        <tr><td>Save & Print (adds to queue)</td><td>Quick Add</td><td><span class="b b-p0">P0</span></td><td>Product created + queued in one tap</td></tr>
+        <tr><td>Offline draft (localStorage fallback)</td><td>Quick Add</td><td><span class="b b-p2">P2</span></td><td>If network drops, save draft locally</td></tr>
+        <tr><td>Scan existing product → edit shortcut</td><td>Quick Add</td><td><span class="b b-p1">P1</span></td><td>If barcode found, offer edit vs create new</td></tr>
+
+        <tr class="cat-row"><td colspan="4">Display Locations</td></tr>
+        <tr><td>Single product page barcode</td><td>Frontend</td><td><span class="b b-p0">P0</span></td><td>Toggle on/off in settings</td></tr>
+        <tr><td>Shop archive loop barcode</td><td>Frontend</td><td><span class="b b-p0">P0</span></td><td>Compact display, toggle</td></tr>
+        <tr><td>Admin products list column</td><td>Admin</td><td><span class="b b-p0">P0</span></td><td>SVG preview + queue button</td></tr>
+        <tr><td>Admin edit product metabox</td><td>Admin</td><td><span class="b b-p0">P0</span></td><td>Preview, EAN field, queue, print</td></tr>
+        <tr><td>Variation panels (EAN per variation)</td><td>Admin</td><td><span class="b b-p0">P0</span></td><td>EAN field in each variation accordion</td></tr>
+
+        <tr class="cat-row"><td colspan="4">Integration & Developer</td></tr>
+        <tr><td>REST API: GET /wcbp/v1/barcode/{id}</td><td>REST API</td><td><span class="b b-p1">P1</span></td><td>Returns barcode value + SVG + PNG URL</td></tr>
+        <tr><td>REST API: GET /wcbp/v1/queue</td><td>REST API</td><td><span class="b b-p2">P2</span></td><td>Read queue for external POS integrations</td></tr>
+        <tr><td>Action/filter hooks (20+ documented)</td><td>Core</td><td><span class="b b-p1">P1</span></td><td>wcbp_before_generate, wcbp_barcode_value…</td></tr>
+        <tr><td>HPOS compatibility declared</td><td>Core</td><td><span class="b b-p0">P0</span></td><td>FeaturesUtil::declare_compatibility</td></tr>
+
+        <tr class="cat-row"><td colspan="4">Code Quality</td></tr>
+        <tr><td>Composer autoloading (PSR-4)</td><td>Core</td><td><span class="b b-p0">P0</span></td><td>No manual requires</td></tr>
+        <tr><td>i18n text domain + POT file</td><td>Core</td><td><span class="b b-p0">P0</span></td><td>All strings wrapped in __() / esc_html__()</td></tr>
+        <tr><td>WordPress Coding Standards (WPCS)</td><td>Core</td><td><span class="b b-p0">P0</span></td><td>phpcs.xml enforced</td></tr>
+        <tr><td>Nonce on every form/AJAX</td><td>Core</td><td><span class="b b-p0">P0</span></td><td>wp_verify_nonce() before any write</td></tr>
+        <tr><td>PHPUnit test suite (unit tests)</td><td>Tests</td><td><span class="b b-p1">P1</span></td><td>Barcode engine, EAN validation, SKU gen</td></tr>
+        <tr><td>All assets bundled (no CDN)</td><td>Core</td><td><span class="b b-p0">P0</span></td><td>JsBarcode.min.js shipped with plugin</td></tr>
+      </tbody>
+    </table>
+  </div></div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     4. WORKFLOWS
+════════════════════════════════════════════ -->
+<div class="section" id="workflows">
+  <div class="section-head"><div class="snum">4</div><div class="stitle">Workflow Definitions</div></div>
+  <p class="sdesc">Step-by-step flows for every major user journey. These are the ground truth for what the UI must support.</p>
+
+  <!-- WF-1 -->
+  <div class="card">
+    <div class="card-h"><span class="dot"></span>WF-1 — First-Time Setup</div>
+    <div class="card-b">
+      <div class="flow">
+        <div class="fbox fbox-purple">Install Plugin</div><span class="arrow">→</span>
+        <div class="fbox fbox-purple">DB Tables Created</div><span class="arrow">→</span>
+        <div class="fbox fbox-purple">Settings Wizard</div><span class="arrow">→</span>
+        <div class="fbox fbox-green">Default Label Template Auto-Created</div><span class="arrow">→</span>
+        <div class="fbox fbox-green">Plugin Ready</div>
+      </div>
+      <ol class="steps">
+        <li>Admin installs and activates plugin.</li>
+        <li>Activation hook creates 3 DB tables: <code>wcbp_label_templates</code>, <code>wcbp_price_templates</code>, <code>wcbp_print_queue</code>.</li>
+        <li>A default "Avery 5160" label template is inserted automatically so the plugin works out of the box.</li>
+        <li>Admin is redirected to Settings → Basic tab.</li>
+        <li>Admin selects: barcode symbology, SKU prefix (e.g. <code>SBM-</code>), auto-SKU toggle.</li>
+        <li>Admin saves settings. Done. All features now usable.</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- WF-2 -->
+  <div class="card">
+    <div class="card-h"><span class="dot"></span>WF-2 — Create a Price Template</div>
+    <div class="card-b">
+      <div class="flow">
+        <div class="fbox fbox-purple">Price Templates Page</div><span class="arrow">→</span>
+        <div class="fbox fbox-purple">New Template</div><span class="arrow">→</span>
+        <div class="fbox fbox-purple">Fill: Name, Price, Category</div><span class="arrow">→</span>
+        <div class="fbox fbox-purple">Choose Label Template</div><span class="arrow">→</span>
+        <div class="fbox fbox-green">Save → Barcode Auto-Generated</div><span class="arrow">→</span>
+        <div class="fbox fbox-green">Print Template Barcode</div>
+      </div>
+      <ol class="steps">
+        <li>Admin goes to WooCommerce → Barcode Pro → Price Templates.</li>
+        <li>Clicks "Add New". Form: name, price, default category, default tags, default attributes, label template to use.</li>
+        <li>On save, plugin generates a unique internal barcode value (<code>WCBP-TPL-{id}</code>) for this template.</li>
+        <li>Admin prints this template barcode (one small label per template).</li>
+        <li>Staff stick template barcodes somewhere accessible (e.g. wall chart, binder).</li>
+        <li>Template is never listed as a product in the store — it is internal only.</li>
+      </ol>
+      <div class="note note-blue"><div class="note-icon">ℹ</div><div>Price Templates are not WooCommerce products. They are rows in the <code>wcbp_price_templates</code> table. Scanning their barcode on the Quick Add page triggers form pre-fill — nothing else.</div></div>
+    </div>
+  </div>
+
+  <!-- WF-3 -->
+  <div class="card">
+    <div class="card-h"><span class="dot"></span>WF-3 — Quick Add a Product (Mobile, Core Workflow)</div>
+    <div class="card-b">
+      <div class="flow">
+        <div class="fbox fbox-purple">Open Quick Add on Phone</div><span class="arrow">→</span>
+        <div class="decision">Scan Template Barcode</div><span class="arrow">→</span>
+        <div class="fbox fbox-green">Form Pre-fills</div><span class="arrow">→</span>
+        <div class="fbox fbox-purple">Type Name</div><span class="arrow">→</span>
+        <div class="fbox fbox-purple">Tap Camera</div><span class="arrow">→</span>
+        <div class="fbox fbox-purple">Take Photo</div><span class="arrow">→</span>
+        <div class="fbox fbox-green">Save & Next</div><span class="arrow">→</span>
+        <div class="fbox fbox-green">Product Created + Barcode Generated</div>
+      </div>
+      <ol class="steps">
+        <li>Staff opens Chrome on Android → navigates to <code>/wp-admin/?page=wcbp-quick-add</code> (bookmarked on home screen).</li>
+        <li>Full-screen simplified page loads — no WP sidebar, large touch targets, dark mode friendly.</li>
+        <li>Staff scans a Price Template barcode (via Bluetooth scanner or camera scan button).</li>
+        <li>AJAX call validates the barcode → returns template data (price, category, attributes).</li>
+        <li>Form appears pre-filled: Price ($50), Category (Shadowboxes), Attributes (Size: Medium).</li>
+        <li>Staff types the product name (e.g. "Blue Ocean Memory Box").</li>
+        <li>Staff taps the camera icon → native camera opens (<code>input capture="environment"</code>).</li>
+        <li>Photo taken → JS resizes to max 1200px / 500KB → thumbnail shown inline.</li>
+        <li>Staff taps "Save & Next" — product saved via WP REST API, barcode auto-generated, form clears.</li>
+        <li>OR taps "Save & Print" — same as above but product also added to print queue.</li>
+        <li>Total time target: under 20 seconds per product.</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- WF-4 -->
+  <div class="card">
+    <div class="card-h"><span class="dot"></span>WF-4 — Design a Label Template</div>
+    <div class="card-b">
+      <ol class="steps">
+        <li>Admin goes to Barcode Pro → Label Templates → Add New.</li>
+        <li>Names the template (e.g. "Small Shelf Tag").</li>
+        <li>Selects a preset or enters custom dimensions (width, height, cols, gap, page margin).</li>
+        <li>Chooses layout: Vertical or Horizontal.</li>
+        <li>Toggles content fields: Name (on), Price (on), SKU (on), Attributes (off), Logo (off), Custom Meta (off).</li>
+        <li>Drags barcode-height ratio slider to 60%.</li>
+        <li>Live preview panel updates instantly (no page reload) using JsBarcode + CSS.</li>
+        <li>Saves template. It is now available in the Print Queue and Quick Add dropdowns.</li>
+        <li>Admin can set any template as "Default" — used whenever no template is explicitly chosen.</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- WF-5 -->
+  <div class="card">
+    <div class="card-h"><span class="dot"></span>WF-5 — Print Queue: From Add to Physical Label</div>
+    <div class="card-b">
+      <div class="flow">
+        <div class="decision">Trigger</div><span class="arrow">→</span>
+        <div class="fbox fbox-purple">Item Added to Queue</div><span class="arrow">→</span>
+        <div class="fbox fbox-purple">Queue Manager Page</div><span class="arrow">→</span>
+        <div class="fbox fbox-purple">Select Label Template</div><span class="arrow">→</span>
+        <div class="fbox fbox-green">Print Page / PDF</div><span class="arrow">→</span>
+        <div class="fbox fbox-green">Physical Labels</div>
+      </div>
+      <ol class="steps">
+        <li>Items reach the queue via any trigger: Quick Add save, metabox button, bulk action, order hook.</li>
+        <li>Admin/Staff opens Barcode Pro → Print Queue.</li>
+        <li>Reviews items. Edits quantities inline if needed. Removes unwanted items.</li>
+        <li>Selects label template from dropdown (default pre-selected).</li>
+        <li>Clicks "Print" → Print Page opens in new tab. Admin chrome is hidden via <code>print.css</code>.</li>
+        <li>Labels rendered in a grid matching the label dimensions. Sheet preview shown.</li>
+        <li>User presses Ctrl+P (or clicks Print button) → browser print dialog.</li>
+        <li>OR clicks "Download PDF" → server generates PDF via mPDF → file downloads.</li>
+        <li>After printing, items marked as "printed" (optional, user confirms).</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- WF-6 -->
+  <div class="card">
+    <div class="card-h"><span class="dot"></span>WF-6 — Bulk Product Import via CSV</div>
+    <div class="card-b">
+      <ol class="steps">
+        <li>Admin prepares a CSV: columns = <code>name, price, category_slug, ean (optional), sku (optional)</code>.</li>
+        <li>Goes to Settings → Advanced → Bulk Import section.</li>
+        <li>Uploads CSV file (or pastes raw CSV text).</li>
+        <li>Plugin parses and shows a preview table: X valid rows, Y rows with issues (highlighted).</li>
+        <li>Admin reviews, optionally skips flagged rows, then clicks "Import".</li>
+        <li>Products created in batches of 50 with a progress bar (AJAX polling).</li>
+        <li>Each product gets an auto-SKU if not provided. EAN stored if provided.</li>
+        <li>On completion: "X products created. [Print All Barcodes] [View Products]".</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- WF-7 -->
+  <div class="card">
+    <div class="card-h"><span class="dot"></span>WF-7 — Order-Triggered Auto Queue</div>
+    <div class="card-b">
+      <ol class="steps">
+        <li>Admin enables "Order Auto-Queue" in Settings → Advanced. Selects trigger status (default: "Processing").</li>
+        <li>Customer places an order. Order status changes to "Processing".</li>
+        <li>Plugin hook fires: <code>woocommerce_order_status_changed</code>.</li>
+        <li>For each line item: product_id (or variation_id) + ordered quantity added to print queue.</li>
+        <li>If product has no barcode yet → auto-generate SKU → generate barcode → then queue.</li>
+        <li>Staff sees queue grow. Prints picking/packing labels on demand.</li>
+        <li>If order is later cancelled: queue items for that order are flagged/removed (configurable).</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- WF-8 -->
+  <div class="card">
+    <div class="card-h"><span class="dot"></span>WF-8 — Scan Existing Product to Edit</div>
+    <div class="card-b">
+      <ol class="steps">
+        <li>Staff opens Quick Add page on mobile.</li>
+        <li>Scans a barcode that is already assigned to an existing product.</li>
+        <li>System detects the barcode matches an existing product (checks SKU and <code>_wcbp_ean</code> meta).</li>
+        <li>Shows: "Product found: Blue Ocean Memory Box — $50" with two options: [Edit Product] [Add to Queue].</li>
+        <li>If Edit: a minimal edit form opens with name, price, stock, image fields.</li>
+        <li>If Add to Queue: quantity prompt → added directly to print queue → confirmation.</li>
+      </ol>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     5. LOGICAL WORKFLOW TESTS
+════════════════════════════════════════════ -->
+<div class="section" id="tests">
+  <div class="section-head"><div class="snum">5</div><div class="stitle">Logical Workflow Tests</div></div>
+  <p class="sdesc">Every significant edge case, decision point, and failure mode — validated for logical correctness before code is written.</p>
+
+  <div class="note note-blue"><div class="note-icon">ℹ</div><div><strong>How to read these</strong>GIVEN = precondition · WHEN = action taken · THEN = expected system response · VERDICT = is the logic sound?</div></div>
+
+  <div class="card"><div class="card-b">
+    <table>
+      <thead>
+        <tr>
+          <th>Test ID</th>
+          <th>Workflow</th>
+          <th>Scenario</th>
+          <th>Given</th>
+          <th>When</th>
+          <th>Then</th>
+          <th>Verdict</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="cat-row"><td colspan="7">Quick Add — Happy Path & Core Logic</td></tr>
+        <tr>
+          <td><code>QA-01</code></td><td>WF-3</td>
+          <td>Happy path</td>
+          <td>Template "Medium $50" exists</td>
+          <td>Scan template → fill name → photo → Save</td>
+          <td>Product created, price=$50, SKU=auto, image=uploaded, barcode=generated</td>
+          <td><span class="b b-pass">PASS</span></td>
+        </tr>
+        <tr>
+          <td><code>QA-02</code></td><td>WF-3</td>
+          <td>Template barcode not found</td>
+          <td>No template with that code</td>
+          <td>Scan unknown barcode</td>
+          <td>Show: "Template not found. Create manually?" with manual price field</td>
+          <td><span class="b b-pass">PASS</span></td>
+        </tr>
+        <tr>
+          <td><code>QA-03</code></td><td>WF-3</td>
+          <td>Scan existing product barcode</td>
+          <td>Product "Sunset Box" has barcode SBM-42</td>
+          <td>Scan SBM-42 on Quick Add page</td>
+          <td>Show: "Existing product found: Sunset Box" — offer Edit or Add to Queue</td>
+          <td><span class="b b-pass">PASS</span></td>
+        </tr>
+        <tr>
+          <td><code>QA-04</code></td><td>WF-3</td>
+          <td>Product name left blank</td>
+          <td>Template scanned, form shown</td>
+          <td>User taps Save without entering name</td>
+          <td>Client-side validation: highlight name field, show "Name is required", do not submit</td>
+          <td><span class="b b-pass">PASS</span></td>
+        </tr>
+        <tr>
+          <td><code>QA-05</code></td><td>WF-3</td>
+          <td>Camera permission denied</td>
+          <td>Android denies camera access</td>
+          <td>User taps camera icon</td>
+          <td>Fall back to file picker (<code>input[type=file]</code>), no error crash</td>
+          <td><span class="b b-pass">PASS</span></td>
+        </tr>
+        <tr>
+          <td><code>QA-06</code></td><td>WF-3</td>
+          <td>Image too large (12MB photo)</td>
+          <td>User takes high-res photo</td>
+          <td>Photo selected/taken</td>
+          <td>JS resizes to max 1200px, compresses to &lt;500KB JPEG before upload. User sees thumbnail, no error</td>
+          <td><span class="b b-pass">PASS</span></td>
+        </tr>
+        <tr>
+          <td><code>QA-07</code></td><td>WF-3</td>
+          <td>Network drops mid-save</td>
+          <td>User filled form, taps Save</td>
+          <td>REST API call fails (network error)</td>
+          <td>Show error toast "Save failed — your data is still here". Form data preserved. Retry button shown.</td>
+          <td><span class="b b-pass">PASS</span></td>
+        </tr>
+        <tr>
+          <td><code>QA-08</code></td><td>WF-3</td>
+          <td>Two staff saving simultaneously</td>
+          <td>Staff A and B both tap Save at same time</td>
+          <td>Two concurrent REST API calls</td>
+          <td>Each product gets a unique auto-SKU (DB auto-increment is atomic). No collision.</td>
+          <td><span class="b b-pass">PASS</span></td>
+        </tr>
+        <tr>
+          <td><code>QA-09</code></td><td>WF-3</td>
+          <td>Staff role (not shop manager)</td>
+          <td>User has only <code>wcbp_quick_add</code> cap</td>
+          <td>Staff opens Quick Add page</td>
+          <td>Page loads normally. But if staff tries to access Settings, returns 403.</td>
+          <td><span class="b b-pass">PASS</span></td>
+        </tr>
+        <tr>
+          <td><code>QA-10</code></td><td>WF-3</td>
+          <td>Unauthenticated access to Quick Add</td>
+          <td>Not logged in</td>
+          <td>Navigate to Quick Add URL</td>
+          <td>WP redirects to login page. No data exposed.</td>
+          <td><span class="b b-pass">PASS</span></td>
+        </tr>
+
+        <tr class="cat-row"><td colspan="7">Barcode Generation Logic</td></tr>
+        <tr>
+          <td><code>BC-01</code></td><td>WF-1</td>
+          <td>EAN preferred over SKU</td>
+          <td>Product has SKU="ABC-1" and EAN="5901234123457", setting: prefer EAN=on</td>
+          <td>Barcode generated</td>
+          <td>EAN-13 barcode generated from "5901234123457"</td>
+          <td><span class="b b-pass">PASS</span></td>
+        </tr>
+        <tr>
+          <td><code>BC-02</code></td><td>WF-1</td>
+          <td>SKU used when EAN off</td>
+          <td>Same product, prefer EAN=off</td>
+          <td>Barcode generated</td>
+          <td>Code 128 barcode from "ABC-1"</td>
+          <td><span class="b b-pass">PASS</span></td>
+        </tr>
+        <tr>
+          <td><code>BC-03</code></td><td>WF-1</td>
+          <td>No SKU, auto-generate</td>
+          <td>Product ID=99, prefix="SBM-", auto-SKU=on</td>
+          <td>Product saved without SKU</td>
+          <td>SKU auto-set to "SBM-99" on save. Barcode generated from this SKU.</td>
+          <td><span class="b b-pass">PASS</span></td>
+        </tr>
+        <tr>
+          <td><code>BC-04</code></td><td>WF-1</td>
+          <td>SKU selected as EAN-13, but SKU is not 12-digit numeric</td>
+          <td>SKU="SBM-123", symbology=EAN-13</td>
+          <td>Barcode generated</td>
+          <td>Plugin pads/prefixes to reach 12 digits numerically, computes checksum. OR warns user SKU is not EAN-compatible, suggests Code 128.</td>
+          <td><span class="b b-warn">REVIEW</span></td>
+        </tr>
+        <tr>
+          <td><code>BC-05</code></td><td>—</td>
+          <td>Variation vs parent barcode</td>
+          <td>Variable product with 3 sizes, each has its own EAN</td>
+          <td>Print all barcodes</td>
+          <td>Each variation gets its own barcode row in the queue. Parent product does not get a barcode (or gets one separately with its own SKU).</td>
+          <td><span class="b b-pass">PASS</span></td>
+        </tr>
+
+        <tr class="cat-row"><td colspan="7">Label Templates</td></tr>
+        <tr>
+          <td><code>LT-01</code></td><td>WF-4</td>
+          <td>Delete a label template in use by queue items</td>
+          <td>Template "Shelf Tag" is referenced by 5 queue items</td>
+          <td>Admin deletes "Shelf Tag" template</td>
+          <td>Warning: "This template is used by 5 queued items. Deleting will reset them to default template." Confirm required.</td>
+          <td><span class="b b-pass">PASS</span></td>
+        </tr>
+        <tr>
+          <td><code>LT-02</code></td><td>WF-4</td>
+          <td>Delete the only default template</td>
+          <td>Only one template exists, it is the default</td>
+          <td>Admin tries to delete it</td>
+          <td>Blocked: "You cannot delete the last label template. Create another first."</td>
+          <td><span class="b b-pass">PASS</span></td>
+        </tr>
+        <tr>
+          <td><code>LT-03</code></td><td>WF-4</td>
+          <td>Custom dimensions with zero gap</td>
+          <td>User enters gap=0</td>
+          <td>Preview renders</td>
+          <td>Labels touch with no gap. Allowed — some label sheets have no gap. Preview shows correctly.</td>
+          <td><span class="b b-pass">PASS</span></td>
+        </tr>
+
+        <tr class="cat-row"><td colspan="7">Print Queue</td></tr>
+        <tr>
+          <td><code>PQ-01</code></td><td>WF-5</td>
+          <td>Product deleted while in queue</td>
+          <td>Product ID 42 is in the print queue</td>
+          <td>Admin deletes product 42</td>
+          <td>On queue page load, orphaned items are highlighted: "Product no longer exists — [Remove]"</td>
+          <td><span class="b b-pass">PASS</span></td>
+        </tr>
+        <tr>
+          <td><code>PQ-02</code></td><td>WF-5</td>
+          <td>Print queue has 500+ items</td>
+          <td>500 items queued</td>
+          <td>Admin opens Print Queue page</td>
+          <td>Paginated list (50 per page). Print page renders in batches — does not timeout.</td>
+          <td><span class="b b-pass">PASS</span></td>
+        </tr>
+        <tr>
+          <td><code>PQ-03</code></td><td>WF-5</td>
+          <td>PDF generation of 200-label sheet</td>
+          <td>200 items in queue, PDF requested</td>
+          <td>Download PDF clicked</td>
+          <td>mPDF generates PDF server-side. If PHP memory limit hit, return error: "Queue too large for PDF — print in batches of 100 or use browser print."</td>
+          <td><span class="b b-pass">PASS</span></td>
+        </tr>
+        <tr>
+          <td><code>PQ-04</code></td><td>WF-5</td>
+          <td>Same product added to queue twice</td>
+          <td>Product 42 already in queue with qty=2</td>
+          <td>Admin adds product 42 to queue again</td>
+          <td>Merge: quantity becomes 3. Not a duplicate row.</td>
+          <td><span class="b b-pass">PASS</span></td>
+        </tr>
+        <tr>
+          <td><code>PQ-05</code></td><td>WF-5</td>
+          <td>Queue empty, open print page</td>
+          <td>Queue is empty</td>
+          <td>Admin navigates to Print page</td>
+          <td>Redirect to Print Queue with message: "Your queue is empty. Add products first."</td>
+          <td><span class="b b-pass">PASS</span></td>
+        </tr>
+
+        <tr class="cat-row"><td colspan="7">Order Auto-Queue</td></tr>
+        <tr>
+          <td><code>OQ-01</code></td><td>WF-7</td>
+          <td>Order cancelled after auto-queue</td>
+          <td>Order queued 3 items on "processing"</td>
+          <td>Order status changes to "cancelled"</td>
+          <td>If setting "Remove from queue on cancel" is on: those queue items removed. Otherwise: flagged with "order cancelled" warning.</td>
+          <td><span class="b b-pass">PASS</span></td>
+        </tr>
+        <tr>
+          <td><code>OQ-02</code></td><td>WF-7</td>
+          <td>Same product in two orders simultaneously</td>
+          <td>Product 42 ordered by Customer A (qty 2) and Customer B (qty 1)</td>
+          <td>Both orders hit "processing" at same time</td>
+          <td>Queue merges: product 42, total qty=3. Atomic DB insert prevents duplicate rows.</td>
+          <td><span class="b b-pass">PASS</span></td>
+        </tr>
+        <tr>
+          <td><code>OQ-03</code></td><td>WF-7</td>
+          <td>Ordered product has no barcode yet</td>
+          <td>Product 55 has no SKU, no EAN</td>
+          <td>Order containing product 55 hits trigger status</td>
+          <td>Auto-SKU generated for product 55. Barcode generated. Then added to queue. No silent failure.</td>
+          <td><span class="b b-pass">PASS</span></td>
+        </tr>
+
+        <tr class="cat-row"><td colspan="7">CSV Bulk Import</td></tr>
+        <tr>
+          <td><code>CSV-01</code></td><td>WF-6</td>
+          <td>CSV has duplicate EANs</td>
+          <td>Two rows with EAN "5901234123457"</td>
+          <td>CSV parsed</td>
+          <td>Preview flags both rows in amber: "Duplicate EAN in this file — row 4 and row 9". User must resolve before import.</td>
+          <td><span class="b b-pass">PASS</span></td>
+        </tr>
+        <tr>
+          <td><code>CSV-02</code></td><td>WF-6</td>
+          <td>CSV EAN conflicts with existing product</td>
+          <td>EAN already assigned to product "Sunset Box"</td>
+          <td>CSV parsed</td>
+          <td>Row flagged: "EAN already in use by: Sunset Box (ID: 42)". Options: Skip or Overwrite.</td>
+          <td><span class="b b-pass">PASS</span></td>
+        </tr>
+        <tr>
+          <td><code>CSV-03</code></td><td>WF-6</td>
+          <td>CSV with 1000 rows</td>
+          <td>Large CSV uploaded</td>
+          <td>Import clicked</td>
+          <td>Processed in batches of 50. Progress bar shown. On timeout/error, report which rows succeeded and which failed — do not silently drop rows.</td>
+          <td><span class="b b-pass">PASS</span></td>
+        </tr>
+        <tr>
+          <td><code>CSV-04</code></td><td>WF-6</td>
+          <td>CSV has text in price column</td>
+          <td>Row: "Blue Box, twenty dollars, shadowboxes"</td>
+          <td>CSV parsed</td>
+          <td>Row flagged red: "Invalid price value 'twenty dollars'". Row excluded from import count.</td>
+          <td><span class="b b-pass">PASS</span></td>
+        </tr>
+
+        <tr class="cat-row"><td colspan="7">Security</td></tr>
+        <tr>
+          <td><code>SEC-01</code></td><td>All</td>
+          <td>CSRF — no nonce on form submit</td>
+          <td>Attacker crafts a form POST to the settings endpoint</td>
+          <td>POST sent without valid nonce</td>
+          <td><code>wp_verify_nonce()</code> returns false → <code>wp_die('Security check failed')</code>. No data changed.</td>
+          <td><span class="b b-pass">PASS</span></td>
+        </tr>
+        <tr>
+          <td><code>SEC-02</code></td><td>All</td>
+          <td>Privilege escalation — customer calls REST API</td>
+          <td>Logged-in customer (subscriber role)</td>
+          <td>GET /wcbp/v1/barcode/42</td>
+          <td>API checks <code>manage_woocommerce</code> capability → 403 Forbidden returned.</td>
+          <td><span class="b b-pass">PASS</span></td>
+        </tr>
+        <tr>
+          <td><code>SEC-03</code></td><td>All</td>
+          <td>XSS — product name contains script tag</td>
+          <td>Product name: <code>&lt;script&gt;alert(1)&lt;/script&gt;</code></td>
+          <td>Name rendered on label or admin page</td>
+          <td>All output escaped with <code>esc_html()</code> / <code>esc_attr()</code>. Script not executed.</td>
+          <td><span class="b b-pass">PASS</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div></div>
+
+  <div class="note note-warn note-amber"><div class="note-icon">⚠</div><div><strong>Item BC-04 Needs a Decision</strong>When the symbology is set to EAN-13 but the SKU is non-numeric (e.g. "SBM-123"), the plugin cannot silently produce a valid EAN-13. Two options: (A) Auto-fall-back to Code 128 for that product and warn the admin, or (B) Block saving and require a numeric value. <strong>Recommended: Option A</strong> — never block the user silently.</div></div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     6. ARCHITECTURE
+════════════════════════════════════════════ -->
+<div class="section" id="arch">
+  <div class="section-head"><div class="snum">6</div><div class="stitle">Technical Architecture</div></div>
+  <p class="sdesc">File structure, class responsibilities, and key technical decisions.</p>
+
+  <div class="card">
+    <div class="card-h"><span class="dot"></span>Plugin File Structure</div>
+    <div class="card-b">
+<pre>woo-barcode-pro/
+├── woo-barcode-pro.php          ← Main file: headers, bootstrap call
+├── composer.json                ← picqer/php-barcode-generator, mpdf/mpdf
+├── includes/
+│   ├── class-plugin.php         ← Singleton bootstrap, hook registration
+│   ├── class-activator.php      ← DB table creation, default data seeding
+│   ├── class-deactivator.php    ← Cleanup on deactivate
+│   ├── Admin/
+│   │   ├── class-admin.php          ← Menu pages, admin_menu hook
+│   │   ├── class-settings.php       ← Settings page, register_setting
+│   │   ├── class-label-templates.php ← Label template CRUD UI
+│   │   ├── class-price-templates.php ← Price template CRUD UI
+│   │   ├── class-print-queue.php    ← Queue management UI + AJAX
+│   │   ├── class-print-page.php     ← Full-screen label sheet render
+│   │   ├── class-quick-add.php      ← Mobile Quick Add page + AJAX
+│   │   └── class-bulk-actions.php   ← CSV import, bulk SKU regen
+│   ├── Barcode/
+│   │   ├── class-barcode-generator.php ← Core: generate SVG/PNG from value
+│   │   ├── class-ean-manager.php       ← EAN meta CRUD, validation, bulk
+│   │   └── class-sku-manager.php       ← Auto-SKU, prefix, force-regen
+│   ├── Label/
+│   │   ├── class-label-renderer.php ← Render a label grid (HTML)
+│   │   └── class-pdf-generator.php  ← mPDF wrapper for PDF output
+│   ├── Frontend/
+│   │   └── class-frontend.php    ← Product page + loop display hooks
+│   ├── REST/
+│   │   └── class-rest-api.php    ← WP REST API endpoint registration
+│   ├── Integration/
+│   │   ├── class-order-queue.php ← Order status hook → auto-queue
+│   │   └── class-email-barcode.php ← Inject barcode into order emails
+│   └── Helpers.php               ← Shared utility functions
+├── assets/
+│   ├── js/
+│   │   ├── admin-settings.js     ← Settings page interactions
+│   │   ├── label-designer.js     ← Live preview rendering
+│   │   ├── print-queue.js        ← Queue AJAX (qty update, remove)
+│   │   ├── quick-add.js          ← Mobile camera, scan, save flow
+│   │   └── vendor/JsBarcode.min.js ← Bundled, no CDN
+│   └── css/
+│       ├── admin.css
+│       ├── quick-add.css         ← Mobile-first, full-screen
+│       └── print.css             ← Hides everything except labels
+├── templates/
+│   ├── admin/
+│   │   ├── settings.php
+│   │   ├── label-templates.php
+│   │   ├── price-templates.php
+│   │   ├── print-queue.php
+│   │   ├── print-page.php
+│   │   └── quick-add.php
+│   └── frontend/
+│       ├── single-barcode.php
+│       └── loop-barcode.php
+├── languages/
+│   └── woo-barcode-pro.pot
+└── tests/
+    ├── bootstrap.php
+    └── Unit/
+        ├── BarcodeGeneratorTest.php
+        ├── EanManagerTest.php
+        └── SkuManagerTest.php</pre>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><span class="dot"></span>Key Technical Decisions</div>
+    <div class="card-b">
+      <table>
+        <thead><tr><th>Decision</th><th>Choice</th><th>Reason</th></tr></thead>
+        <tbody>
+          <tr><td>Server-side barcode library</td><td><code>picqer/php-barcode-generator</code></td><td>Pure PHP, no GD/ImageMagick required, outputs SVG or PNG, MIT licensed</td></tr>
+          <tr><td>PDF generation</td><td><code>mpdf/mpdf</code></td><td>Best CSS support for label sheets, actively maintained, handles mm units natively</td></tr>
+          <tr><td>Client-side barcode (live preview)</td><td><code>JsBarcode</code> (bundled)</td><td>No CDN dependency, fast, supports all required formats</td></tr>
+          <tr><td>Quick Add API</td><td>WP REST API (<code>/wp-json/wc/v3/products</code>)</td><td>Native WC endpoint — no custom POST handler needed for product creation</td></tr>
+          <tr><td>Mobile camera</td><td><code>&lt;input type="file" accept="image/*" capture="environment"&gt;</code></td><td>Works on all Android browsers, no extra JS library, triggers native camera</td></tr>
+          <tr><td>Image resize</td><td>Canvas API (client-side JS)</td><td>Resize before upload — saves server processing and upload time on mobile</td></tr>
+          <tr><td>Queue storage</td><td>Custom DB table <code>{prefix}wcbp_print_queue</code></td><td>WP option would break above ~200 items. DB table scales to millions of rows.</td></tr>
+          <tr><td>Autoloading</td><td>Composer PSR-4</td><td>No manual <code>require</code> chains, standard in modern WP plugins</td></tr>
+          <tr><td>Settings storage</td><td>Single <code>wcbg_settings</code> option (serialized array)</td><td>Simple, fast. Label templates in DB table (not option) for scalability.</td></tr>
+          <tr><td>PHP minimum</td><td>PHP 8.0</td><td>Named arguments, union types, nullsafe operator — cleaner code</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     7. DATABASE SCHEMA
+════════════════════════════════════════════ -->
+<div class="section" id="schema">
+  <div class="section-head"><div class="snum">7</div><div class="stitle">Database Schema</div></div>
+  <p class="sdesc">Three custom tables created on plugin activation. All use the WP table prefix.</p>
+
+  <div class="schema-col">
+    <div class="card">
+      <div class="card-h"><span class="dot"></span>wcbp_label_templates</div>
+      <div class="card-b">
+<pre>id            bigint(20) PK AUTO_INCREMENT
+name          varchar(100) NOT NULL
+preset        varchar(50)  DEFAULT 'custom'
+width_in      decimal(6,3) DEFAULT 2.625
+height_in     decimal(6,3) DEFAULT 1.000
+cols          tinyint(3)   DEFAULT 3
+gap_in        decimal(6,3) DEFAULT 0.100
+margin_in     decimal(6,3) DEFAULT 0.500
+layout        varchar(20)  DEFAULT 'vertical'
+fields        longtext               -- JSON
+barcode_ratio tinyint(3)   DEFAULT 60
+logo_id       bigint(20)   DEFAULT 0
+is_default    tinyint(1)   DEFAULT 0
+created_at    datetime</pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><span class="dot"></span>wcbp_price_templates</div>
+      <div class="card-b">
+<pre>id                bigint(20) PK AUTO_INCREMENT
+name              varchar(100) NOT NULL
+price             decimal(10,2) NOT NULL
+category_ids      longtext          -- JSON
+tag_ids           longtext          -- JSON
+attributes        longtext          -- JSON
+label_template_id bigint(20) DEFAULT 0
+barcode_value     varchar(50) UNIQUE
+                  -- e.g. WCBP-TPL-7
+created_at        datetime</pre>
+      </div>
+    </div>
+
+    <div class="card" style="grid-column:1/-1">
+      <div class="card-h"><span class="dot"></span>wcbp_print_queue</div>
+      <div class="card-b">
+<pre>id                bigint(20) PK AUTO_INCREMENT
+product_id        bigint(20) NOT NULL
+variation_id      bigint(20)   DEFAULT 0
+quantity          int(11)      DEFAULT 1
+label_template_id bigint(20)   DEFAULT 0
+added_by          bigint(20)   DEFAULT 0    -- user ID
+added_at          datetime
+status            varchar(20)  DEFAULT 'pending'  -- pending | printed | archived
+printed_at        datetime     DEFAULT NULL
+order_id          bigint(20)   DEFAULT 0    -- if added via order hook
+
+KEY idx_product   (product_id)
+KEY idx_status    (status)
+KEY idx_order     (order_id)</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="note note-green"><div class="note-icon">★</div><div><strong>Migration Strategy</strong>Table creation runs inside <code>register_activation_hook</code> using <code>dbDelta()</code>. Plugin version stored in <code>wcbp_db_version</code> option. On each update, <code>plugins_loaded</code> hook checks version and runs any migration needed — forward-only, never destructive.</div></div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     8. DEVELOPMENT PHASES
+════════════════════════════════════════════ -->
+<div class="section" id="phases">
+  <div class="section-head"><div class="snum">8</div><div class="stitle">Development Phases</div></div>
+  <p class="sdesc">Ordered so each phase produces working, testable software. No phase leaves the plugin in a broken state.</p>
+
+  <div class="phases">
+    <div class="phase">
+      <div class="phase-num ph1">1</div>
+      <div>
+        <div class="phase-title">Foundation & Scaffold</div>
+        <div class="phase-week">Week 1</div>
+        <div class="phase-items">
+          <span class="phase-item">Plugin header + bootstrap class</span>
+          <span class="phase-item">Composer setup (picqer, mpdf)</span>
+          <span class="phase-item">DB table creation + migration</span>
+          <span class="phase-item">Plugin settings (basic tab)</span>
+          <span class="phase-item">WPCS + phpcs.xml configured</span>
+          <span class="phase-item">i18n text domain wired</span>
+          <span class="phase-item">HPOS compatibility declared</span>
+        </div>
+      </div>
+    </div>
+    <div class="phase">
+      <div class="phase-num ph2">2</div>
+      <div>
+        <div class="phase-title">Barcode Engine + SKU/EAN Management</div>
+        <div class="phase-week">Week 2</div>
+        <div class="phase-items">
+          <span class="phase-item">BarcodeGenerator (Code128, EAN-13)</span>
+          <span class="phase-item">SKU Manager (auto-gen, prefix)</span>
+          <span class="phase-item">EAN Manager (meta CRUD, validation)</span>
+          <span class="phase-item">Admin products list column</span>
+          <span class="phase-item">Product edit metabox</span>
+          <span class="phase-item">Variation EAN field</span>
+          <span class="phase-item">PHPUnit tests for barcode engine</span>
+        </div>
+      </div>
+    </div>
+    <div class="phase">
+      <div class="phase-num ph3">3</div>
+      <div>
+        <div class="phase-title">Label Designer + Print (Browser)</div>
+        <div class="phase-week">Week 3</div>
+        <div class="phase-items">
+          <span class="phase-item">Label template CRUD (DB)</span>
+          <span class="phase-item">Label Designer UI + live preview</span>
+          <span class="phase-item">Avery + A4 presets</span>
+          <span class="phase-item">LabelRenderer (HTML grid)</span>
+          <span class="phase-item">Print page (full-screen)</span>
+          <span class="phase-item">print.css</span>
+          <span class="phase-item">Quick print (ID×Qty shorthand)</span>
+        </div>
+      </div>
+    </div>
+    <div class="phase">
+      <div class="phase-num ph4">4</div>
+      <div>
+        <div class="phase-title">Print Queue</div>
+        <div class="phase-week">Week 4</div>
+        <div class="phase-items">
+          <span class="phase-item">Queue DB table CRUD</span>
+          <span class="phase-item">Add from metabox / bulk action</span>
+          <span class="phase-item">Queue Manager page</span>
+          <span class="phase-item">Qty edit + remove AJAX</span>
+          <span class="phase-item">Queue → Print integration</span>
+          <span class="phase-item">Merge duplicate product rows</span>
+        </div>
+      </div>
+    </div>
+    <div class="phase">
+      <div class="phase-num ph5">5</div>
+      <div>
+        <div class="phase-title">Quick Add (Mobile) + Price Templates</div>
+        <div class="phase-week">Week 5–6</div>
+        <div class="phase-items">
+          <span class="phase-item">Price Template CRUD</span>
+          <span class="phase-item">Template barcode auto-generation</span>
+          <span class="phase-item">Quick Add page (mobile-first CSS)</span>
+          <span class="phase-item">Scan / type template barcode (AJAX lookup)</span>
+          <span class="phase-item">Camera capture + JS image resize</span>
+          <span class="phase-item">Save via WC REST API</span>
+          <span class="phase-item">Save & Next / Save & Print flow</span>
+          <span class="phase-item">Existing product detection</span>
+        </div>
+      </div>
+    </div>
+    <div class="phase">
+      <div class="phase-num ph6">6</div>
+      <div>
+        <div class="phase-title">Advanced Features</div>
+        <div class="phase-week">Week 7–8</div>
+        <div class="phase-items">
+          <span class="phase-item">PDF export (mPDF)</span>
+          <span class="phase-item">QR Code, UPC-A, ITF-14 symbologies</span>
+          <span class="phase-item">Order-triggered auto-queue</span>
+          <span class="phase-item">Bulk EAN CSV import + export</span>
+          <span class="phase-item">Frontend display (product page + loop)</span>
+          <span class="phase-item">REST API endpoint</span>
+          <span class="phase-item">Settings Advanced tab (bulk tools)</span>
+        </div>
+      </div>
+    </div>
+    <div class="phase">
+      <div class="phase-num ph7">7</div>
+      <div>
+        <div class="phase-title">Quality, Polish & Launch Prep</div>
+        <div class="phase-week">Week 9</div>
+        <div class="phase-items">
+          <span class="phase-item">Full WPCS pass</span>
+          <span class="phase-item">PHPUnit full suite</span>
+          <span class="phase-item">POT file generation</span>
+          <span class="phase-item">readme.txt (WordPress.org format)</span>
+          <span class="phase-item">Uninstall.php cleanup</span>
+          <span class="phase-item">Performance: query caching</span>
+          <span class="phase-item">End-to-end workflow testing</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note note-green" style="margin-top:1.5rem"><div class="note-icon">★</div><div><strong>Rule: No Phase Leaves the Plugin Broken</strong>Each phase ends with a plugin that installs cleanly, has no PHP errors, and all features built so far work end-to-end. We test each phase before moving to the next.</div></div>
+</div>
+
+</div><!-- .wrap -->
+
+<footer>
+  WooBarcode Pro — Pre-Code Blueprint v1.0 &nbsp;·&nbsp;
+  Review all sections and raise changes before Phase 1 begins &nbsp;·&nbsp;
+  BC-04 decision required before Phase 2
+</footer>
+</body>
+</html>
