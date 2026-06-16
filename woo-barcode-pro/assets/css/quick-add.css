@@ -1,0 +1,146 @@
+/* WooBarcode Pro — Quick Add (mobile-first) */
+
+* { box-sizing: border-box; }
+
+body.wcbp-quick-add-body {
+	background: #f0f0f1;
+	margin: 0;
+	padding: 0;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, sans-serif;
+}
+
+.wcbp-qa-wrap {
+	max-width: 520px;
+	margin: 0 auto;
+	padding: 16px 12px 80px;
+}
+
+.wcbp-qa-header {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin-bottom: 20px;
+}
+.wcbp-qa-header h1 {
+	margin: 0;
+	font-size: 20px;
+	color: #1d2327;
+}
+.wcbp-qa-header .wcbp-queue-count {
+	background: #2271b1;
+	color: #fff;
+	border-radius: 10px;
+	font-size: 12px;
+	padding: 2px 8px;
+	font-weight: 700;
+}
+
+/* ── Scan section ────────────────────────────────────────────────────────── */
+.wcbp-qa-scan-row {
+	display: flex;
+	gap: 8px;
+	margin-bottom: 8px;
+}
+.wcbp-qa-scan-row input {
+	flex: 1;
+	font-size: 16px;
+	padding: 10px 12px;
+	border: 2px solid #2271b1;
+	border-radius: 6px;
+	outline: none;
+}
+.wcbp-qa-scan-row input:focus { border-color: #135e96; }
+
+#wcbp-scan-btn {
+	background: #2271b1;
+	color: #fff;
+	border: none;
+	border-radius: 6px;
+	padding: 10px 16px;
+	font-size: 20px;
+	cursor: pointer;
+	line-height: 1;
+}
+#wcbp-scan-btn:active { background: #135e96; }
+
+#wcbp-scan-status {
+	font-size: 13px;
+	margin-bottom: 12px;
+	min-height: 20px;
+}
+
+/* ── Form fields ─────────────────────────────────────────────────────────── */
+.wcbp-qa-form { background: #fff; border-radius: 8px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+
+.wcbp-qa-field { margin-bottom: 14px; }
+.wcbp-qa-field label { display: block; font-size: 12px; font-weight: 600; color: #555; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .4px; }
+.wcbp-qa-field input[type="text"],
+.wcbp-qa-field input[type="number"],
+.wcbp-qa-field select {
+	width: 100%;
+	font-size: 16px;
+	padding: 10px 12px;
+	border: 1px solid #c3c4c7;
+	border-radius: 6px;
+	outline: none;
+}
+.wcbp-qa-field input:focus,
+.wcbp-qa-field select:focus { border-color: #2271b1; }
+
+/* ── Photo capture ───────────────────────────────────────────────────────── */
+.wcbp-photo-wrap {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+.wcbp-photo-btn {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	background: #f0f0f1;
+	border: 2px dashed #c3c4c7;
+	border-radius: 8px;
+	padding: 12px 20px;
+	cursor: pointer;
+	font-size: 15px;
+	color: #1d2327;
+	font-weight: 600;
+}
+.wcbp-photo-btn:active { background: #e0e0e0; }
+.wcbp-photo-icon { font-size: 24px; }
+#wcbp-photo-preview {
+	width: 72px;
+	height: 72px;
+	object-fit: cover;
+	border-radius: 6px;
+	border: 1px solid #e0e0e0;
+	display: none;
+}
+#wcbp-photo-status { font-size: 12px; color: #757575; margin-top: 4px; }
+
+/* ── Save button ─────────────────────────────────────────────────────────── */
+#wcbp-save-btn {
+	display: block;
+	width: 100%;
+	padding: 14px;
+	background: #00a32a;
+	color: #fff;
+	border: none;
+	border-radius: 8px;
+	font-size: 18px;
+	font-weight: 700;
+	cursor: pointer;
+	margin-top: 8px;
+}
+#wcbp-save-btn:disabled { background: #999; }
+#wcbp-save-btn:active { background: #008a20; }
+
+/* ── Result ──────────────────────────────────────────────────────────────── */
+#wcbp-result { margin-top: 12px; font-size: 14px; font-weight: 600; display: none; }
+.wcbp-success { color: #00a32a; }
+.wcbp-error   { color: #d63638; }
+
+/* ── Landscape / tablet tweaks ───────────────────────────────────────────── */
+@media (min-width: 640px) {
+	.wcbp-qa-wrap { padding: 24px 20px; }
+}
