@@ -34,6 +34,7 @@ class Plugin {
 		} );
 
 		// Boot modules.
+		Updater\PluginUpdater::get_instance()->register_hooks();
 		Admin\Admin::get_instance()->register_hooks();
 		Admin\Settings::get_instance()->register_hooks();
 		Admin\Tutorial::get_instance()->register_hooks();

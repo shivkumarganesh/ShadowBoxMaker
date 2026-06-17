@@ -55,6 +55,7 @@ add_action( 'plugins_loaded', static function () {
 		require_once WCBP_PLUGIN_DIR . 'includes/class-activator.php';
 		require_once WCBP_PLUGIN_DIR . 'includes/class-deactivator.php';
 		require_once WCBP_PLUGIN_DIR . 'includes/helpers.php';
+		require_once WCBP_PLUGIN_DIR . 'includes/Updater/class-plugin-updater.php';
 		require_once WCBP_PLUGIN_DIR . 'includes/Barcode/class-barcode-generator.php';
 		require_once WCBP_PLUGIN_DIR . 'includes/Barcode/class-sku-manager.php';
 		require_once WCBP_PLUGIN_DIR . 'includes/Barcode/class-ean-manager.php';
