@@ -117,10 +117,20 @@ class PriceTemplates {
 			wp_send_json_success( array( 'type' => 'template', 'template' => $tpl ) );
 		}
 
-		// Check existing products (by SKU or EAN meta).
-		$product_id = wc_get_product_id_by_sku( $barcode );
+		// Check existing products (by SKU or EAN meta) — query postmeta directly
+		// so draft products are found (wc_get_product_id_by_sku uses lookup table
+		// which may not include drafts in all WC versions).
+		global $wpdb;
+		$product_id = (int) $wpdb->get_var( $wpdb->prepare( // phpcs:ignore WordPress.DB
+			"SELECT p.ID FROM {$wpdb->posts} p
+			 INNER JOIN {$wpdb->postmeta} pm ON pm.post_id = p.ID
+			 WHERE pm.meta_key = '_sku' AND pm.meta_value = %s
+			   AND p.post_type IN ('product','product_variation')
+			   AND p.post_status NOT IN ('trash','auto-draft')
+			 LIMIT 1",
+			$barcode
+		) );
 		if ( ! $product_id ) {
-			global $wpdb;
 			$product_id = (int) $wpdb->get_var( $wpdb->prepare( // phpcs:ignore WordPress.DB
 				"SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value = %s LIMIT 1",
 				\WCBarcodePro\Barcode\EanManager::META_KEY,

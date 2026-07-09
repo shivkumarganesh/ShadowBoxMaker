@@ -1,16 +1,16 @@
 {
     "name": "WooBarcode Pro",
     "slug": "woo-barcode-pro",
-    "version": "1.2.2",
+    "version": "1.2.3",
     "author": "ShadowBoxMaker",
     "homepage": "https://github.com/shivkumarganesh/ShadowBoxMaker",
     "requires": "6.3",
     "tested": "6.7",
     "requires_php": "8.0",
     "last_updated": "2026-07-09",
-    "download_url": "https://github.com/shivkumarganesh/ShadowBoxMaker/raw/main/releases/woo-barcode-pro-1.2.2.zip",
+    "download_url": "https://github.com/shivkumarganesh/ShadowBoxMaker/raw/main/releases/woo-barcode-pro-1.2.3.zip",
     "sections": {
         "description": "Auto-generate barcodes, design label templates, manage a print queue, and add products in seconds with the mobile Quick Add workflow.",
-        "changelog": "<h4>1.2.2</h4><ul><li>New: Live camera barcode scanner — tap 📷 on Quick Add or Inventory scanner to open a real-time camera view that automatically detects and looks up a barcode the moment it appears in frame.</li><li>New: Animated scan line and viewfinder corners for clear camera UX.</li><li>Graceful fallback message on browsers without BarcodeDetector (Safari/iOS).</li></ul><h4>1.2.1</h4><ul><li>Maintenance release.</li></ul><h4>1.2.0</h4><ul><li>New: Batch Create page and Scan-to-Publish workflow.</li></ul><h4>1.1.5</h4><ul><li>Fixed: Quick Add barcode lookup broken in three ways.</li></ul><h4>1.1.0</h4><ul><li>New: Inventory management module.</li></ul><h4>1.0.0</h4><ul><li>Initial release.</li></ul>"
+        "changelog": "<h4>1.2.3</h4><ul><li>Fixed: Barcode scanner returned unknown barcode for draft products — wc_get_product_id_by_sku() uses a lookup table that may exclude drafts; replaced with a direct _sku postmeta query that covers all statuses.</li><li>Improved: Error message now shows the scanned barcode value to help diagnose mismatches.</li></ul><h4>1.2.2</h4><ul><li>New: Live camera barcode scanner with auto-detect on both Quick Add and Inventory pages.</li></ul><h4>1.2.1</h4><ul><li>Maintenance release.</li></ul><h4>1.2.0</h4><ul><li>New: Batch Create and Scan-to-Publish workflow.</li></ul>"
     }
 }
