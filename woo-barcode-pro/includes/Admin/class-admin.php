@@ -87,7 +87,17 @@ class Admin {
 		}
 
 		if ( 'wcbp-label-templates' === $page ) {
+			wp_enqueue_media();
 			wp_enqueue_script( 'wcbp-label-designer', WCBP_PLUGIN_URL . 'assets/js/label-designer.js', array( 'jquery' ), WCBP_VERSION, true );
+			wp_localize_script( 'wcbp-label-designer', 'wcbpDesigner', array(
+				'ajax_url' => admin_url( 'admin-ajax.php' ),
+				'nonce'    => wp_create_nonce( 'wcbp_admin' ),
+				'presets'  => Admin\LabelTemplates::get_instance()->get_preset_dimensions(),
+				'strings'  => array(
+					'select_logo' => __( 'Select Logo Image', 'woo-barcode-pro' ),
+					'use_image'   => __( 'Use This Image', 'woo-barcode-pro' ),
+				),
+			) );
 		}
 
 		if ( 'wcbp-print-queue' === $page ) {
