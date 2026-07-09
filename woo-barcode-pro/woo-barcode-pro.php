@@ -24,7 +24,7 @@ define( 'WCBP_VERSION',     '1.0.0' );
 define( 'WCBP_PLUGIN_FILE', __FILE__ );
 define( 'WCBP_PLUGIN_DIR',  plugin_dir_path( __FILE__ ) );
 define( 'WCBP_PLUGIN_URL',  plugin_dir_url( __FILE__ ) );
-define( 'WCBP_DB_VERSION',  '1.0' );
+define( 'WCBP_DB_VERSION',  '1.1' );
 
 register_activation_hook( __FILE__, static function () {
 	require_once WCBP_PLUGIN_DIR . 'includes/class-activator.php';

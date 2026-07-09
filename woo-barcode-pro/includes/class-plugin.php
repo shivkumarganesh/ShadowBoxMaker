@@ -25,6 +25,10 @@ class Plugin {
 	private function __construct() {}
 
 	public function init(): void {
+		if ( get_option( 'wcbp_db_version' ) !== WCBP_DB_VERSION ) {
+			Activator::activate();
+		}
+
 		load_plugin_textdomain( 'woo-barcode-pro', false, dirname( plugin_basename( WCBP_PLUGIN_FILE ) ) . '/languages' );
 
 		add_action( 'before_woocommerce_init', static function () {

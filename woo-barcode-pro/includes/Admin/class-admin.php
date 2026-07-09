@@ -26,7 +26,8 @@ class Admin {
 		add_action( 'admin_menu',                   array( $this, 'register_menu_pages' ) );
 		add_action( 'admin_enqueue_scripts',        array( $this, 'enqueue_scripts' ) );
 		add_action( 'admin_notices',                array( $this, 'show_welcome_notice' ) );
-		add_action( 'wp_ajax_wcbp_dismiss_notice',  array( $this, 'ajax_dismiss_notice' ) );
+		add_action( 'wp_ajax_wcbp_dismiss_notice',      array( $this, 'ajax_dismiss_notice' ) );
+		add_action( 'wp_ajax_wcbp_get_barcode_preview', array( $this, 'ajax_barcode_preview' ) );
 		add_action( 'add_meta_boxes',               array( $this, 'add_product_metabox' ) );
 		add_action( 'save_post_product',            array( $this, 'save_product_metabox' ), 10, 1 );
 		add_filter( 'manage_edit-product_columns',  array( $this, 'add_barcode_column' ) );
@@ -64,19 +65,22 @@ class Admin {
 
 		wp_enqueue_style( 'wcbp-admin', WCBP_PLUGIN_URL . 'assets/css/admin.css', array(), WCBP_VERSION );
 
-		$wcbp_pages = array( 'wcbp-settings', 'wcbp-label-templates', 'wcbp-price-templates', 'wcbp-print-queue', 'wcbp-quick-add', 'wcbp-tutorial', 'wcbp-print' );
-		$page       = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : ''; // phpcs:ignore WordPress.Security
+		$wcbp_pages  = array( 'wcbp-settings', 'wcbp-label-templates', 'wcbp-price-templates', 'wcbp-print-queue', 'wcbp-quick-add', 'wcbp-tutorial', 'wcbp-print' );
+		$page        = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : ''; // phpcs:ignore WordPress.Security
+		$on_product  = 'product' === $screen->post_type && in_array( $screen->base, array( 'post', 'edit' ), true );
 
-		if ( in_array( $page, $wcbp_pages, true ) ) {
+		if ( in_array( $page, $wcbp_pages, true ) || $on_product ) {
 			wp_enqueue_script( 'wcbp-admin', WCBP_PLUGIN_URL . 'assets/js/admin.js', array( 'jquery' ), WCBP_VERSION, true );
 			wp_localize_script( 'wcbp-admin', 'wcbpAdmin', array(
 				'ajax_url'   => admin_url( 'admin-ajax.php' ),
 				'nonce'      => wp_create_nonce( 'wcbp_admin' ),
+				'queue_nonce'=> wp_create_nonce( 'wcbp_queue' ),
 				'plugin_url' => WCBP_PLUGIN_URL,
-				'i18n'       => array(
-					'confirm_delete' => __( 'Are you sure?', 'woo-barcode-pro' ),
-					'saved'          => __( 'Saved!', 'woo-barcode-pro' ),
-					'error'          => __( 'An error occurred.', 'woo-barcode-pro' ),
+				'strings'    => array(
+					'adding'          => __( 'Adding…', 'woo-barcode-pro' ),
+					'added'           => __( 'Added!', 'woo-barcode-pro' ),
+					'error'           => __( 'Error', 'woo-barcode-pro' ),
+					'select_products' => __( 'Please select products first.', 'woo-barcode-pro' ),
 				),
 			) );
 		}
@@ -88,8 +92,13 @@ class Admin {
 		if ( 'wcbp-print-queue' === $page ) {
 			wp_enqueue_script( 'wcbp-print-queue', WCBP_PLUGIN_URL . 'assets/js/print-queue.js', array( 'jquery' ), WCBP_VERSION, true );
 			wp_localize_script( 'wcbp-print-queue', 'wcbpQueue', array(
-				'ajax_url' => admin_url( 'admin-ajax.php' ),
-				'nonce'    => wp_create_nonce( 'wcbp_queue' ),
+				'ajax_url'  => admin_url( 'admin-ajax.php' ),
+				'admin_url' => admin_url( 'admin.php' ),
+				'nonce'     => wp_create_nonce( 'wcbp_queue' ),
+				'strings'   => array(
+					'confirm_clear' => __( 'Clear all items from the queue?', 'woo-barcode-pro' ),
+					'popup_blocked' => __( 'Please allow popups for this site.', 'woo-barcode-pro' ),
+				),
 			) );
 		}
 
@@ -153,6 +162,31 @@ class Admin {
 		<?php
 	}
 
+	public function ajax_barcode_preview(): void {
+		check_ajax_referer( 'wcbp_admin', 'nonce' );
+		$product_id = (int) ( $_POST['id'] ?? 0 );
+		$raw_value  = sanitize_text_field( wp_unslash( $_POST['value'] ?? '' ) );
+
+		if ( $product_id ) {
+			$svg = \WCBarcodePro\wcbp_product_barcode_svg( $product_id, 0, array( 'height' => 50, 'module_width' => 1 ) );
+		} elseif ( '' !== $raw_value ) {
+			$symbology = \WCBarcodePro\wcbp_get_setting( 'symbology', 'code128' );
+			$svg = \WCBarcodePro\Barcode\BarcodeGenerator::get_instance()->generate_svg(
+				$raw_value, $symbology, array( 'height' => 50, 'module_width' => 1 )
+			);
+		} else {
+			wp_send_json_error();
+			return;
+		}
+
+		if ( '' === $svg ) {
+			wp_send_json_error( array( 'message' => __( 'Could not generate barcode.', 'woo-barcode-pro' ) ) );
+			return;
+		}
+
+		wp_send_json_success( array( 'svg' => $svg ) );
+	}
+
 	public function ajax_dismiss_notice(): void {
 		check_ajax_referer( 'wcbp_dismiss', 'nonce' );
 		delete_transient( 'wcbp_just_activated' );
@@ -178,23 +212,25 @@ class Admin {
 		wp_nonce_field( 'wcbp_metabox', 'wcbp_metabox_nonce' );
 		?>
 		<div class="wcbp-metabox">
-			<?php if ( $svg ) : ?>
-				<div class="wcbp-metabox-preview"><?php echo $svg; // phpcs:ignore WordPress.Security ?></div>
-				<p class="wcbp-metabox-value"><code><?php echo esc_html( $value ); ?></code></p>
-			<?php else : ?>
-				<p class="description"><?php esc_html_e( 'No barcode yet. Save the product or add a SKU.', 'woo-barcode-pro' ); ?></p>
-			<?php endif; ?>
+			<div id="wcbp-barcode-preview" class="wcbp-metabox-preview">
+				<?php if ( $svg ) : ?>
+					<?php echo $svg; // phpcs:ignore WordPress.Security ?>
+					<p class="wcbp-metabox-value"><code><?php echo esc_html( $value ); ?></code></p>
+				<?php else : ?>
+					<p class="description"><?php esc_html_e( 'No barcode yet. Save the product or add a SKU.', 'woo-barcode-pro' ); ?></p>
+				<?php endif; ?>
+			</div>
 
 			<p>
 				<label><strong><?php esc_html_e( 'EAN / Custom Barcode', 'woo-barcode-pro' ); ?></strong></label>
-				<input type="text" name="wcbp_ean" id="wcbp_ean_simple"
+				<input type="text" name="wcbp_ean" id="wcbp_ean"
 					value="<?php echo esc_attr( $ean ); ?>"
 					placeholder="<?php esc_attr_e( 'Optional EAN-13 or custom', 'woo-barcode-pro' ); ?>"
 					class="widefat" />
 			</p>
 
 			<p>
-				<button type="button" class="button wcbp-add-to-queue" data-product-id="<?php echo esc_attr( (string) $product_id ); ?>">
+				<button type="button" class="button wcbp-add-single-queue" data-product-id="<?php echo esc_attr( (string) $product_id ); ?>">
 					<?php esc_html_e( '+ Add to Print Queue', 'woo-barcode-pro' ); ?>
 				</button>
 			</p>
@@ -240,7 +276,7 @@ class Admin {
 		$svg = \WCBarcodePro\wcbp_product_barcode_svg( $post_id, 0, array( 'height' => 32, 'module_width' => 1, 'show_text' => false ) );
 		if ( $svg ) {
 			echo $svg; // phpcs:ignore WordPress.Security
-			echo '<br><button type="button" class="button button-small wcbp-add-to-queue" data-product-id="' . esc_attr( (string) $post_id ) . '">' .
+			echo '<br><button type="button" class="button button-small wcbp-add-single-queue" data-product-id="' . esc_attr( (string) $post_id ) . '">' .
 				esc_html__( '+Queue', 'woo-barcode-pro' ) . '</button>';
 		} else {
 			echo '<span class="wcbp-no-barcode">—</span>';

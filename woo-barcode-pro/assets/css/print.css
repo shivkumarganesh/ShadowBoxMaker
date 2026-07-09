@@ -37,8 +37,8 @@ body.wcbp-print-body {
 .wcbp-label-sheet {
 	margin: 20px auto;
 	background: #fff;
-	width: 8.5in;
-	min-height: 11in;
+	width: var(--wcbp-sheet-w, 8.5in);
+	min-height: var(--wcbp-sheet-h, 11in);
 	padding: var(--wcbp-margin, 0.5in);
 	box-shadow: 0 2px 8px rgba(0,0,0,.15);
 }
@@ -107,7 +107,7 @@ body.wcbp-print-body {
 	}
 
 	@page {
-		size: letter;
+		size: var(--wcbp-page-size, letter);
 		margin: 0;
 	}
 }

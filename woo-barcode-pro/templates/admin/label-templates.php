@@ -78,6 +78,17 @@ defined( 'ABSPATH' ) || exit;
 						<td><input type="number" id="wcbp-margin-in" name="margin_in" value="<?php echo esc_attr( $editing['margin_in'] ?? 0.5 ); ?>" step="0.01" min="0" max="2" class="small-text" /></td>
 					</tr>
 					<tr>
+						<th><?php esc_html_e( 'Paper size', 'woo-barcode-pro' ); ?></th>
+						<td>
+							<select name="page_size" id="wcbp-page-size">
+								<option value="letter" <?php selected( $editing['page_size'] ?? 'letter', 'letter' ); ?>><?php esc_html_e( 'Letter (8.5 × 11 in)', 'woo-barcode-pro' ); ?></option>
+								<option value="A4"     <?php selected( $editing['page_size'] ?? 'letter', 'A4'     ); ?>><?php esc_html_e( 'A4 (210 × 297 mm)',   'woo-barcode-pro' ); ?></option>
+								<option value="legal"  <?php selected( $editing['page_size'] ?? 'letter', 'legal'  ); ?>><?php esc_html_e( 'Legal (8.5 × 14 in)', 'woo-barcode-pro' ); ?></option>
+								<option value="A5"     <?php selected( $editing['page_size'] ?? 'letter', 'A5'     ); ?>><?php esc_html_e( 'A5 (148 × 210 mm)',   'woo-barcode-pro' ); ?></option>
+							</select>
+						</td>
+					</tr>
+					<tr>
 						<th><?php esc_html_e( 'Layout', 'woo-barcode-pro' ); ?></th>
 						<td>
 							<label><input type="radio" name="layout" value="vertical"   <?php checked( $editing['layout'] ?? 'vertical', 'vertical'   ); ?> /> <?php esc_html_e( 'Vertical (barcode top)', 'woo-barcode-pro' ); ?></label><br/>

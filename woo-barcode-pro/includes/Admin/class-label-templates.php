@@ -64,6 +64,7 @@ class LabelTemplates {
 			'custom_meta' => sanitize_text_field( $fields_raw['custom_meta'] ?? '' ),
 		);
 
+		$allowed_page_sizes = array( 'letter', 'A4', 'A5', 'legal' );
 		$row = array(
 			'name'          => sanitize_text_field( $data['name'] ?? 'Untitled' ),
 			'preset'        => sanitize_key( $data['preset'] ?? 'custom' ),
@@ -77,8 +78,9 @@ class LabelTemplates {
 			'fields'        => wp_json_encode( $fields ),
 			'barcode_ratio' => max( 30, min( 80, (int) ( $data['barcode_ratio'] ?? 60 ) ) ),
 			'logo_id'       => (int) ( $data['logo_id'] ?? 0 ),
+			'page_size'     => in_array( $data['page_size'] ?? 'letter', $allowed_page_sizes, true ) ? $data['page_size'] : 'letter',
 		);
-		$fmt = array( '%s','%s','%f','%f','%d','%d','%f','%f','%s','%s','%d','%d' );
+		$fmt = array( '%s','%s','%f','%f','%d','%d','%f','%f','%s','%s','%d','%d','%s' );
 
 		if ( ! empty( $data['id'] ) ) {
 			$wpdb->update( $table, $row, array( 'id' => (int) $data['id'] ), $fmt, array( '%d' ) ); // phpcs:ignore WordPress.DB
@@ -113,11 +115,12 @@ class LabelTemplates {
 
 	public function get_preset_dimensions(): array {
 		return array(
-			'avery_5160' => array( 'name' => 'Avery 5160',   'width_in' => 2.625, 'height_in' => 1.0,   'cols' => 3, 'rows_per_page' => 10, 'gap_in' => 0.0, 'margin_in' => 0.5 ),
-			'avery_8160' => array( 'name' => 'Avery 8160',   'width_in' => 2.625, 'height_in' => 1.0,   'cols' => 3, 'rows_per_page' => 10, 'gap_in' => 0.0, 'margin_in' => 0.5 ),
-			'avery_5260' => array( 'name' => 'Avery 5260',   'width_in' => 2.625, 'height_in' => 1.0,   'cols' => 3, 'rows_per_page' => 10, 'gap_in' => 0.0, 'margin_in' => 0.5 ),
-			'a4_65up'    => array( 'name' => 'A4 65-up',     'width_in' => 1.497, 'height_in' => 0.835, 'cols' => 5, 'rows_per_page' => 13, 'gap_in' => 0.0, 'margin_in' => 0.24 ),
-			'custom'     => array( 'name' => 'Custom',       'width_in' => 2.0,   'height_in' => 1.0,   'cols' => 3, 'rows_per_page' => 10, 'gap_in' => 0.1, 'margin_in' => 0.5 ),
+			'avery_5160' => array( 'name' => 'Avery 5160 (Letter)', 'width_in' => 2.625, 'height_in' => 1.0,   'cols' => 3, 'rows_per_page' => 10, 'gap_in' => 0.0,  'margin_in' => 0.5,  'page_size' => 'letter' ),
+			'avery_8160' => array( 'name' => 'Avery 8160 (Letter)', 'width_in' => 2.625, 'height_in' => 1.0,   'cols' => 3, 'rows_per_page' => 10, 'gap_in' => 0.0,  'margin_in' => 0.5,  'page_size' => 'letter' ),
+			'avery_5260' => array( 'name' => 'Avery 5260 (Letter)', 'width_in' => 2.625, 'height_in' => 1.0,   'cols' => 3, 'rows_per_page' => 10, 'gap_in' => 0.0,  'margin_in' => 0.5,  'page_size' => 'letter' ),
+			'a4_65up'    => array( 'name' => 'A4 65-up (A4)',       'width_in' => 1.497, 'height_in' => 0.835, 'cols' => 5, 'rows_per_page' => 13, 'gap_in' => 0.0,  'margin_in' => 0.24, 'page_size' => 'A4'     ),
+			'a4_24up'    => array( 'name' => 'A4 24-up (A4)',       'width_in' => 2.48,  'height_in' => 1.35,  'cols' => 3, 'rows_per_page' => 8,  'gap_in' => 0.12, 'margin_in' => 0.24, 'page_size' => 'A4'     ),
+			'custom'     => array( 'name' => 'Custom',              'width_in' => 2.0,   'height_in' => 1.0,   'cols' => 3, 'rows_per_page' => 10, 'gap_in' => 0.1,  'margin_in' => 0.5,  'page_size' => 'letter' ),
 		);
 	}
 

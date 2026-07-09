@@ -23,7 +23,8 @@ class PrintQueue {
 	private function __construct() {}
 
 	public function register_hooks(): void {
-		add_action( 'wp_ajax_wcbp_add_to_queue',      array( $this, 'ajax_add' ) );
+		add_action( 'wp_ajax_wcbp_add_to_queue',       array( $this, 'ajax_add' ) );
+		add_action( 'wp_ajax_wcbp_bulk_add_to_queue', array( $this, 'ajax_bulk_add' ) );
 		add_action( 'wp_ajax_wcbp_remove_from_queue', array( $this, 'ajax_remove' ) );
 		add_action( 'wp_ajax_wcbp_update_qty',        array( $this, 'ajax_update_qty' ) );
 		add_action( 'wp_ajax_wcbp_clear_queue',       array( $this, 'ajax_clear' ) );
@@ -139,6 +140,24 @@ class PrintQueue {
 		wp_send_json_success( array(
 			'count'   => $this->get_count(),
 			'message' => __( 'Added to print queue.', 'woo-barcode-pro' ),
+		) );
+	}
+
+	public function ajax_bulk_add(): void {
+		check_ajax_referer( 'wcbp_queue', 'nonce' );
+		if ( ! \WCBarcodePro\wcbp_current_user_can_manage() ) {
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'woo-barcode-pro' ) ) );
+		}
+		$ids   = array_map( 'intval', (array) ( $_POST['ids'] ?? array() ) );
+		$count = $this->handle_bulk_add( $ids );
+		wp_send_json_success( array(
+			'total'   => $this->get_count(),
+			'added'   => $count,
+			'message' => sprintf(
+				/* translators: %d: number of products added */
+				_n( '%d product added to print queue.', '%d products added to print queue.', $count, 'woo-barcode-pro' ),
+				$count
+			),
 		) );
 	}
 

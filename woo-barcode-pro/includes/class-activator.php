@@ -34,6 +34,7 @@ class Activator {
 			barcode_ratio tinyint(3) UNSIGNED DEFAULT 60,
 			logo_id bigint(20) UNSIGNED DEFAULT 0,
 			is_default tinyint(1) DEFAULT 0,
+			page_size varchar(10) NOT NULL DEFAULT 'letter',
 			created_at datetime DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY (id)
 		) $charset;";
@@ -99,8 +100,9 @@ class Activator {
 					'barcode_ratio'=> 60,
 					'logo_id'      => 0,
 					'is_default'   => 1,
+					'page_size'    => 'letter',
 				),
-				array( '%s', '%s', '%f', '%f', '%d', '%d', '%f', '%f', '%s', '%s', '%d', '%d', '%d' )
+				array( '%s', '%s', '%f', '%f', '%d', '%d', '%f', '%f', '%s', '%s', '%d', '%d', '%d', '%s' )
 			);
 		}
 
