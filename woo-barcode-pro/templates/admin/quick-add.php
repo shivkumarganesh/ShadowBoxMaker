@@ -58,6 +58,37 @@ defined( 'ABSPATH' ) || exit;
 	</div>
 	<?php endif; ?>
 
+	<!-- ── Draft product: Scan-to-Publish card ── -->
+	<div id="wcbp-qa-draft-card" style="display:none;margin:16px 0;padding:18px;background:#fff8e1;border:2px solid #ffe082;border-radius:8px;">
+		<p style="margin:0 0 4px;font-weight:600;color:#92400e;">⚠️ <?php esc_html_e( 'Draft product scanned — complete to publish', 'woo-barcode-pro' ); ?></p>
+		<p style="margin:0 0 14px;font-size:13px;color:#78350f;">SKU: <strong id="wcbp-qa-draft-sku"></strong></p>
+
+		<div class="wcbp-qa-field">
+			<label for="wcbp-qa-draft-name"><?php esc_html_e( 'Product Name *', 'woo-barcode-pro' ); ?></label>
+			<input id="wcbp-qa-draft-name" type="text" class="wcbp-qa-input"
+			       placeholder="<?php esc_attr_e( 'Enter a name for this product…', 'woo-barcode-pro' ); ?>" />
+		</div>
+
+		<div class="wcbp-qa-field">
+			<label><?php esc_html_e( 'Photo', 'woo-barcode-pro' ); ?></label>
+			<div class="wcbp-photo-wrap">
+				<label class="wcbp-photo-btn" for="wcbp-qa-draft-photo">
+					<span class="wcbp-photo-icon">📸</span>
+					<?php esc_html_e( 'Take photo', 'woo-barcode-pro' ); ?>
+				</label>
+				<input id="wcbp-qa-draft-photo" type="file" accept="image/*" capture="environment" style="display:none" />
+				<img id="wcbp-qa-draft-preview" src="" alt="" style="display:none;max-width:100px;max-height:100px;margin-top:8px;border-radius:4px;object-fit:cover;" />
+			</div>
+			<div id="wcbp-qa-draft-photo-status" style="font-size:13px;margin-top:4px;"></div>
+		</div>
+
+		<button id="wcbp-qa-publish-btn" type="button" style="background:#16a34a;color:#fff;border:none;padding:12px 24px;border-radius:6px;font-size:16px;font-weight:600;width:100%;cursor:pointer;margin-top:4px;">
+			✓ <?php esc_html_e( 'Publish Product', 'woo-barcode-pro' ); ?>
+		</button>
+		<div id="wcbp-qa-draft-result" style="margin-top:10px;font-weight:600;"></div>
+		<input type="hidden" id="wcbp-qa-draft-product-id" value="" />
+	</div>
+
 	<!-- Product form -->
 	<form id="wcbp-quick-form" class="wcbp-qa-form" autocomplete="off">
 		<input type="hidden" id="wcbp-template-id" name="template_id" value="" />
@@ -111,8 +142,9 @@ defined( 'ABSPATH' ) || exit;
 
 <?php
 wp_localize_script( 'wcbp-quick-add', 'wcbpQuickAdd', array(
-	'ajax_url' => admin_url( 'admin-ajax.php' ),
-	'nonce'    => wp_create_nonce( 'wcbp_quick_add' ),
+	'ajax_url'  => admin_url( 'admin-ajax.php' ),
+	'nonce'     => wp_create_nonce( 'wcbp_quick_add' ),
+	'inv_nonce' => wp_create_nonce( 'wcbp_inventory' ),
 	'strings'  => array(
 		'looking_up'      => __( 'Looking up barcode…', 'woo-barcode-pro' ),
 		'template_found'  => __( 'Template found', 'woo-barcode-pro' ),
@@ -129,6 +161,12 @@ wp_localize_script( 'wcbp-quick-add', 'wcbpQuickAdd', array(
 		'error'           => __( 'Something went wrong.', 'woo-barcode-pro' ),
 		'no_camera_api'   => __( 'Live scanning not supported on this browser. Please type the barcode manually.', 'woo-barcode-pro' ),
 		'camera_error'    => __( 'Could not access camera:', 'woo-barcode-pro' ),
+		'publish_btn'     => __( 'Publish Product', 'woo-barcode-pro' ),
+		'publishing'      => __( 'Publishing…', 'woo-barcode-pro' ),
+		'published_ok'    => __( 'Product published!', 'woo-barcode-pro' ),
+		'uploading'       => __( 'Uploading photo…', 'woo-barcode-pro' ),
+		'photo_ready'     => __( 'Photo ready ✓', 'woo-barcode-pro' ),
+		'upload_failed'   => __( 'Photo upload failed.', 'woo-barcode-pro' ),
 	),
 ) );
 wp_print_scripts( 'wcbp-quick-add' );

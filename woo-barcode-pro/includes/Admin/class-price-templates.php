@@ -143,10 +143,11 @@ class PriceTemplates {
 				wp_send_json_success( array(
 					'type'    => 'product',
 					'product' => array(
-						'id'    => $product_id,
-						'name'  => $product->get_name(),
-						'price' => $product->get_price(),
-						'sku'   => $product->get_sku(),
+						'id'     => $product_id,
+						'status' => $product->get_status(),
+						'name'   => $product->get_name(),
+						'price'  => $product->get_price(),
+						'sku'    => $product->get_sku(),
 						'edit_url' => get_edit_post_link( $product_id, 'raw' ),
 					),
 				) );

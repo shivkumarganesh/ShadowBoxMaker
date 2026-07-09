@@ -120,6 +120,7 @@ class Admin {
 			wp_localize_script( 'wcbp-quick-add', 'wcbpQuickAdd', array(
 				'ajax_url'   => admin_url( 'admin-ajax.php' ),
 				'nonce'      => wp_create_nonce( 'wcbp_quick_add' ),
+				'inv_nonce'  => wp_create_nonce( 'wcbp_inventory' ),
 				'plugin_url' => WCBP_PLUGIN_URL,
 			) );
 		}

@@ -2,10 +2,12 @@
 (function ($) {
 	'use strict';
 
-	var uploadedImageId  = 0;
-	var imageUploading   = false;
-	var barcodeScanned   = '';
-	var priceFromTpl     = 0;
+	var uploadedImageId   = 0;
+	var imageUploading    = false;
+	var draftImageId      = 0;
+	var draftImageUploading = false;
+	var barcodeScanned    = '';
+	var priceFromTpl      = 0;
 
 	// ── Barcode lookup ────────────────────────────────────────────────────────
 	function lookupBarcode(value) {
@@ -34,7 +36,22 @@
 				$('#wcbp-scan-status').text(wcbpQuickAdd.strings.template_found + ' — ' + d.template.name).addClass('wcbp-success');
 				$('#wcbp-name').focus();
 			} else if ('product' === d.type) {
-				$('#wcbp-scan-status').text(wcbpQuickAdd.strings.product_exists + ': ' + d.product.name).addClass('wcbp-error');
+				if (d.product.status === 'draft') {
+					// Show inline Scan-to-Publish card
+					$('#wcbp-scan-status').text('').removeClass('wcbp-error wcbp-success');
+					$('#wcbp-qa-draft-product-id').val(d.product.id);
+					$('#wcbp-qa-draft-sku').text(d.product.sku || '—');
+					$('#wcbp-qa-draft-name').val('');
+					$('#wcbp-qa-draft-preview').hide().attr('src', '');
+					$('#wcbp-qa-draft-photo-status').text('').removeClass('wcbp-error');
+					$('#wcbp-qa-draft-result').text('').removeClass('wcbp-success wcbp-error');
+					$('#wcbp-qa-publish-btn').prop('disabled', false).text('✓ ' + wcbpQuickAdd.strings.publish_btn);
+					draftImageId = 0; draftImageUploading = false;
+					$('#wcbp-qa-draft-card').show();
+					$('#wcbp-qa-draft-name').focus();
+				} else {
+					$('#wcbp-scan-status').text(wcbpQuickAdd.strings.product_exists + ': ' + d.product.name).addClass('wcbp-error');
+				}
 			} else {
 				$('#wcbp-scan-status').text(wcbpQuickAdd.strings.unknown_barcode).addClass('wcbp-error');
 			}
@@ -173,9 +190,12 @@
 	});
 
 	function resetForm() {
-		uploadedImageId = 0;
-		imageUploading  = false;
-		barcodeScanned  = '';
+		uploadedImageId     = 0;
+		imageUploading      = false;
+		draftImageId        = 0;
+		draftImageUploading = false;
+		barcodeScanned      = '';
+		$('#wcbp-qa-draft-card').hide();
 		$('#wcbp-barcode-input').val('');
 		$('#wcbp-name').val('');
 		$('#wcbp-sku').val('');
@@ -185,6 +205,76 @@
 		$('#wcbp-scan-status, #wcbp-photo-status').text('').removeClass('wcbp-error wcbp-success');
 		setTimeout(function () { $('#wcbp-result').hide(); }, 3000);
 	}
+
+	// ── Draft publish card ────────────────────────────────────────────────────
+	$('#wcbp-qa-draft-photo').on('change', function () {
+		var file = this.files[0];
+		if (!file) return;
+		var reader = new FileReader();
+		reader.onload = function (e) {
+			var img = new Image();
+			img.onload = function () {
+				var maxW = 1200, maxH = 1200, w = img.width, h = img.height;
+				if (w > maxW || h > maxH) { var s = Math.min(maxW/w, maxH/h); w = Math.round(w*s); h = Math.round(h*s); }
+				var cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+				cv.getContext('2d').drawImage(img, 0, 0, w, h);
+				cv.toBlob(function (blob) {
+					draftImageUploading = true;
+					$('#wcbp-qa-publish-btn').prop('disabled', true);
+					$('#wcbp-qa-draft-photo-status').text(wcbpQuickAdd.strings.uploading).removeClass('wcbp-error');
+					var fd = new FormData();
+					fd.append('action', 'wcbp_quick_upload_image');
+					fd.append('nonce', wcbpQuickAdd.nonce);
+					fd.append('image', blob, file.name);
+					$.ajax({ url: wcbpQuickAdd.ajax_url, type: 'POST', data: fd, processData: false, contentType: false,
+						success: function (res) {
+							draftImageUploading = false;
+							$('#wcbp-qa-publish-btn').prop('disabled', false);
+							if (res.success) { draftImageId = res.data.attachment_id; $('#wcbp-qa-draft-photo-status').text(wcbpQuickAdd.strings.photo_ready); }
+							else { $('#wcbp-qa-draft-photo-status').text(wcbpQuickAdd.strings.upload_failed).addClass('wcbp-error'); }
+						},
+						error: function () {
+							draftImageUploading = false;
+							$('#wcbp-qa-publish-btn').prop('disabled', false);
+							$('#wcbp-qa-draft-photo-status').text(wcbpQuickAdd.strings.upload_failed).addClass('wcbp-error');
+						}
+					});
+				}, 'image/jpeg', 0.82);
+				$('#wcbp-qa-draft-preview').attr('src', cv.toDataURL()).show();
+			};
+			img.src = e.target.result;
+		};
+		reader.readAsDataURL(file);
+	});
+
+	$('#wcbp-qa-publish-btn').on('click', function () {
+		var pid  = parseInt($('#wcbp-qa-draft-product-id').val(), 10);
+		var name = $('#wcbp-qa-draft-name').val().trim();
+		if (!name) { $('#wcbp-qa-draft-name').focus(); return; }
+		if (draftImageUploading) return;
+		var $btn = $(this).prop('disabled', true).text(wcbpQuickAdd.strings.publishing);
+		$.post(wcbpQuickAdd.ajax_url, {
+			action     : 'wcbp_inv_publish_draft',
+			nonce      : wcbpQuickAdd.inv_nonce,
+			product_id : pid,
+			name       : name,
+			image_id   : draftImageId || 0,
+		}, function (res) {
+			$btn.prop('disabled', false).text('✓ ' + wcbpQuickAdd.strings.publish_btn);
+			if (res.success) {
+				$('#wcbp-qa-draft-result').html(
+					wcbpQuickAdd.strings.published_ok + ' <a href="' + res.data.edit_url + '" target="_blank">' + wcbpQuickAdd.strings.view + '</a>'
+				).addClass('wcbp-success').removeClass('wcbp-error');
+				// Reset for next scan
+				setTimeout(function () {
+					$('#wcbp-qa-draft-card').hide();
+					$('#wcbp-barcode-input').val('').focus();
+				}, 2500);
+			} else {
+				$('#wcbp-qa-draft-result').text(res.data.message || wcbpQuickAdd.strings.error).addClass('wcbp-error').removeClass('wcbp-success');
+			}
+		});
+	});
 
 	// ── Live camera scanner ───────────────────────────────────────────────────
 	var _cameraStream = null;
