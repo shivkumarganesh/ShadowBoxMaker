@@ -1,16 +1,16 @@
 {
     "name": "WooBarcode Pro",
     "slug": "woo-barcode-pro",
-    "version": "1.2.1",
+    "version": "1.2.2",
     "author": "ShadowBoxMaker",
     "homepage": "https://github.com/shivkumarganesh/ShadowBoxMaker",
     "requires": "6.3",
     "tested": "6.7",
     "requires_php": "8.0",
     "last_updated": "2026-07-09",
-    "download_url": "https://github.com/shivkumarganesh/ShadowBoxMaker/raw/main/releases/woo-barcode-pro-1.2.1.zip",
+    "download_url": "https://github.com/shivkumarganesh/ShadowBoxMaker/raw/main/releases/woo-barcode-pro-1.2.2.zip",
     "sections": {
         "description": "Auto-generate barcodes, design label templates, manage a print queue, and add products in seconds with the mobile Quick Add workflow.",
-        "changelog": "<h4>1.2.1</h4><ul><li>Maintenance release.</li></ul><h4>1.2.0</h4><ul><li>New: Batch Create page — scaffold N draft products from a price template in one click.</li><li>New: Scan-to-Publish flow — scanning a draft product barcode shows a Complete &amp; Publish card.</li></ul><h4>1.1.5</h4><ul><li>Fixed: Quick Add barcode lookup broken in three ways.</li></ul><h4>1.1.4</h4><ul><li>Fixed: Quick Add product image blank due to photo upload race condition.</li></ul><h4>1.1.3</h4><ul><li>Maintenance release.</li></ul><h4>1.1.2</h4><ul><li>Fixed: Fatal 500 error on Label Templates page.</li></ul><h4>1.1.1</h4><ul><li>Fixed: Label Templates JS crash and media picker error.</li></ul><h4>1.1.0</h4><ul><li>New: Inventory management module.</li></ul><h4>1.0.1</h4><ul><li>Fixed barcode live preview. Added A4 paper size support.</li></ul><h4>1.0.0</h4><ul><li>Initial release.</li></ul>"
+        "changelog": "<h4>1.2.2</h4><ul><li>New: Live camera barcode scanner — tap 📷 on Quick Add or Inventory scanner to open a real-time camera view that automatically detects and looks up a barcode the moment it appears in frame.</li><li>New: Animated scan line and viewfinder corners for clear camera UX.</li><li>Graceful fallback message on browsers without BarcodeDetector (Safari/iOS).</li></ul><h4>1.2.1</h4><ul><li>Maintenance release.</li></ul><h4>1.2.0</h4><ul><li>New: Batch Create page and Scan-to-Publish workflow.</li></ul><h4>1.1.5</h4><ul><li>Fixed: Quick Add barcode lookup broken in three ways.</li></ul><h4>1.1.0</h4><ul><li>New: Inventory management module.</li></ul><h4>1.0.0</h4><ul><li>Initial release.</li></ul>"
     }
 }

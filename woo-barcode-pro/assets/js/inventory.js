@@ -16,7 +16,7 @@
 		$($(this).attr('href')).show();
 	});
 
-	// ── Scanner: lookup on Enter or button click ──────────────────────────────
+	// ── Scanner: lookup on Enter, button click, or live camera ───────────────
 	$('#wcbp-inv-barcode').on('keydown', function (e) {
 		if (13 === e.which) {
 			e.preventDefault();
@@ -24,6 +24,12 @@
 		}
 	});
 	$('#wcbp-inv-lookup-btn').on('click', doLookup);
+	$('#wcbp-inv-camera-btn').on('click', function () {
+		openCameraScanner(function (value) {
+			$('#wcbp-inv-barcode').val(value);
+			doLookup();
+		});
+	});
 
 	function doLookup() {
 		var barcode = $('#wcbp-inv-barcode').val().trim();
@@ -349,6 +355,58 @@
 
 	function escHtml(str) {
 		return $('<div>').text(str || '').html();
+	}
+
+	// ── Live camera scanner ───────────────────────────────────────────────────
+	var _cameraStream = null;
+
+	function openCameraScanner(onDetected) {
+		if (!('BarcodeDetector' in window) || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+			showFeedback(wcbpInv.strings.no_camera_api, 'error', true);
+			$('#wcbp-inv-barcode').focus();
+			return;
+		}
+
+		var video    = document.getElementById('wcbp-camera-video');
+		var $modal   = $('#wcbp-camera-modal');
+		var scanning = true;
+
+		navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } } })
+			.then(function (stream) {
+				_cameraStream = stream;
+				video.srcObject = stream;
+				video.play();
+				$modal.css('display', 'flex');
+
+				var detector = new BarcodeDetector({ formats: ['code_128', 'ean_13', 'ean_8', 'upc_a', 'upc_e', 'qr_code', 'code_39', 'code_93', 'itf'] });
+
+				function tick() {
+					if (!scanning) return;
+					if (video.readyState < video.HAVE_ENOUGH_DATA) { requestAnimationFrame(tick); return; }
+					detector.detect(video).then(function (codes) {
+						if (codes.length && scanning) {
+							scanning = false;
+							closeCamera();
+							onDetected(codes[0].rawValue);
+						} else {
+							requestAnimationFrame(tick);
+						}
+					}).catch(function () { if (scanning) requestAnimationFrame(tick); });
+				}
+				requestAnimationFrame(tick);
+			})
+			.catch(function (err) {
+				showFeedback(wcbpInv.strings.camera_error + ' ' + err.message, 'error', true);
+			});
+
+		function closeCamera() {
+			scanning = false;
+			if (_cameraStream) { _cameraStream.getTracks().forEach(function (t) { t.stop(); }); _cameraStream = null; }
+			if (video) { video.srcObject = null; }
+			$modal.hide();
+		}
+
+		$('#wcbp-camera-close').off('click').on('click', closeCamera);
 	}
 
 }(jQuery));

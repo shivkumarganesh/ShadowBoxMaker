@@ -62,29 +62,12 @@
 		}
 	});
 
-	// Camera button — open image scanner
+	// Camera button — live camera scan
 	$('#wcbp-scan-btn').on('click', function () {
-		$('#wcbp-barcode-file').trigger('click');
-	});
-
-	// BarcodeDetector API (Android Chrome)
-	$('#wcbp-barcode-file').on('change', function () {
-		var file = this.files[0];
-		if (!file) return;
-		if ('BarcodeDetector' in window) {
-			var img = new Image();
-			img.onload = function () {
-				var bd = new BarcodeDetector({ formats: ['code_128', 'ean_13', 'upc_a', 'qr_code'] });
-				bd.detect(img).then(function (codes) {
-					if (codes.length) lookupBarcode(codes[0].rawValue);
-					else $('#wcbp-scan-status').text(wcbpQuickAdd.strings.no_barcode).addClass('wcbp-error');
-				});
-			};
-			img.src = URL.createObjectURL(file);
-		} else {
-			// Fallback: user types barcode manually
-			$('#wcbp-barcode-input').focus();
-		}
+		openCameraScanner(function (value) {
+			$('#wcbp-barcode-input').val(value);
+			lookupBarcode(value);
+		});
 	});
 
 	// ── Camera image upload ───────────────────────────────────────────────────
@@ -201,6 +184,58 @@
 		$('#wcbp-photo-preview').hide().attr('src', '');
 		$('#wcbp-scan-status, #wcbp-photo-status').text('').removeClass('wcbp-error wcbp-success');
 		setTimeout(function () { $('#wcbp-result').hide(); }, 3000);
+	}
+
+	// ── Live camera scanner ───────────────────────────────────────────────────
+	var _cameraStream = null;
+
+	function openCameraScanner(onDetected) {
+		if (!('BarcodeDetector' in window) || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+			$('#wcbp-scan-status').text(wcbpQuickAdd.strings.no_camera_api).addClass('wcbp-error');
+			$('#wcbp-barcode-input').focus();
+			return;
+		}
+
+		var video   = document.getElementById('wcbp-camera-video');
+		var $modal  = $('#wcbp-camera-modal');
+		var scanning = true;
+
+		navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } } })
+			.then(function (stream) {
+				_cameraStream = stream;
+				video.srcObject = stream;
+				video.play();
+				$modal.css('display', 'flex');
+
+				var detector = new BarcodeDetector({ formats: ['code_128', 'ean_13', 'ean_8', 'upc_a', 'upc_e', 'qr_code', 'code_39', 'code_93', 'itf'] });
+
+				function tick() {
+					if (!scanning) return;
+					if (video.readyState < video.HAVE_ENOUGH_DATA) { requestAnimationFrame(tick); return; }
+					detector.detect(video).then(function (codes) {
+						if (codes.length && scanning) {
+							scanning = false;
+							closeCamera();
+							onDetected(codes[0].rawValue);
+						} else {
+							requestAnimationFrame(tick);
+						}
+					}).catch(function () { if (scanning) requestAnimationFrame(tick); });
+				}
+				requestAnimationFrame(tick);
+			})
+			.catch(function (err) {
+				$('#wcbp-scan-status').text(wcbpQuickAdd.strings.camera_error + ' ' + err.message).addClass('wcbp-error');
+			});
+
+		function closeCamera() {
+			scanning = false;
+			if (_cameraStream) { _cameraStream.getTracks().forEach(function (t) { t.stop(); }); _cameraStream = null; }
+			if (video) { video.srcObject = null; }
+			$modal.hide();
+		}
+
+		$('#wcbp-camera-close').off('click').on('click', closeCamera);
 	}
 
 }(jQuery));

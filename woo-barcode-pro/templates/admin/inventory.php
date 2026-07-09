@@ -27,8 +27,10 @@ defined( 'ABSPATH' ) || exit;
 			<input type="text" id="wcbp-inv-barcode" class="regular-text"
 				placeholder="<?php esc_attr_e( 'Scan or type barcode / SKU…', 'woo-barcode-pro' ); ?>"
 				autofocus autocomplete="off" />
+			<button id="wcbp-inv-camera-btn" class="button" title="<?php esc_attr_e( 'Live camera scan', 'woo-barcode-pro' ); ?>">📷</button>
 			<button id="wcbp-inv-lookup-btn" class="button button-primary"><?php esc_html_e( 'Look Up', 'woo-barcode-pro' ); ?></button>
 		</div>
+		<?php include WCBP_PLUGIN_DIR . 'templates/admin/camera-modal.php'; ?>
 
 		<div id="wcbp-inv-result" style="display:none;">
 			<div class="wcbp-inv-product-card">

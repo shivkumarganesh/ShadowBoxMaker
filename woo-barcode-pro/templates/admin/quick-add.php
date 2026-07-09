@@ -39,10 +39,10 @@ defined( 'ABSPATH' ) || exit;
 		       placeholder="<?php esc_attr_e( 'Scan or type price template barcode…', 'woo-barcode-pro' ); ?>"
 		       autocomplete="off" autocorrect="off" spellcheck="false" />
 		<button id="wcbp-lookup-btn" type="button" title="<?php esc_attr_e( 'Look up barcode', 'woo-barcode-pro' ); ?>">🔍</button>
-		<button id="wcbp-scan-btn" title="<?php esc_attr_e( 'Scan barcode image', 'woo-barcode-pro' ); ?>">📷</button>
+		<button id="wcbp-scan-btn" type="button" title="<?php esc_attr_e( 'Scan barcode with camera', 'woo-barcode-pro' ); ?>">📷</button>
 	</div>
-	<input id="wcbp-barcode-file" type="file" accept="image/*" capture="environment" style="display:none" />
 	<div id="wcbp-scan-status"></div>
+	<?php include WCBP_PLUGIN_DIR . 'templates/admin/camera-modal.php'; ?>
 
 	<?php if ( ! empty( $price_templates ) ) : ?>
 	<div style="margin-bottom:12px;font-size:13px;color:#555">
@@ -127,6 +127,8 @@ wp_localize_script( 'wcbp-quick-add', 'wcbpQuickAdd', array(
 		'saved'           => __( 'Product created!', 'woo-barcode-pro' ),
 		'view'            => __( 'Edit →', 'woo-barcode-pro' ),
 		'error'           => __( 'Something went wrong.', 'woo-barcode-pro' ),
+		'no_camera_api'   => __( 'Live scanning not supported on this browser. Please type the barcode manually.', 'woo-barcode-pro' ),
+		'camera_error'    => __( 'Could not access camera:', 'woo-barcode-pro' ),
 	),
 ) );
 wp_print_scripts( 'wcbp-quick-add' );

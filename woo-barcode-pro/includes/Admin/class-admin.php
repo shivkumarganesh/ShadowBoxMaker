@@ -158,6 +158,8 @@ class Admin {
 					'publish_btn'         => __( '✓ Publish Product', 'woo-barcode-pro' ),
 					'published_ok'        => __( 'Product published!', 'woo-barcode-pro' ),
 					'view_product'        => __( 'Edit →', 'woo-barcode-pro' ),
+					'no_camera_api'       => __( 'Live scanning not supported on this browser. Please type the barcode manually.', 'woo-barcode-pro' ),
+					'camera_error'        => __( 'Could not access camera:', 'woo-barcode-pro' ),
 				),
 			) );
 		}
