@@ -67,6 +67,38 @@ defined( 'ABSPATH' ) || exit;
 
 		<input type="hidden" id="wcbp-inv-product-id" value="" />
 		<input type="hidden" id="wcbp-inv-variation-id" value="" />
+
+		<!-- ── Draft product: Scan-to-Publish card ── -->
+		<div id="wcbp-inv-draft-card" style="display:none;margin-top:16px;padding:20px;background:#fff8e1;border:1px solid #ffe082;border-radius:4px;">
+			<h3 style="margin-top:0;color:#f59e0b;">
+				⚠️ <?php esc_html_e( 'Draft Product — Complete to Publish', 'woo-barcode-pro' ); ?>
+			</h3>
+			<p style="margin-bottom:4px"><strong><?php esc_html_e( 'SKU:', 'woo-barcode-pro' ); ?></strong> <span id="wcbp-publish-sku"></span></p>
+
+			<table class="form-table" style="max-width:500px;margin-top:12px;">
+				<tr>
+					<th style="width:120px"><label for="wcbp-publish-name"><?php esc_html_e( 'Product Name *', 'woo-barcode-pro' ); ?></label></th>
+					<td><input type="text" id="wcbp-publish-name" class="regular-text" placeholder="<?php esc_attr_e( 'Enter a name for this product…', 'woo-barcode-pro' ); ?>" /></td>
+				</tr>
+				<tr>
+					<th><label><?php esc_html_e( 'Photo', 'woo-barcode-pro' ); ?></label></th>
+					<td>
+						<label class="button" for="wcbp-publish-photo-input">📷 <?php esc_html_e( 'Take / Upload Photo', 'woo-barcode-pro' ); ?></label>
+						<input id="wcbp-publish-photo-input" type="file" accept="image/*" capture="environment" style="display:none" />
+						<div id="wcbp-publish-photo-status" style="margin-top:4px;font-size:13px;"></div>
+						<img id="wcbp-publish-photo-preview" src="" alt="" style="display:none;margin-top:8px;max-width:120px;max-height:120px;border-radius:4px;object-fit:cover;" />
+					</td>
+				</tr>
+			</table>
+
+			<p style="margin-top:16px;">
+				<button id="wcbp-publish-btn" class="button button-primary button-large">
+					✓ <?php esc_html_e( 'Publish Product', 'woo-barcode-pro' ); ?>
+				</button>
+			</p>
+			<div id="wcbp-publish-feedback" style="display:none;margin-top:10px;font-weight:600;"></div>
+			<input type="hidden" id="wcbp-publish-product-id" value="" />
+		</div>
 	</div>
 
 	<!-- ── Low Stock ── -->

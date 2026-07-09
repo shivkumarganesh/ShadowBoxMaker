@@ -1,16 +1,16 @@
 {
     "name": "WooBarcode Pro",
     "slug": "woo-barcode-pro",
-    "version": "1.1.5",
+    "version": "1.2.0",
     "author": "ShadowBoxMaker",
     "homepage": "https://github.com/shivkumarganesh/ShadowBoxMaker",
     "requires": "6.3",
     "tested": "6.7",
     "requires_php": "8.0",
     "last_updated": "2026-07-09",
-    "download_url": "https://github.com/shivkumarganesh/ShadowBoxMaker/raw/main/releases/woo-barcode-pro-1.1.5.zip",
+    "download_url": "https://github.com/shivkumarganesh/ShadowBoxMaker/raw/main/releases/woo-barcode-pro-1.2.0.zip",
     "sections": {
         "description": "Auto-generate barcodes, design label templates, manage a print queue, and add products in seconds with the mobile Quick Add workflow.",
-        "changelog": "<h4>1.1.5</h4><ul><li>Fixed: Quick Add barcode lookup did nothing when tapping template buttons (wcbpLookup was a dead stub).</li><li>Fixed: No way to trigger barcode lookup without a hardware keyboard — added a 🔍 Look Up button.</li><li>Fixed: inputmode=none prevented software keyboard on mobile, making manual barcode entry impossible.</li></ul><h4>1.1.4</h4><ul><li>Fixed: Quick Add product image blank due to race condition — Save button now disabled during photo upload.</li></ul><h4>1.1.3</h4><ul><li>Maintenance release.</li></ul><h4>1.1.2</h4><ul><li>Fixed: Fatal 500 error on Label Templates page.</li></ul><h4>1.1.1</h4><ul><li>Fixed: Label Templates JS crash and media picker cross-origin error.</li></ul><h4>1.1.0</h4><ul><li>New: Inventory management module.</li></ul><h4>1.0.1</h4><ul><li>Fixed barcode live preview. Added A4 paper size support.</li></ul><h4>1.0.0</h4><ul><li>Initial release.</li></ul>"
+        "changelog": "<h4>1.2.0</h4><ul><li>New: Batch Create page — scaffold N draft products from a price template in one click, all added to print queue automatically.</li><li>New: Scan-to-Publish flow — scanning a draft product barcode now shows a Complete &amp; Publish card to add name, photo, and publish without leaving the scanner.</li></ul><h4>1.1.5</h4><ul><li>Fixed: Quick Add barcode lookup broken (dead stub, no lookup button, inputmode prevented keyboard).</li></ul><h4>1.1.4</h4><ul><li>Fixed: Quick Add product image blank due to photo upload race condition.</li></ul><h4>1.1.3</h4><ul><li>Maintenance release.</li></ul><h4>1.1.2</h4><ul><li>Fixed: Fatal 500 error on Label Templates page.</li></ul><h4>1.1.1</h4><ul><li>Fixed: Label Templates JS crash and media picker error.</li></ul><h4>1.1.0</h4><ul><li>New: Inventory management module.</li></ul><h4>1.0.1</h4><ul><li>Fixed barcode live preview. Added A4 paper size support.</li></ul><h4>1.0.0</h4><ul><li>Initial release.</li></ul>"
     }
 }

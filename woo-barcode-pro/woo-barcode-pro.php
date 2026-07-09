@@ -3,7 +3,7 @@
  * Plugin Name:       WooBarcode Pro
  * Plugin URI:        https://shadowboxmaker.com
  * Description:       Auto-generate barcodes, design label templates, manage a print queue, and add products in seconds with the mobile Quick Add workflow.
- * Version:           1.1.5
+ * Version:           1.2.0
  * Author:            ShadowBoxMaker
  * Author URI:        https://shadowboxmaker.com
  * License:           GPL-2.0-or-later
@@ -20,7 +20,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'WCBP_VERSION',     '1.1.5' );
+define( 'WCBP_VERSION',     '1.2.0' );
 define( 'WCBP_PLUGIN_FILE', __FILE__ );
 define( 'WCBP_PLUGIN_DIR',  plugin_dir_path( __FILE__ ) );
 define( 'WCBP_PLUGIN_URL',  plugin_dir_url( __FILE__ ) );
@@ -73,6 +73,7 @@ add_action( 'plugins_loaded', static function () {
 		require_once WCBP_PLUGIN_DIR . 'includes/REST/class-rest-api.php';
 		require_once WCBP_PLUGIN_DIR . 'includes/Integration/class-order-queue.php';
 		require_once WCBP_PLUGIN_DIR . 'includes/Inventory/class-inventory-manager.php';
+		require_once WCBP_PLUGIN_DIR . 'includes/Admin/class-batch-create.php';
 	}
 
 	\WCBarcodePro\Plugin::get_instance()->init();

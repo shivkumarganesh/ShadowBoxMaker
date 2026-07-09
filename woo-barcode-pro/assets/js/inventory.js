@@ -4,6 +4,8 @@
 
 	var currentProductId   = 0;
 	var currentVariationId = 0;
+	var publishImageId     = 0;
+	var publishUploading   = false;
 
 	// ── Tab switching ─────────────────────────────────────────────────────────
 	$('.wcbp-inv-tabs .nav-tab').on('click', function (e) {
@@ -43,25 +45,44 @@
 			currentProductId   = d.product_id;
 			currentVariationId = d.variation_id || 0;
 
-			$('#wcbp-inv-product-id').val(d.product_id);
-			$('#wcbp-inv-variation-id').val(d.variation_id || 0);
-			$('#wcbp-inv-name').text(d.name);
-			$('#wcbp-inv-sku').text(d.sku ? 'SKU: ' + d.sku : '');
-			$('#wcbp-inv-new-qty').val(d.stock_qty);
-
-			var $badge = $('#wcbp-inv-qty');
-			$badge.text(d.stock_qty === null ? '—' : d.stock_qty);
-			$badge.removeClass('wcbp-inv-badge-ok wcbp-inv-badge-low wcbp-inv-badge-out');
-			if (d.stock_qty <= 0) {
-				$badge.addClass('wcbp-inv-badge-out').text('Out of Stock');
-			} else if (d.stock_qty <= 5) {
-				$badge.addClass('wcbp-inv-badge-low');
+			if (d.status === 'draft') {
+				// ── Draft product: show Scan-to-Publish card ──────────────────
+				publishImageId   = 0;
+				publishUploading = false;
+				$('#wcbp-inv-result').hide();
+				$('#wcbp-publish-product-id').val(d.product_id);
+				$('#wcbp-publish-sku').text(d.sku ? 'SKU: ' + d.sku : '');
+				$('#wcbp-publish-price').text(wcbpInv.strings.draft_price_prefix + (d.price || ''));
+				$('#wcbp-publish-name').val('');
+				$('#wcbp-publish-photo-preview').hide().attr('src', '');
+				$('#wcbp-publish-photo-status').text('').removeClass('wcbp-inv-err');
+				$('#wcbp-publish-feedback').hide();
+				$('#wcbp-publish-btn').prop('disabled', false).text(wcbpInv.strings.publish_btn);
+				$('#wcbp-inv-draft-card').show();
+				$('#wcbp-publish-name').focus();
 			} else {
-				$badge.addClass('wcbp-inv-badge-ok');
-			}
+				// ── Published product: show stock adjustment ──────────────────
+				$('#wcbp-inv-draft-card').hide();
+				$('#wcbp-inv-product-id').val(d.product_id);
+				$('#wcbp-inv-variation-id').val(d.variation_id || 0);
+				$('#wcbp-inv-name').text(d.name);
+				$('#wcbp-inv-sku').text(d.sku ? 'SKU: ' + d.sku : '');
+				$('#wcbp-inv-new-qty').val(d.stock_qty);
 
-			$('#wcbp-inv-result').show();
-			$('#wcbp-inv-new-qty').trigger('focus');
+				var $badge = $('#wcbp-inv-qty');
+				$badge.text(d.stock_qty === null ? '—' : d.stock_qty);
+				$badge.removeClass('wcbp-inv-badge-ok wcbp-inv-badge-low wcbp-inv-badge-out');
+				if (d.stock_qty <= 0) {
+					$badge.addClass('wcbp-inv-badge-out').text('Out of Stock');
+				} else if (d.stock_qty <= 5) {
+					$badge.addClass('wcbp-inv-badge-low');
+				} else {
+					$badge.addClass('wcbp-inv-badge-ok');
+				}
+
+				$('#wcbp-inv-result').show();
+				$('#wcbp-inv-new-qty').trigger('focus');
+			}
 		});
 	}
 
@@ -123,6 +144,91 @@
 				showFeedback(wcbpInv.strings.sold_one.replace('%qty%', d.new_qty), 'success');
 			} else {
 				showFeedback(res.data.message || wcbpInv.strings.error, 'error');
+			}
+		});
+	});
+
+	// ── Scan-to-Publish: photo upload ────────────────────────────────────────
+	$('#wcbp-publish-photo-input').on('change', function () {
+		var file = this.files[0];
+		if (!file) return;
+		var reader = new FileReader();
+		reader.onload = function (e) {
+			var img = new Image();
+			img.onload = function () {
+				var maxW = 1200, maxH = 1200, w = img.width, h = img.height;
+				if (w > maxW || h > maxH) {
+					var scale = Math.min(maxW / w, maxH / h);
+					w = Math.round(w * scale); h = Math.round(h * scale);
+				}
+				var canvas = document.createElement('canvas');
+				canvas.width = w; canvas.height = h;
+				canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+				canvas.toBlob(function (blob) { uploadPublishPhoto(blob, file.name); }, 'image/jpeg', 0.82);
+				$('#wcbp-publish-photo-preview').attr('src', canvas.toDataURL()).show();
+			};
+			img.src = e.target.result;
+		};
+		reader.readAsDataURL(file);
+	});
+
+	function uploadPublishPhoto(blob, filename) {
+		publishUploading = true;
+		$('#wcbp-publish-btn').prop('disabled', true);
+		$('#wcbp-publish-photo-status').text(wcbpInv.strings.uploading).removeClass('wcbp-inv-err');
+		var fd = new FormData();
+		fd.append('action', 'wcbp_quick_upload_image');
+		fd.append('nonce',  wcbpInv.nonce);
+		fd.append('image',  blob, filename);
+		$.ajax({
+			url: wcbpInv.ajax_url, type: 'POST', data: fd,
+			processData: false, contentType: false,
+			success: function (res) {
+				publishUploading = false;
+				$('#wcbp-publish-btn').prop('disabled', false);
+				if (res.success) {
+					publishImageId = res.data.attachment_id;
+					$('#wcbp-publish-photo-status').text(wcbpInv.strings.photo_ready);
+				} else {
+					$('#wcbp-publish-photo-status').text(wcbpInv.strings.upload_failed).addClass('wcbp-inv-err');
+				}
+			},
+			error: function () {
+				publishUploading = false;
+				$('#wcbp-publish-btn').prop('disabled', false);
+				$('#wcbp-publish-photo-status').text(wcbpInv.strings.upload_failed).addClass('wcbp-inv-err');
+			},
+		});
+	}
+
+	// ── Scan-to-Publish: submit ───────────────────────────────────────────────
+	$('#wcbp-publish-btn').on('click', function () {
+		var pid  = parseInt($('#wcbp-publish-product-id').val(), 10);
+		var name = $('#wcbp-publish-name').val().trim();
+		if (!name) {
+			$('#wcbp-publish-name').focus();
+			return;
+		}
+		if (publishUploading) return;
+		var $btn = $(this).prop('disabled', true).text(wcbpInv.strings.publishing);
+		$.post(wcbpInv.ajax_url, {
+			action     : 'wcbp_inv_publish_draft',
+			nonce      : wcbpInv.nonce,
+			product_id : pid,
+			name       : name,
+			image_id   : publishImageId || 0,
+		}, function (res) {
+			$btn.prop('disabled', false).text(wcbpInv.strings.publish_btn);
+			if (res.success) {
+				$('#wcbp-inv-draft-card').hide();
+				$('#wcbp-publish-feedback')
+					.html(wcbpInv.strings.published_ok + ' <a href="' + res.data.edit_url + '" target="_blank">' + wcbpInv.strings.view_product + '</a>')
+					.addClass('wcbp-inv-ok').removeClass('wcbp-inv-err').show();
+				$('#wcbp-inv-barcode').val('').focus();
+			} else {
+				$('#wcbp-publish-feedback')
+					.text(res.data.message || wcbpInv.strings.error)
+					.addClass('wcbp-inv-err').removeClass('wcbp-inv-ok').show();
 			}
 		});
 	});

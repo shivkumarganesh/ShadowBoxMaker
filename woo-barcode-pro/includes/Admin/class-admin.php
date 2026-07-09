@@ -52,6 +52,7 @@ class Admin {
 		add_submenu_page( 'wcbp-settings', __( 'Print Queue', 'woo-barcode-pro' ),      __( 'Print Queue', 'woo-barcode-pro' ),      'manage_woocommerce', 'wcbp-print-queue',      array( PrintQueue::get_instance(),    'render_page' ) );
 		add_submenu_page( 'wcbp-settings', __( 'Quick Add', 'woo-barcode-pro' ),        __( '📱 Quick Add', 'woo-barcode-pro' ),    'manage_woocommerce', 'wcbp-quick-add',        array( QuickAdd::get_instance(),      'render_page' ) );
 		add_submenu_page( 'wcbp-settings', __( 'Inventory', 'woo-barcode-pro' ),       __( 'Inventory', 'woo-barcode-pro' ),       'manage_woocommerce', 'wcbp-inventory',        array( \WCBarcodePro\Inventory\InventoryManager::get_instance(), 'render_page' ) );
+		add_submenu_page( 'wcbp-settings', __( 'Batch Create', 'woo-barcode-pro' ),    __( '⚡ Batch Create', 'woo-barcode-pro' ),  'manage_woocommerce', 'wcbp-batch-create',     array( BatchCreate::get_instance(), 'render_page' ) );
 		// Tutorial — hidden from nav but accessible via URL.
 		add_submenu_page( null,            __( 'Tutorial', 'woo-barcode-pro' ),         __( 'Tutorial', 'woo-barcode-pro' ),         'manage_woocommerce', 'wcbp-tutorial',         array( Tutorial::get_instance(),      'render_page' ) );
 		// Print page — hidden, full-screen.
@@ -66,7 +67,7 @@ class Admin {
 
 		wp_enqueue_style( 'wcbp-admin', WCBP_PLUGIN_URL . 'assets/css/admin.css', array(), WCBP_VERSION );
 
-		$wcbp_pages  = array( 'wcbp-settings', 'wcbp-label-templates', 'wcbp-price-templates', 'wcbp-print-queue', 'wcbp-quick-add', 'wcbp-tutorial', 'wcbp-print', 'wcbp-inventory' );
+		$wcbp_pages  = array( 'wcbp-settings', 'wcbp-label-templates', 'wcbp-price-templates', 'wcbp-print-queue', 'wcbp-quick-add', 'wcbp-tutorial', 'wcbp-print', 'wcbp-inventory', 'wcbp-batch-create' );
 		$page        = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : ''; // phpcs:ignore WordPress.Security
 		$on_product  = 'product' === $screen->post_type && in_array( $screen->base, array( 'post', 'edit' ), true );
 
@@ -148,7 +149,35 @@ class Admin {
 					'no_log'          => __( 'No history found.', 'woo-barcode-pro' ),
 					'reason_order'    => __( 'Order sale', 'woo-barcode-pro' ),
 					'reason_manual'   => __( 'Manual adjust', 'woo-barcode-pro' ),
-					'reason_scan_sell'=> __( 'In-person sale', 'woo-barcode-pro' ),
+					'reason_scan_sell'    => __( 'In-person sale', 'woo-barcode-pro' ),
+					'draft_price_prefix'  => __( 'Price: ', 'woo-barcode-pro' ),
+					'uploading'           => __( 'Uploading photo…', 'woo-barcode-pro' ),
+					'photo_ready'         => __( 'Photo ready ✓', 'woo-barcode-pro' ),
+					'upload_failed'       => __( 'Photo upload failed.', 'woo-barcode-pro' ),
+					'publishing'          => __( 'Publishing…', 'woo-barcode-pro' ),
+					'publish_btn'         => __( '✓ Publish Product', 'woo-barcode-pro' ),
+					'published_ok'        => __( 'Product published!', 'woo-barcode-pro' ),
+					'view_product'        => __( 'Edit →', 'woo-barcode-pro' ),
+				),
+			) );
+		}
+
+		if ( 'wcbp-batch-create' === $page ) {
+			wp_enqueue_script( 'wcbp-batch-create', WCBP_PLUGIN_URL . 'assets/js/batch-create.js', array( 'jquery' ), WCBP_VERSION, true );
+			wp_localize_script( 'wcbp-batch-create', 'wcbpBatch', array(
+				'ajax_url' => admin_url( 'admin-ajax.php' ),
+				'nonce'    => wp_create_nonce( 'wcbp_batch_create' ),
+				'strings'  => array(
+					'select_template' => __( 'Please select a price template.', 'woo-barcode-pro' ),
+					'invalid_qty'     => __( 'Please enter a valid quantity (1–500).', 'woo-barcode-pro' ),
+					'creating'        => __( 'Creating…', 'woo-barcode-pro' ),
+					'creating_n'      => __( 'Creating %n% draft products…', 'woo-barcode-pro' ),
+					'create_btn'      => __( 'Create Draft Products', 'woo-barcode-pro' ),
+					'success'         => __( '%n% draft products created and added to print queue.', 'woo-barcode-pro' ),
+					'go_to_queue'     => __( 'Go to Print Queue', 'woo-barcode-pro' ),
+					'print_now'       => __( 'Print Now', 'woo-barcode-pro' ),
+					'show_skus'       => __( 'Show generated SKUs', 'woo-barcode-pro' ),
+					'error'           => __( 'An error occurred. Please try again.', 'woo-barcode-pro' ),
 				),
 			) );
 		}

@@ -29,6 +29,7 @@ class InventoryManager {
 		add_action( 'wp_ajax_wcbp_inv_sell_one',      array( $this, 'ajax_sell_one' ) );
 		add_action( 'wp_ajax_wcbp_inv_low_stock',     array( $this, 'ajax_low_stock' ) );
 		add_action( 'wp_ajax_wcbp_inv_log',           array( $this, 'ajax_get_log' ) );
+		add_action( 'wp_ajax_wcbp_inv_publish_draft', array( $this, 'ajax_publish_draft' ) );
 	}
 
 	// ── Core methods ─────────────────────────────────────────────────────────
@@ -64,10 +65,12 @@ class InventoryManager {
 			'variation_id'  => 0,
 			'name'          => $product->get_name(),
 			'sku'           => $product->get_sku(),
+			'status'        => $product->get_status(),
 			'stock_qty'     => (int) $product->get_stock_quantity(),
 			'stock_status'  => $product->get_stock_status(),
 			'manage_stock'  => (bool) $product->get_manage_stock(),
 			'edit_url'      => get_edit_post_link( $product_id, 'raw' ),
+			'image_url'     => get_the_post_thumbnail_url( $product_id, 'thumbnail' ) ?: '',
 		);
 	}
 
@@ -273,6 +276,45 @@ class InventoryManager {
 		$limit      = 50;
 		$offset     = ( $page - 1 ) * $limit;
 		wp_send_json_success( array( 'log' => $this->get_log( $product_id, $limit, $offset ) ) );
+	}
+
+	public function ajax_publish_draft(): void {
+		check_ajax_referer( 'wcbp_inventory', 'nonce' );
+		if ( ! \WCBarcodePro\wcbp_current_user_can_manage() ) {
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'woo-barcode-pro' ) ) );
+		}
+
+		$product_id = (int) ( $_POST['product_id'] ?? 0 );
+		$name       = sanitize_text_field( wp_unslash( $_POST['name'] ?? '' ) );
+		$image_id   = (int) ( $_POST['image_id'] ?? 0 );
+
+		if ( ! $product_id ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid product.', 'woo-barcode-pro' ) ) );
+		}
+		if ( ! $name ) {
+			wp_send_json_error( array( 'message' => __( 'Product name is required.', 'woo-barcode-pro' ) ) );
+		}
+
+		$product = wc_get_product( $product_id );
+		if ( ! $product ) {
+			wp_send_json_error( array( 'message' => __( 'Product not found.', 'woo-barcode-pro' ) ) );
+		}
+
+		$product->set_name( $name );
+		$product->set_status( 'publish' );
+		$product->set_catalog_visibility( 'visible' );
+
+		if ( $image_id ) {
+			$product->set_image_id( $image_id );
+		}
+
+		$product->save();
+
+		wp_send_json_success( array(
+			'product_id' => $product_id,
+			'edit_url'   => get_edit_post_link( $product_id, 'raw' ),
+			'name'       => $name,
+		) );
 	}
 
 	// ── Admin page ────────────────────────────────────────────────────────────
