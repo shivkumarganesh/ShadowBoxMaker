@@ -1,16 +1,16 @@
 {
     "name": "WooBarcode Pro",
     "slug": "woo-barcode-pro",
-    "version": "1.2.4",
+    "version": "1.2.5",
     "author": "ShadowBoxMaker",
     "homepage": "https://github.com/shivkumarganesh/ShadowBoxMaker",
     "requires": "6.3",
     "tested": "6.7",
     "requires_php": "8.0",
     "last_updated": "2026-07-09",
-    "download_url": "https://github.com/shivkumarganesh/ShadowBoxMaker/raw/main/releases/woo-barcode-pro-1.2.4.zip",
+    "download_url": "https://github.com/shivkumarganesh/ShadowBoxMaker/raw/main/releases/woo-barcode-pro-1.2.5.zip",
     "sections": {
         "description": "Auto-generate barcodes, design label templates, manage a print queue, and add products in seconds with the mobile Quick Add workflow.",
-        "changelog": "<h4>1.2.4</h4><ul><li>Fixed: Scanning a draft product barcode in Quick Add showed an error instead of the Scan-to-Publish form. Draft products now show an inline Complete &amp; Publish card directly on the Quick Add page — enter name, take photo, tap Publish and the scanner resets for the next item.</li></ul><h4>1.2.3</h4><ul><li>Fixed: Barcode lookup missed draft products due to WooCommerce lookup table not covering all statuses.</li></ul><h4>1.2.2</h4><ul><li>New: Live camera barcode scanner.</li></ul><h4>1.2.0</h4><ul><li>New: Batch Create and Scan-to-Publish workflow.</li></ul>"
+        "changelog": "<h4>1.2.5</h4><ul><li>Maintenance release.</li></ul><h4>1.2.4</h4><ul><li>Fixed: Scanning a draft product barcode in Quick Add now shows inline Complete &amp; Publish card.</li></ul><h4>1.2.3</h4><ul><li>Fixed: Barcode lookup missed draft products.</li></ul><h4>1.2.2</h4><ul><li>New: Live camera barcode scanner.</li></ul><h4>1.2.0</h4><ul><li>New: Batch Create and Scan-to-Publish workflow.</li></ul>"
     }
 }
