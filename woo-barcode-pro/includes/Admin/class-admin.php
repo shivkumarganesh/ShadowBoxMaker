@@ -92,7 +92,7 @@ class Admin {
 			wp_localize_script( 'wcbp-label-designer', 'wcbpDesigner', array(
 				'ajax_url' => admin_url( 'admin-ajax.php' ),
 				'nonce'    => wp_create_nonce( 'wcbp_admin' ),
-				'presets'  => Admin\LabelTemplates::get_instance()->get_preset_dimensions(),
+				'presets'  => LabelTemplates::get_instance()->get_preset_dimensions(),
 				'strings'  => array(
 					'select_logo' => __( 'Select Logo Image', 'woo-barcode-pro' ),
 					'use_image'   => __( 'Use This Image', 'woo-barcode-pro' ),
