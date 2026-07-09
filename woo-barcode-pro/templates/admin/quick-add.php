@@ -35,10 +35,11 @@ defined( 'ABSPATH' ) || exit;
 
 	<!-- Scan / enter barcode -->
 	<div class="wcbp-qa-scan-row">
-		<input id="wcbp-barcode-input" type="text" inputmode="none"
+		<input id="wcbp-barcode-input" type="text" inputmode="text"
 		       placeholder="<?php esc_attr_e( 'Scan or type price template barcode…', 'woo-barcode-pro' ); ?>"
 		       autocomplete="off" autocorrect="off" spellcheck="false" />
-		<button id="wcbp-scan-btn" title="<?php esc_attr_e( 'Scan barcode', 'woo-barcode-pro' ); ?>">📷</button>
+		<button id="wcbp-lookup-btn" type="button" title="<?php esc_attr_e( 'Look up barcode', 'woo-barcode-pro' ); ?>">🔍</button>
+		<button id="wcbp-scan-btn" title="<?php esc_attr_e( 'Scan barcode image', 'woo-barcode-pro' ); ?>">📷</button>
 	</div>
 	<input id="wcbp-barcode-file" type="file" accept="image/*" capture="environment" style="display:none" />
 	<div id="wcbp-scan-status"></div>
@@ -132,7 +133,7 @@ wp_print_scripts( 'wcbp-quick-add' );
 ?>
 <script>
 // Allow quick-tap template buttons to trigger lookup
-function wcbpLookup(v){ /* handled in quick-add.js lookupBarcode() */ }
+function wcbpLookup(v){ if(typeof lookupBarcode==='function') lookupBarcode(v); }
 </script>
 </body>
 </html>

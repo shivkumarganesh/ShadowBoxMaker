@@ -41,7 +41,10 @@
 		});
 	}
 
-	// Camera icon tap → trigger native camera input
+	// Expose lookup for template buttons in the page markup
+	window.lookupBarcode = lookupBarcode;
+
+	// Enter key in the barcode input
 	$('#wcbp-barcode-input').on('keydown', function (e) {
 		if (13 === e.which) {
 			e.preventDefault();
@@ -49,6 +52,17 @@
 		}
 	});
 
+	// Dedicated look-up button
+	$('#wcbp-lookup-btn').on('click', function () {
+		var val = $('#wcbp-barcode-input').val().trim();
+		if (val) {
+			lookupBarcode(val);
+		} else {
+			$('#wcbp-barcode-input').focus();
+		}
+	});
+
+	// Camera button — open image scanner
 	$('#wcbp-scan-btn').on('click', function () {
 		$('#wcbp-barcode-file').trigger('click');
 	});
