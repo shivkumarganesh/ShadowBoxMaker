@@ -2,9 +2,10 @@
 (function ($) {
 	'use strict';
 
-	var uploadedImageId = 0;
-	var barcodeScanned  = '';
-	var priceFromTpl    = 0;
+	var uploadedImageId  = 0;
+	var imageUploading   = false;
+	var barcodeScanned   = '';
+	var priceFromTpl     = 0;
 
 	// ── Barcode lookup ────────────────────────────────────────────────────────
 	function lookupBarcode(value) {
@@ -104,7 +105,9 @@
 	});
 
 	function uploadImage(blob, filename) {
-		$('#wcbp-photo-status').text(wcbpQuickAdd.strings.uploading);
+		imageUploading = true;
+		$('#wcbp-save-btn').prop('disabled', true);
+		$('#wcbp-photo-status').text(wcbpQuickAdd.strings.uploading).removeClass('wcbp-error');
 		var fd = new FormData();
 		fd.append('action', 'wcbp_quick_upload_image');
 		fd.append('nonce',  wcbpQuickAdd.nonce);
@@ -117,12 +120,19 @@
 			processData: false,
 			contentType: false,
 			success    : function (res) {
+				imageUploading = false;
+				$('#wcbp-save-btn').prop('disabled', false);
 				if (res.success) {
 					uploadedImageId = res.data.attachment_id;
 					$('#wcbp-photo-status').text(wcbpQuickAdd.strings.photo_ready);
 				} else {
 					$('#wcbp-photo-status').text(wcbpQuickAdd.strings.upload_failed).addClass('wcbp-error');
 				}
+			},
+			error: function () {
+				imageUploading = false;
+				$('#wcbp-save-btn').prop('disabled', false);
+				$('#wcbp-photo-status').text(wcbpQuickAdd.strings.upload_failed).addClass('wcbp-error');
 			},
 		});
 	}
@@ -167,6 +177,7 @@
 
 	function resetForm() {
 		uploadedImageId = 0;
+		imageUploading  = false;
 		barcodeScanned  = '';
 		$('#wcbp-barcode-input').val('');
 		$('#wcbp-name').val('');
