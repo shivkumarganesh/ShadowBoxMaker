@@ -51,6 +51,7 @@ class Admin {
 		add_submenu_page( 'wcbp-settings', __( 'Price Templates', 'woo-barcode-pro' ),  __( 'Price Templates', 'woo-barcode-pro' ),  'manage_woocommerce', 'wcbp-price-templates',  array( PriceTemplates::get_instance(), 'render_page' ) );
 		add_submenu_page( 'wcbp-settings', __( 'Print Queue', 'woo-barcode-pro' ),      __( 'Print Queue', 'woo-barcode-pro' ),      'manage_woocommerce', 'wcbp-print-queue',      array( PrintQueue::get_instance(),    'render_page' ) );
 		add_submenu_page( 'wcbp-settings', __( 'Quick Add', 'woo-barcode-pro' ),        __( '📱 Quick Add', 'woo-barcode-pro' ),    'manage_woocommerce', 'wcbp-quick-add',        array( QuickAdd::get_instance(),      'render_page' ) );
+		add_submenu_page( 'wcbp-settings', __( 'Inventory', 'woo-barcode-pro' ),       __( 'Inventory', 'woo-barcode-pro' ),       'manage_woocommerce', 'wcbp-inventory',        array( \WCBarcodePro\Inventory\InventoryManager::get_instance(), 'render_page' ) );
 		// Tutorial — hidden from nav but accessible via URL.
 		add_submenu_page( null,            __( 'Tutorial', 'woo-barcode-pro' ),         __( 'Tutorial', 'woo-barcode-pro' ),         'manage_woocommerce', 'wcbp-tutorial',         array( Tutorial::get_instance(),      'render_page' ) );
 		// Print page — hidden, full-screen.
@@ -65,7 +66,7 @@ class Admin {
 
 		wp_enqueue_style( 'wcbp-admin', WCBP_PLUGIN_URL . 'assets/css/admin.css', array(), WCBP_VERSION );
 
-		$wcbp_pages  = array( 'wcbp-settings', 'wcbp-label-templates', 'wcbp-price-templates', 'wcbp-print-queue', 'wcbp-quick-add', 'wcbp-tutorial', 'wcbp-print' );
+		$wcbp_pages  = array( 'wcbp-settings', 'wcbp-label-templates', 'wcbp-price-templates', 'wcbp-print-queue', 'wcbp-quick-add', 'wcbp-tutorial', 'wcbp-print', 'wcbp-inventory' );
 		$page        = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : ''; // phpcs:ignore WordPress.Security
 		$on_product  = 'product' === $screen->post_type && in_array( $screen->base, array( 'post', 'edit' ), true );
 
@@ -114,6 +115,32 @@ class Admin {
 
 		if ( 'wcbp-print' === $page ) {
 			wp_enqueue_style( 'wcbp-print', WCBP_PLUGIN_URL . 'assets/css/print.css', array(), WCBP_VERSION );
+		}
+
+		if ( 'wcbp-inventory' === $page ) {
+			wp_enqueue_script( 'wcbp-inventory', WCBP_PLUGIN_URL . 'assets/js/inventory.js', array( 'jquery' ), WCBP_VERSION, true );
+			wp_localize_script( 'wcbp-inventory', 'wcbpInv', array(
+				'ajax_url'  => admin_url( 'admin-ajax.php' ),
+				'nonce'     => wp_create_nonce( 'wcbp_inventory' ),
+				'edit_url'  => admin_url( 'post.php?post=' ),
+				'order_url' => admin_url( 'post.php?post=' ),
+				'strings'   => array(
+					'not_found'       => __( 'No product found for that barcode or SKU.', 'woo-barcode-pro' ),
+					'loading'         => __( 'Loading…', 'woo-barcode-pro' ),
+					'saving'          => __( 'Saving…', 'woo-barcode-pro' ),
+					'error'           => __( 'An error occurred.', 'woo-barcode-pro' ),
+					'invalid_qty'     => __( 'Please enter a valid quantity (0 or more).', 'woo-barcode-pro' ),
+					'set_stock'       => __( 'Set Stock', 'woo-barcode-pro' ),
+					'confirm_sell'    => __( 'Deduct 1 unit from stock as an in-person sale?', 'woo-barcode-pro' ),
+					'adjusted'        => __( 'Stock updated: %old% → %new% (%change%)', 'woo-barcode-pro' ),
+					'sold_one'        => __( 'Sold 1 unit. New stock: %qty%', 'woo-barcode-pro' ),
+					'no_low_stock'    => __( 'No products below that threshold.', 'woo-barcode-pro' ),
+					'no_log'          => __( 'No history found.', 'woo-barcode-pro' ),
+					'reason_order'    => __( 'Order sale', 'woo-barcode-pro' ),
+					'reason_manual'   => __( 'Manual adjust', 'woo-barcode-pro' ),
+					'reason_scan_sell'=> __( 'In-person sale', 'woo-barcode-pro' ),
+				),
+			) );
 		}
 
 		if ( 'wcbp-tutorial' === $page ) {

@@ -70,9 +70,28 @@ class Activator {
 			KEY order_id (order_id)
 		) $charset;";
 
+		$sql_stock_log = "CREATE TABLE {$wpdb->prefix}wcbp_stock_log (
+			id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+			product_id bigint(20) UNSIGNED NOT NULL,
+			variation_id bigint(20) UNSIGNED DEFAULT 0,
+			old_qty int(11) NOT NULL DEFAULT 0,
+			new_qty int(11) NOT NULL DEFAULT 0,
+			change_qty int(11) NOT NULL DEFAULT 0,
+			reason varchar(50) NOT NULL DEFAULT 'manual',
+			order_id bigint(20) UNSIGNED DEFAULT 0,
+			user_id bigint(20) UNSIGNED DEFAULT 0,
+			note varchar(255) DEFAULT '',
+			created_at datetime DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (id),
+			KEY product_id (product_id),
+			KEY reason (reason),
+			KEY created_at (created_at)
+		) $charset;";
+
 		dbDelta( $sql_label );
 		dbDelta( $sql_price );
 		dbDelta( $sql_queue );
+		dbDelta( $sql_stock_log );
 
 		// Seed a default label template if none exists.
 		$existing = $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}wcbp_label_templates" ); // phpcs:ignore WordPress.DB

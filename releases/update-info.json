@@ -1,16 +1,16 @@
 {
     "name": "WooBarcode Pro",
     "slug": "woo-barcode-pro",
-    "version": "1.0.1",
+    "version": "1.1.0",
     "author": "ShadowBoxMaker",
     "homepage": "https://github.com/shivkumarganesh/ShadowBoxMaker",
     "requires": "6.3",
     "tested": "6.7",
     "requires_php": "8.0",
     "last_updated": "2026-07-09",
-    "download_url": "https://github.com/shivkumarganesh/ShadowBoxMaker/raw/main/releases/woo-barcode-pro-1.0.1.zip",
+    "download_url": "https://github.com/shivkumarganesh/ShadowBoxMaker/raw/main/releases/woo-barcode-pro-1.1.0.zip",
     "sections": {
         "description": "Auto-generate barcodes, design label templates, manage a print queue, and add products in seconds with the mobile Quick Add workflow.",
-        "changelog": "<h4>1.0.1</h4><ul><li>Fixed barcode live preview in product metabox (EAN field now updates preview as you type).</li><li>Fixed Add to Print Queue buttons on product list and product edit page.</li><li>Fixed bulk action Add to Print Queue.</li><li>Added A4, A5, and Legal paper size options for label printing.</li><li>Added A4 65-up and A4 24-up label presets.</li><li>Self-hosted auto-update mechanism added.</li></ul><h4>1.0.0</h4><ul><li>Initial release.</li></ul>"
+        "changelog": "<h4>1.1.0</h4><ul><li>New: Inventory management module (Barcode Pro → Inventory).</li><li>New: Barcode scanner — scan or type a SKU to look up any product instantly.</li><li>New: Adjust stock quantity from the scanner page with an optional reason note.</li><li>New: Sell One button — scan a product and deduct 1 unit as an in-person sale.</li><li>New: Low Stock dashboard — see all products below a chosen threshold with quick-adjust.</li><li>New: Stock History log — every change recorded with before/after quantities, reason, and linked order.</li><li>New: Orders automatically logged in the stock history when WooCommerce reduces stock.</li></ul><h4>1.0.1</h4><ul><li>Fixed barcode live preview in product metabox.</li><li>Added A4 paper size support for label printing.</li></ul><h4>1.0.0</h4><ul><li>Initial release.</li></ul>"
     }
 }

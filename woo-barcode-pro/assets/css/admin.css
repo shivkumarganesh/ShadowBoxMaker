@@ -111,3 +111,63 @@
 	color: #757575;
 }
 .wcbp-empty-state .wcbp-empty-icon { font-size: 48px; }
+
+/* ── Inventory ───────────────────────────────────────────────────────────── */
+.wcbp-inv-product-card {
+	background: #f6f7f7;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	padding: 12px 16px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 16px;
+}
+.wcbp-inv-product-info { display: flex; flex-direction: column; gap: 2px; }
+.wcbp-inv-product-info strong { font-size: 15px; }
+.wcbp-inv-stock-display { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+
+.wcbp-inv-qty-badge {
+	display: inline-block;
+	font-size: 13px;
+	font-weight: 700;
+	padding: 2px 10px;
+	border-radius: 12px;
+	min-width: 32px;
+	text-align: center;
+}
+.wcbp-inv-badge-ok  { background: #d7f5dc; color: #1a6131; }
+.wcbp-inv-badge-low { background: #fff3cd; color: #7a5000; }
+.wcbp-inv-badge-out { background: #fde8e8; color: #8a1010; }
+
+.wcbp-inv-actions { display: flex; gap: 16px; flex-wrap: wrap; }
+.wcbp-inv-action-box {
+	flex: 1 1 260px;
+	background: #fff;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	padding: 14px 16px;
+}
+.wcbp-inv-action-box h3 { margin: 0 0 10px; font-size: 14px; }
+
+.wcbp-inv-feedback {
+	margin-top: 14px;
+	padding: 10px 14px;
+	border-radius: 4px;
+	font-weight: 600;
+}
+.wcbp-inv-ok  { background: #d7f5dc; color: #1a6131; border: 1px solid #7fd98f; }
+.wcbp-inv-err { background: #fde8e8; color: #8a1010; border: 1px solid #f5a0a0; }
+
+.wcbp-inv-pos { color: #1a6131; font-weight: 700; }
+.wcbp-inv-neg { color: #8a1010; font-weight: 700; }
+
+.wcbp-queue-count-pill {
+	background: #ca4a1f;
+	color: #fff;
+	border-radius: 10px;
+	font-size: 11px;
+	padding: 2px 8px;
+	margin-left: 8px;
+	vertical-align: middle;
+}

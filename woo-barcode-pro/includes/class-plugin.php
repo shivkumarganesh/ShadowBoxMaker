@@ -53,6 +53,7 @@ class Plugin {
 		Frontend\Frontend::get_instance()->register_hooks();
 		REST\RestAPI::get_instance()->register_hooks();
 		Integration\OrderQueue::get_instance()->register_hooks();
+		Inventory\InventoryManager::get_instance()->register_hooks();
 	}
 
 	public static function get_default_settings(): array {
