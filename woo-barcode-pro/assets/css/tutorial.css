@@ -1,0 +1,110 @@
+/* WooBarcode Pro — Tutorial / Onboarding styles */
+
+.wcbp-tutorial-wrap {
+	max-width: 680px;
+	margin: 40px auto;
+	text-align: center;
+}
+
+.wcbp-tutorial-card {
+	background: #fff;
+	border-radius: 12px;
+	box-shadow: 0 4px 24px rgba(0,0,0,.10);
+	padding: 48px 40px 36px;
+	position: relative;
+}
+
+.wcbp-tutorial-icon {
+	font-size: 56px;
+	line-height: 1;
+	margin-bottom: 16px;
+}
+
+.wcbp-tutorial-card h1 {
+	font-size: 26px;
+	color: #1d2327;
+	margin: 0 0 16px;
+}
+
+.wcbp-tutorial-card p {
+	font-size: 15px;
+	color: #444;
+	line-height: 1.7;
+	max-width: 540px;
+	margin: 0 auto 32px;
+}
+
+.wcbp-tutorial-card p code {
+	background: #f0f0f1;
+	padding: 2px 6px;
+	border-radius: 4px;
+	font-size: 13px;
+	word-break: break-all;
+}
+
+/* ── Progress dots ────────────────────────────────────────────────────────── */
+.wcbp-tut-dots {
+	display: flex;
+	justify-content: center;
+	gap: 8px;
+	margin-bottom: 28px;
+}
+.wcbp-tut-dot {
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	background: #c3c4c7;
+	cursor: pointer;
+	border: none;
+	padding: 0;
+	transition: background .2s;
+}
+.wcbp-tut-dot.active { background: #2271b1; }
+.wcbp-tut-dot:hover  { background: #135e96; }
+
+/* ── Action buttons ────────────────────────────────────────────────────────── */
+.wcbp-tut-actions {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 16px;
+	flex-wrap: wrap;
+}
+
+#wcbp-tut-next {
+	background: #2271b1;
+	color: #fff;
+	border: none;
+	border-radius: 6px;
+	padding: 12px 28px;
+	font-size: 15px;
+	font-weight: 600;
+	cursor: pointer;
+	text-decoration: none;
+}
+#wcbp-tut-next:hover { background: #135e96; }
+
+#wcbp-tut-skip {
+	background: none;
+	border: none;
+	color: #757575;
+	font-size: 13px;
+	cursor: pointer;
+	text-decoration: underline;
+}
+#wcbp-tut-skip:hover { color: #444; }
+
+.wcbp-tut-action-link {
+	display: inline-block;
+	background: #f0f0f1;
+	color: #1d2327;
+	border-radius: 6px;
+	padding: 10px 20px;
+	font-size: 14px;
+	text-decoration: none;
+	border: 1px solid #c3c4c7;
+}
+.wcbp-tut-action-link:hover { background: #e0e0e0; }
+
+/* ── Complete state ────────────────────────────────────────────────────────── */
+.wcbp-tut-complete .wcbp-tutorial-card { border-top: 4px solid #00a32a; }

@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WooCommerce Barcode Plugin — Flow Diagrams & Industry Comparison</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --purple:       #7c3aed;
+            --purple-light: #a78bfa;
+            --green:        #10b981;
+            --green-light:  #34d399;
+            --amber:        #f59e0b;
+            --red:          #ef4444;
+            --dark:         #0f172a;
+            --card:         #1e293b;
+            --card2:        #162032;
+            --border:       rgba(255,255,255,0.07);
+            --text:         #e2e8f0;
+            --muted:        #94a3b8;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--dark);
+            color: var(--text);
+            line-height: 1.65;
+        }
+
+        /* ── Header ─────────────────────────────────────── */
+        header {
+            background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 50%, #5b21b6 100%);
+            padding: 3.5rem 2rem 3rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        header::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            pointer-events: none;
+        }
+        header h1 {
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            position: relative;
+        }
+        header p {
+            color: rgba(255,255,255,0.75);
+            margin-top: 0.6rem;
+            font-size: 1.05rem;
+            position: relative;
+        }
+        .header-badges {
+            margin-top: 1.2rem;
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            position: relative;
+        }
+        .header-badge {
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 99px;
+            padding: 0.3rem 0.9rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+        }
+
+        /* ── Layout ──────────────────────────────────────── */
+        .container {
+            max-width: 1380px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem;
+        }
+
+        .section { margin-bottom: 5rem; }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.6rem;
+        }
+        .section-number {
+            width: 2.2rem;
+            height: 2.2rem;
+            background: var(--purple);
+            border-radius: 8px;
+            display: grid;
+            place-items: center;
+            font-weight: 800;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+        .section-title {
+            font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+            font-weight: 700;
+            color: var(--text);
+        }
+        .section-desc {
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-bottom: 1.8rem;
+            padding-left: 3.2rem;
+        }
+
+        /* ── Cards ───────────────────────────────────────── */
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+        .card-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        .card-header .dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: var(--green);
+        }
+        .card-body { padding: 1.5rem; }
+
+        /* ── Mermaid wrapper ─────────────────────────────── */
+        .mermaid-wrap {
+            background: #0c1424;
+            border-radius: 10px;
+            padding: 1.5rem;
+            overflow-x: auto;
+        }
+        .mermaid-wrap .mermaid { min-width: 600px; }
+
+        /* ── Two-column grid ─────────────────────────────── */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+
+        /* ── Radar chart ─────────────────────────────────── */
+        .radar-wrap {
+            position: relative;
+            height: 480px;
+            max-width: 640px;
+            margin: 0 auto;
+        }
+        .legend-row {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+        .legend-swatch {
+            width: 30px;
+            height: 4px;
+            border-radius: 2px;
+        }
+
+        /* ── Callout boxes ───────────────────────────────── */
+        .callout {
+            border-radius: 10px;
+            padding: 1rem 1.4rem;
+            margin-top: 1.2rem;
+            font-size: 0.875rem;
+            display: flex;
+            gap: 0.75rem;
+        }
+        .callout-icon { font-size: 1.1rem; flex-shrink: 0; line-height: 1.5; }
+        .callout-red   { background: rgba(239,68,68,0.1);  border: 1px solid rgba(239,68,68,0.25); color: #fca5a5; }
+        .callout-green { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25); color: #6ee7b7; }
+        .callout-amber { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.25); color: #fde68a; }
+        .callout strong { color: inherit; font-weight: 700; display: block; margin-bottom: 0.2rem; }
+
+        /* ── Feature Matrix Table ────────────────────────── */
+        .matrix-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+        .matrix-table thead th {
+            padding: 1rem;
+            text-align: center;
+            font-weight: 700;
+            border-bottom: 2px solid var(--border);
+            white-space: nowrap;
+        }
+        .matrix-table thead th:first-child { text-align: left; width: 38%; }
+
+        .matrix-table td {
+            padding: 0.7rem 1rem;
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+            vertical-align: middle;
+        }
+        .matrix-table td:first-child {
+            text-align: left;
+            color: var(--text);
+            font-size: 0.85rem;
+        }
+        .matrix-table tbody tr:hover td { background: rgba(255,255,255,0.025); }
+
+        .matrix-table .cat-row td {
+            background: rgba(124,58,237,0.18);
+            color: var(--purple-light);
+            font-weight: 700;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 0.5rem 1rem;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.22rem 0.65rem;
+            border-radius: 99px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .b-yes     { background: rgba(16,185,129,0.15);  color: #34d399; }
+        .b-no      { background: rgba(239,68,68,0.15);   color: #f87171; }
+        .b-partial { background: rgba(245,158,11,0.15);  color: #fbbf24; }
+        .b-planned { background: rgba(124,58,237,0.2);   color: #c4b5fd; }
+
+        th.col-ref  { color: var(--amber); }
+        th.col-ours { color: var(--green); }
+        th.col-std  { color: var(--purple-light); }
+
+        /* ── Score chips ─────────────────────────────────── */
+        .score-row {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            margin-top: 1.5rem;
+        }
+        .score-chip {
+            flex: 1;
+            min-width: 160px;
+            background: var(--card2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.2rem 1.5rem;
+            text-align: center;
+        }
+        .score-chip .label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+        .score-chip .value { font-size: 2.2rem; font-weight: 800; margin: 0.3rem 0 0.1rem; }
+        .score-chip .sub   { font-size: 0.75rem; color: var(--muted); }
+        .chip-ref   .value { color: var(--amber); }
+        .chip-ours  .value { color: var(--green); }
+        .chip-std   .value { color: var(--purple-light); }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--muted);
+            font-size: 0.8rem;
+            border-top: 1px solid var(--border);
+        }
+        footer span { color: var(--purple-light); }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     HEADER
+════════════════════════════════════════════════════════════ -->
+<header>
+    <h1>WooCommerce Barcode Plugin</h1>
+    <p>Architecture Flow Diagrams &amp; Industry Standard Comparison</p>
+    <div class="header-badges">
+        <span class="header-badge">Plugin Spec v1.0</span>
+        <span class="header-badge">WooCommerce 9.1+</span>
+        <span class="header-badge">PHP 8.0+</span>
+        <span class="header-badge">WordPress 6.3+</span>
+    </div>
+</header>
+
+<div class="container">
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 1 — SYSTEM ARCHITECTURE
+════════════════════════════════════════════════════════════ -->
+<div class="section">
+    <div class="section-header">
+        <div class="section-number">1</div>
+        <div class="section-title">System Architecture Overview</div>
+    </div>
+    <p class="section-desc">High-level component map showing how all parts of the plugin connect — from data inputs to every output channel.</p>
+
+    <div class="card">
+        <div class="card-header"><span class="dot"></span> Plugin Component Architecture</div>
+        <div class="card-body">
+            <div class="mermaid-wrap">
+                <div class="mermaid">
+flowchart LR
+    subgraph IN["DATA INPUTS"]
+        direction TB
+        P1[Simple Product]
+        P2[Variable Product]
+        P3[Variation]
+        ORD[WooCommerce Order]
+        CSV[CSV EAN Import]
+    end
+
+    subgraph CORE["PLUGIN CORE"]
+        direction TB
+        SKU[SKU Manager]
+        EAN[EAN Manager]
+        BC[Barcode Generator]
+        LD[Label Designer]
+        PQ[Print Queue]
+        BULK[Bulk Engine]
+        API[REST API Layer]
+    end
+
+    subgraph OUT["OUTPUT CHANNELS"]
+        direction TB
+        FE[Storefront Display]
+        ADM[Admin Display]
+        PG[Print Page]
+        PDF[PDF Export]
+        EMAIL[Order Emails]
+        REST[REST Response]
+    end
+
+    P1 --> SKU
+    P2 --> SKU
+    P3 --> SKU
+    CSV --> EAN
+    ORD --> PQ
+
+    SKU --> EAN --> BC
+    BC --> FE
+    BC --> ADM
+    BC --> API
+    BC --> EMAIL
+
+    BULK --> PQ
+    PQ --> LD
+    LD --> PG
+    LD --> PDF
+    API --> REST
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 2 — BARCODE VALUE RESOLUTION
+════════════════════════════════════════════════════════════ -->
+<div class="section">
+    <div class="section-header">
+        <div class="section-number">2</div>
+        <div class="section-title">Barcode Value Assignment Flow</div>
+    </div>
+    <p class="section-desc">Decision tree that runs every time a barcode is needed — determines what value to encode and which symbology to use.</p>
+
+    <div class="card">
+        <div class="card-header"><span class="dot"></span> Barcode Value Resolution</div>
+        <div class="card-body">
+            <div class="mermaid-wrap">
+                <div class="mermaid">
+flowchart TD
+    START([Product or Variation]) --> A{EAN Meta\nField Present?}
+
+    A -->|Yes| B{Global Setting:\nPrefer EAN?}
+    B -->|Yes| C[Use EAN Value]
+    B -->|No| D{SKU Exists?}
+    A -->|No| D
+
+    D -->|Yes| E[Use Existing SKU]
+    D -->|No| F[Auto-Generate SKU\nPrefix + Product ID]
+    F --> E
+
+    C --> G{Barcode\nSymbology Setting}
+    E --> G
+
+    G -->|Code 128| H[Encode as CODE128\nAll ASCII supported]
+    G -->|EAN-13| I{Numeric value\nis exactly 12 digits?}
+    G -->|QR Code| Q[Encode full\nURL or data string]
+    G -->|UPC-A| U[Encode 11-digit\nnumeric value]
+
+    I -->|Yes| J[Append EAN-13 Checksum\n12 digits + 1 = 13]
+    I -->|No| K[Pad or prefix to\n12 digits then checksum]
+
+    H --> READY([Barcode SVG Ready])
+    J --> READY
+    K --> READY
+    Q --> READY
+    U --> READY
+
+    READY --> LOC{Render\nLocation}
+    LOC --> L1[Single Product Page]
+    LOC --> L2[Shop Archive Loop]
+    LOC --> L3[Admin Products List]
+    LOC --> L4[Admin Edit Metabox]
+    LOC --> L5[Variation Panel]
+    LOC --> L6[Print Queue / Label Sheet]
+    LOC --> L7[REST API Response]
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 3 — PRINT QUEUE LIFECYCLE
+════════════════════════════════════════════════════════════ -->
+<div class="section">
+    <div class="section-header">
+        <div class="section-number">3</div>
+        <div class="section-title">Print Queue Lifecycle</div>
+    </div>
+    <p class="section-desc">Every path from a trigger event through queue management to final physical or digital output.</p>
+
+    <div class="card">
+        <div class="card-header"><span class="dot"></span> Print Queue Workflow</div>
+        <div class="card-body">
+            <div class="mermaid-wrap">
+                <div class="mermaid">
+flowchart TD
+    subgraph TRIG["TRIGGER SOURCES"]
+        T1[Product Edit\nMetabox Button]
+        T2[Products List\nBulk Action]
+        T3[Quick Print\nID + Qty Form]
+        T4[Order Placed\nAuto-Trigger]
+        T5[Category\nBatch Select]
+    end
+
+    T1 -->|Add to Queue| Q
+    T2 -->|Add to Queue| Q
+    T4 -->|Auto-Add on Status| Q
+    T5 -->|Batch Add| Q
+    T3 -->|Skip Queue| LABEL
+
+    Q[(Print Queue\nDB Table)] --> QM[Queue Manager Page]
+
+    QM --> ACT{User Action}
+    ACT -->|Edit Qty| QM1[Update Quantity]
+    ACT -->|Remove| QM2[Remove Item]
+    ACT -->|Clear All| QM3[Empty Queue]
+    QM1 --> QM
+    QM2 --> QM
+    QM3 --> QM
+
+    ACT -->|Print Now| LABEL[Apply Label\nDesigner Settings]
+
+    LABEL --> SHEET[Render Label Sheet\nRows x Columns Grid]
+    SHEET --> PG[Print Page\nAdmin CSS Hidden]
+
+    PG --> OUT1[Browser Print\nCtrl + P]
+    PG --> OUT2[Download PDF\nServer-side mPDF]
+    PG --> OUT3[Download ZIP\nPNG per product]
+
+    style T4 fill:#064e3b,stroke:#059669,color:#d1fae5
+    style OUT2 fill:#064e3b,stroke:#059669,color:#d1fae5
+    style OUT3 fill:#064e3b,stroke:#059669,color:#d1fae5
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="callout callout-green">
+        <div class="callout-icon">★</div>
+        <div><strong>Enhancements over Reference Plugin</strong>Green nodes above are new capabilities not in the reference plugin: order-triggered auto-queue, server-side PDF export, and ZIP download of individual barcode images.</div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 4 — LABEL DESIGNER FLOW
+════════════════════════════════════════════════════════════ -->
+<div class="section">
+    <div class="section-header">
+        <div class="section-number">4</div>
+        <div class="section-title">Label Designer Configuration Flow</div>
+    </div>
+    <p class="section-desc">How a user configures a label from preset selection through field toggles to a saved, reusable template.</p>
+
+    <div class="grid-2">
+        <div class="card">
+            <div class="card-header"><span class="dot"></span> Designer Steps</div>
+            <div class="card-body">
+                <div class="mermaid-wrap">
+                    <div class="mermaid">
+flowchart TD
+    START([Open Label Designer]) --> TMPL{Load Existing\nTemplate?}
+    TMPL -->|Yes| LOAD[Load Named Template]
+    TMPL -->|No| PRESET{Choose Preset}
+
+    PRESET --> AV1[Avery 5160\n3x10 - 1x2.625 in]
+    PRESET --> AV2[Avery 8160\nInkjet variant]
+    PRESET --> AV3[Avery 5260\nLaser variant]
+    PRESET --> AV4[A4 65-up\n38.1x21.2 mm]
+    PRESET --> CUST[Custom Dimensions\nEnter manually]
+
+    AV1 & AV2 & AV3 & AV4 & CUST & LOAD --> LAYOUT
+
+    LAYOUT{Layout Direction} --> VERT[Vertical\nBarcode top\nText below]
+    LAYOUT --> HORIZ[Horizontal\nBarcode left\nText right]
+
+    VERT & HORIZ --> FIELDS[Configure Content Fields]
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><span class="dot"></span> Field & Output Configuration</div>
+            <div class="card-body">
+                <div class="mermaid-wrap">
+                    <div class="mermaid">
+flowchart TD
+    FIELDS[Content Fields] --> F1{Product Name\nOn or Off}
+    FIELDS --> F2{Price Display\nOn or Off}
+    FIELDS --> F3{SKU Display\nOn or Off}
+    FIELDS --> F4{Attributes\nOn or Off}
+    FIELDS --> F5{Custom Meta Key\nEnter key name}
+    FIELDS --> F6{Store Logo\nMedia Library}
+
+    F1 & F2 & F3 & F4 & F5 & F6 --> RATIO[Set Barcode Height\nRatio 30 to 80 pct]
+    RATIO --> PREV[Live Preview\nUpdates Instantly]
+    PREV --> SAVE{Save Options}
+    SAVE -->|Save as New| NAMED[Named Template\nReusable]
+    SAVE -->|Apply Once| APPLY[Apply to Print\nQueue Session]
+    NAMED --> DONE([Done])
+    APPLY --> DONE
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 5 — ADMIN SETTINGS FLOW
+════════════════════════════════════════════════════════════ -->
+<div class="section">
+    <div class="section-header">
+        <div class="section-number">5</div>
+        <div class="section-title">Admin Settings & Tools Map</div>
+    </div>
+    <p class="section-desc">The complete admin interface — every page, tab, and action available to a Shop Manager or Administrator.</p>
+
+    <div class="card">
+        <div class="card-header"><span class="dot"></span> Admin Menu Structure</div>
+        <div class="card-body">
+            <div class="mermaid-wrap">
+                <div class="mermaid">
+flowchart LR
+    MENU[WooCommerce\nAdmin Menu] --> S[Barcode Settings]
+    MENU --> PQ[Print Queue]
+    MENU --> PRINT[Print Page]
+
+    S --> TAB1[Basic Tab]
+    S --> TAB2[Advanced Tab]
+
+    TAB1 --> B1[Symbology Select\nCode128 EAN13 QR UPC]
+    TAB1 --> B2[Label Preset\nand Custom Dimensions]
+    TAB1 --> B3[Content Field Toggles]
+    TAB1 --> B4[Live Label Designer]
+    TAB1 --> B5[Quick Print Form\nID x Qty]
+
+    TAB2 --> A1[Render Mode\nClient vs Server-side]
+    TAB2 --> A2[EAN Bulk Import\nCSV Textarea]
+    TAB2 --> A3[EAN Bulk Export\nCSV Download]
+    TAB2 --> A4[SKU Generation\nPrefix and Auto Toggle]
+    TAB2 --> A5[Force SKU Regen\nEntire Catalog]
+    TAB2 --> A6[Reset All Settings]
+
+    PQ --> PQ1[View Queue Items]
+    PQ --> PQ2[Edit Quantities]
+    PQ --> PQ3[Remove Items]
+    PQ --> PQ4[Clear All]
+    PQ --> PQ5[Proceed to Print]
+
+    PRINT --> PR1[Full Sheet Preview\nColumns x Rows]
+    PRINT --> PR2[Browser Print]
+    PRINT --> PR3[PDF Download]
+    PRINT --> PR4[ZIP Download]
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 6 — INDUSTRY COMPARISON RADAR
+════════════════════════════════════════════════════════════ -->
+<div class="section">
+    <div class="section-header">
+        <div class="section-number">6</div>
+        <div class="section-title">Industry Standard Comparison — Radar</div>
+    </div>
+    <p class="section-desc">Scoring across 8 dimensions: Reference Plugin (v0.11) vs Our Planned Plugin vs Industry Standard (YITH / premium-tier WooCommerce plugins). Score out of 10.</p>
+
+    <div class="card">
+        <div class="card-header"><span class="dot"></span> Feature Coverage Radar (out of 10)</div>
+        <div class="card-body">
+            <div class="radar-wrap">
+                <canvas id="radarChart"></canvas>
+            </div>
+            <div class="legend-row">
+                <div class="legend-item">
+                    <div class="legend-swatch" style="background:#f59e0b"></div>
+                    Reference Plugin (v0.11)
+                </div>
+                <div class="legend-item">
+                    <div class="legend-swatch" style="background:#10b981"></div>
+                    Our Planned Plugin
+                </div>
+                <div class="legend-item">
+                    <div class="legend-swatch" style="background:#a78bfa; border-top: 2px dashed #a78bfa; height:0;"></div>
+                    Industry Standard (YITH / Premium)
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="score-row">
+        <div class="score-chip chip-ref">
+            <div class="label">Reference Plugin</div>
+            <div class="value">43/80</div>
+            <div class="sub">Average: 5.4 / 10</div>
+        </div>
+        <div class="score-chip chip-ours">
+            <div class="label">Our Planned Plugin</div>
+            <div class="value">66/80</div>
+            <div class="sub">Average: 8.3 / 10</div>
+        </div>
+        <div class="score-chip chip-std">
+            <div class="label">Industry Standard</div>
+            <div class="value">68/80</div>
+            <div class="sub">Average: 8.5 / 10</div>
+        </div>
+    </div>
+
+    <div class="callout callout-red" style="margin-top:1.2rem">
+        <div class="callout-icon">⚠</div>
+        <div><strong>Critical Gaps in Reference Plugin</strong>Only 2 barcode formats · Client-side rendering only (blocks email/PDF use) · Single label template stored globally · No REST API · No i18n/l10n text domain · Unclear role/capability gating · Queue stored in WP option (breaks above ~200 items) · Zero automated tests · JsBarcode loaded from external CDN</div>
+    </div>
+
+    <div class="callout callout-green">
+        <div class="callout-icon">★</div>
+        <div><strong>Our Plugin Closes These Gaps</strong>5 symbologies (Code128, EAN-13, QR, UPC-A, ITF-14) · Server-side PHP barcode rendering · PDF label sheet export · Multiple named, saveable templates · Order-triggered auto-queue · Full REST API · i18n-ready with POT file · Capability-gated with nonce verification · DB-table-backed queue · PHPUnit test suite · All assets bundled locally</div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SECTION 7 — FEATURE MATRIX
+════════════════════════════════════════════════════════════ -->
+<div class="section">
+    <div class="section-header">
+        <div class="section-number">7</div>
+        <div class="section-title">Feature-by-Feature Matrix</div>
+    </div>
+    <p class="section-desc">Every feature compared across all three reference points. Green = have it · Red = missing · Amber = partial · Purple = planned improvement.</p>
+
+    <div class="card" style="padding:0; overflow:hidden;">
+        <table class="matrix-table">
+            <thead>
+                <tr>
+                    <th>Feature</th>
+                    <th class="col-ref">Reference Plugin</th>
+                    <th class="col-ours">Our Plugin</th>
+                    <th class="col-std">Industry Std</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                <tr class="cat-row"><td colspan="4">Barcode Symbologies</td></tr>
+                <tr><td>Code 128</td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>EAN-13 with auto checksum</td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>QR Code</td><td><span class="badge b-no">✗ No</span></td><td><span class="badge b-planned">★ Planned</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>UPC-A</td><td><span class="badge b-no">✗ No</span></td><td><span class="badge b-planned">★ Planned</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>ITF-14 / GTIN-14</td><td><span class="badge b-no">✗ No</span></td><td><span class="badge b-planned">★ Planned</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>EAN-8</td><td><span class="badge b-no">✗ No</span></td><td><span class="badge b-planned">★ Planned</span></td><td><span class="badge b-partial">~ Partial</span></td></tr>
+                <tr><td>Data Matrix</td><td><span class="badge b-no">✗ No</span></td><td><span class="badge b-no">✗ No (P3)</span></td><td><span class="badge b-partial">~ Partial</span></td></tr>
+
+                <tr class="cat-row"><td colspan="4">Rendering & Output</td></tr>
+                <tr><td>Client-side SVG rendering</td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>Server-side PHP rendering</td><td><span class="badge b-no">✗ No</span></td><td><span class="badge b-planned">★ Planned</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>PNG / SVG download per product</td><td><span class="badge b-no">✗ No</span></td><td><span class="badge b-planned">★ Planned</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>Browser print (Ctrl+P)</td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>PDF label sheet download</td><td><span class="badge b-no">✗ No</span></td><td><span class="badge b-planned">★ Planned</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>Barcode in order emails</td><td><span class="badge b-no">✗ No</span></td><td><span class="badge b-planned">★ Planned</span></td><td><span class="badge b-partial">~ Partial</span></td></tr>
+                <tr><td>Assets bundled (no CDN dep.)</td><td><span class="badge b-no">✗ CDN</span></td><td><span class="badge b-planned">★ Bundled</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+
+                <tr class="cat-row"><td colspan="4">Label Design</td></tr>
+                <tr><td>Live preview designer</td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>Avery / standard label presets</td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>Custom label dimensions</td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>Multiple named templates</td><td><span class="badge b-no">✗ No</span></td><td><span class="badge b-planned">★ Planned</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>Vertical / horizontal layout</td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>Logo / image on label</td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>Custom meta field on label</td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-partial">~ Partial</span></td></tr>
+                <tr><td>Barcode:text height ratio slider</td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+
+                <tr class="cat-row"><td colspan="4">SKU & EAN Management</td></tr>
+                <tr><td>Auto SKU generation</td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>Configurable SKU prefix</td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>Per-variation EAN field</td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>Bulk EAN CSV import</td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>Bulk EAN / SKU CSV export</td><td><span class="badge b-no">✗ No</span></td><td><span class="badge b-planned">★ Planned</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>GS1 / GTIN format validation</td><td><span class="badge b-no">✗ No</span></td><td><span class="badge b-planned">★ Planned</span></td><td><span class="badge b-partial">~ Partial</span></td></tr>
+                <tr><td>Force SKU regen across catalog</td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+
+                <tr class="cat-row"><td colspan="4">Print Queue & Bulk Operations</td></tr>
+                <tr><td>Print queue system</td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>Per-item quantity in queue</td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>Bulk add to queue (list table)</td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>Category-scoped batch print</td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>Order-triggered auto-queue</td><td><span class="badge b-no">✗ No</span></td><td><span class="badge b-planned">★ Planned</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>Scalable queue (DB table, not option)</td><td><span class="badge b-no">✗ Option only</span></td><td><span class="badge b-planned">★ Planned</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>Quick print by ID+Qty shorthand</td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-partial">~ Partial</span></td></tr>
+
+                <tr class="cat-row"><td colspan="4">Display Locations</td></tr>
+                <tr><td>Single product page</td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>Shop / archive loop</td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>Admin products list column</td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>Admin edit metabox</td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>Variation panels</td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>Order emails (inline barcode)</td><td><span class="badge b-no">✗ No</span></td><td><span class="badge b-planned">★ Planned</span></td><td><span class="badge b-partial">~ Partial</span></td></tr>
+
+                <tr class="cat-row"><td colspan="4">Integration & Developer Features</td></tr>
+                <tr><td>REST API barcode endpoint</td><td><span class="badge b-no">✗ No</span></td><td><span class="badge b-planned">★ Planned</span></td><td><span class="badge b-partial">~ Partial</span></td></tr>
+                <tr><td>Action / filter hooks for devs</td><td><span class="badge b-partial">~ Limited</span></td><td><span class="badge b-planned">★ Full</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>HPOS (Custom Order Tables)</td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>WP Multisite support</td><td><span class="badge b-no">✗ No</span></td><td><span class="badge b-planned">★ Planned</span></td><td><span class="badge b-partial">~ Partial</span></td></tr>
+                <tr><td>Barcode scanner hardware input</td><td><span class="badge b-no">✗ No</span></td><td><span class="badge b-no">✗ No (P3)</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+
+                <tr class="cat-row"><td colspan="4">Code Quality & WP Standards</td></tr>
+                <tr><td>i18n / Localization + POT file</td><td><span class="badge b-no">✗ No</span></td><td><span class="badge b-planned">★ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>Role / capability checks</td><td><span class="badge b-partial">~ Unclear</span></td><td><span class="badge b-planned">★ Full</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>Nonce verification on all forms</td><td><span class="badge b-partial">~ Partial</span></td><td><span class="badge b-planned">★ Full</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>WP Coding Standards (WPCS)</td><td><span class="badge b-no">✗ No</span></td><td><span class="badge b-planned">★ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>PHPUnit test suite</td><td><span class="badge b-no">✗ No</span></td><td><span class="badge b-planned">★ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+                <tr><td>Composer autoloading</td><td><span class="badge b-no">✗ No</span></td><td><span class="badge b-planned">★ Yes</span></td><td><span class="badge b-yes">✓ Yes</span></td></tr>
+
+            </tbody>
+        </table>
+    </div>
+
+    <div class="callout callout-amber">
+        <div class="callout-icon">i</div>
+        <div><strong>Legend</strong>
+        <span class="badge b-yes" style="margin:0 0.3rem">✓ Yes</span> Feature exists &amp; complete &nbsp;·&nbsp;
+        <span class="badge b-no" style="margin:0 0.3rem">✗ No</span> Feature absent &nbsp;·&nbsp;
+        <span class="badge b-partial" style="margin:0 0.3rem">~ Partial</span> Partially implemented &nbsp;·&nbsp;
+        <span class="badge b-planned" style="margin:0 0.3rem">★ Planned</span> Planned in our plugin, not in reference</div>
+    </div>
+</div>
+
+</div><!-- /.container -->
+
+<footer>
+    WooCommerce Barcode Plugin — Product Specification &nbsp;·&nbsp;
+    <span>★ green nodes / cells = enhancements over reference plugin</span> &nbsp;·&nbsp;
+    Scores are engineering estimates across 8 dimensions, out of 10 each
+</footer>
+
+<script>
+mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    flowchart: { curve: 'basis', padding: 16, nodeSpacing: 40, rankSpacing: 50 },
+    themeVariables: {
+        primaryColor:       '#2d3748',
+        primaryTextColor:   '#e2e8f0',
+        primaryBorderColor: '#7c3aed',
+        lineColor:          '#4a5568',
+        secondaryColor:     '#1e293b',
+        tertiaryColor:      '#0f172a',
+        background:         '#0c1424',
+        mainBkg:            '#1e293b',
+        nodeBorder:         '#7c3aed',
+        clusterBkg:         '#162032',
+        clusterBorder:      '#374151',
+        titleColor:         '#e2e8f0',
+        edgeLabelBackground:'#1e293b',
+        fontFamily:         '-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif',
+    }
+});
+
+/* ── Radar Chart ──────────────────────────────── */
+const ctx = document.getElementById('radarChart').getContext('2d');
+new Chart(ctx, {
+    type: 'radar',
+    data: {
+        labels: [
+            'Barcode Formats',
+            'Render & Output',
+            'Label Design',
+            'Bulk Operations',
+            'Integration',
+            'Developer Tools',
+            'UX & Usability',
+            'Scale & Perf'
+        ],
+        datasets: [
+            {
+                label: 'Reference Plugin (v0.11)',
+                data: [4, 3, 7, 6, 2, 2, 6, 3],
+                borderColor: '#f59e0b',
+                backgroundColor: 'rgba(245,158,11,0.12)',
+                pointBackgroundColor: '#f59e0b',
+                pointBorderColor: '#f59e0b',
+                borderWidth: 2,
+                pointRadius: 5,
+            },
+            {
+                label: 'Our Planned Plugin',
+                data: [8, 8, 9, 8, 7, 8, 9, 8],
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16,185,129,0.12)',
+                pointBackgroundColor: '#10b981',
+                pointBorderColor: '#10b981',
+                borderWidth: 2,
+                pointRadius: 5,
+            },
+            {
+                label: 'Industry Standard',
+                data: [9, 9, 8, 8, 8, 7, 8, 8],
+                borderColor: '#a78bfa',
+                backgroundColor: 'rgba(167,139,250,0.08)',
+                pointBackgroundColor: '#a78bfa',
+                pointBorderColor: '#a78bfa',
+                borderWidth: 2,
+                borderDash: [6, 3],
+                pointRadius: 5,
+            },
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            r: {
+                min: 0,
+                max: 10,
+                ticks: {
+                    stepSize: 2,
+                    color: '#475569',
+                    backdropColor: 'transparent',
+                    font: { size: 10 }
+                },
+                grid:        { color: 'rgba(255,255,255,0.06)' },
+                angleLines:  { color: 'rgba(255,255,255,0.06)' },
+                pointLabels: { color: '#94a3b8', font: { size: 12, weight: '600' } }
+            }
+        },
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                backgroundColor: '#1e293b',
+                borderColor: 'rgba(255,255,255,0.1)',
+                borderWidth: 1,
+                titleColor: '#e2e8f0',
+                bodyColor: '#94a3b8',
+                callbacks: {
+                    label: ctx => ` ${ctx.dataset.label}: ${ctx.raw}/10`
+                }
+            }
+        }
+    }
+});
+</script>
+
+</body>
+</html>

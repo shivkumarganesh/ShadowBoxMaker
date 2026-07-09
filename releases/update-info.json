@@ -1,0 +1,16 @@
+{
+    "name": "WooBarcode Pro",
+    "slug": "woo-barcode-pro",
+    "version": "1.0.0",
+    "author": "ShadowBoxMaker",
+    "homepage": "https://github.com/shivkumarganesh/ShadowBoxMaker",
+    "requires": "6.3",
+    "tested": "6.7",
+    "requires_php": "8.0",
+    "last_updated": "2026-06-17",
+    "download_url": "https://github.com/shivkumarganesh/ShadowBoxMaker/raw/main/releases/woo-barcode-pro-1.0.0.zip",
+    "sections": {
+        "description": "Auto-generate barcodes, design label templates, manage a print queue, and add products in seconds with the mobile Quick Add workflow.",
+        "changelog": "<h4>1.0.0</h4><ul><li>Initial release.</li></ul>"
+    }
+}

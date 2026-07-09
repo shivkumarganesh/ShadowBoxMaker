@@ -1,0 +1,113 @@
+/* WooBarcode Pro — Admin styles */
+
+/* ── Shared ────────────────────────────────────────────────────────────────── */
+.wcbp-card {
+	background: #fff;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	padding: 20px 24px;
+	margin-bottom: 20px;
+}
+.wcbp-card h2 { margin-top: 0; }
+
+.wcbp-flex { display: flex; gap: 20px; flex-wrap: wrap; }
+.wcbp-flex-1 { flex: 1 1 300px; }
+
+.wcbp-badge {
+	display: inline-block;
+	font-size: 11px;
+	padding: 2px 8px;
+	border-radius: 10px;
+	background: #2271b1;
+	color: #fff;
+	font-weight: 600;
+}
+.wcbp-badge-green  { background: #00a32a; }
+.wcbp-badge-orange { background: #dba617; }
+.wcbp-badge-grey   { background: #757575; }
+
+/* ── Queue badge in menu ────────────────────────────────────────────────────── */
+.wcbp-menu-count {
+	display: inline-block;
+	background: #ca4a1f;
+	border-radius: 10px;
+	color: #fff;
+	font-size: 10px;
+	font-weight: 600;
+	min-width: 16px;
+	padding: 0 5px;
+	line-height: 18px;
+	text-align: center;
+	margin-left: 4px;
+	vertical-align: middle;
+}
+
+/* ── Product list barcode column ─────────────────────────────────────────── */
+.column-wcbp_barcode { width: 100px; }
+.wcbp-barcode-col svg { max-width: 90px; height: auto; display: block; }
+.wcbp-barcode-col .button-link { font-size: 11px; }
+.wcbp-barcode-svg { margin-top: 4px; }
+
+/* ── Metabox ─────────────────────────────────────────────────────────────── */
+#wcbp-barcode-metabox .inside { padding: 12px; }
+#wcbp-barcode-preview { max-width: 200px; margin-bottom: 12px; }
+#wcbp-barcode-preview svg { width: 100%; height: auto; }
+.wcbp-metabox-label { font-weight: 600; display: block; margin-bottom: 4px; }
+.wcbp-metabox-row { margin-bottom: 12px; }
+.wcbp-metabox-row input[type="text"] { width: 100%; }
+
+/* ── Price Templates ─────────────────────────────────────────────────────── */
+.wcbp-template-card {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 12px 16px;
+	border: 1px solid #e0e0e0;
+	border-radius: 4px;
+	margin-bottom: 8px;
+	background: #fafafa;
+}
+.wcbp-template-card .wcbp-tpl-price {
+	font-size: 22px;
+	font-weight: 700;
+	color: #2271b1;
+	min-width: 60px;
+}
+.wcbp-template-card .wcbp-tpl-name { flex: 1; font-weight: 600; }
+.wcbp-template-card .wcbp-tpl-barcode { font-family: monospace; font-size: 11px; color: #888; }
+
+/* ── Label designer ──────────────────────────────────────────────────────── */
+.wcbp-designer-wrap { display: flex; gap: 24px; align-items: flex-start; }
+.wcbp-designer-form { flex: 1 1 340px; }
+.wcbp-designer-preview { flex: 0 0 280px; position: sticky; top: 32px; }
+#wcbp-label-preview { border: 1px dashed #bbb; background: #fff; }
+
+.wcbp-field-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.wcbp-field-row label { min-width: 100px; }
+
+.wcbp-ratio-wrap { display: flex; align-items: center; gap: 8px; }
+#wcbp-barcode-ratio { flex: 1; }
+
+/* ── Print queue ─────────────────────────────────────────────────────────── */
+.wcbp-queue-toolbar {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-bottom: 16px;
+	flex-wrap: wrap;
+}
+.wcbp-queue-count-pill {
+	background: #f0f0f1;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	padding: 4px 12px;
+	font-size: 13px;
+}
+#wcbp-template-select { max-width: 220px; }
+
+.wcbp-empty-state {
+	text-align: center;
+	padding: 60px 20px;
+	color: #757575;
+}
+.wcbp-empty-state .wcbp-empty-icon { font-size: 48px; }
