@@ -21,9 +21,8 @@ body.wcbp-print-body {
 }
 .wcbp-print-toolbar h2 { margin: 0; font-size: 15px; color: #fff; flex: 1; }
 
-#wcbp-do-print {
-	background: #2271b1;
-	color: #fff;
+#wcbp-do-print,
+#wcbp-do-pdf {
 	border: none;
 	border-radius: 4px;
 	padding: 8px 20px;
@@ -31,7 +30,10 @@ body.wcbp-print-body {
 	font-weight: 600;
 	cursor: pointer;
 }
+#wcbp-do-print { background: #2271b1; color: #fff; }
 #wcbp-do-print:hover { background: #135e96; }
+#wcbp-do-pdf { background: #00a32a; color: #fff; }
+#wcbp-do-pdf:hover { background: #008a20; }
 
 /* ── Label grid ────────────────────────────────────────────────────────────── */
 .wcbp-label-sheet {
