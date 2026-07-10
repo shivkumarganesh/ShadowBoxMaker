@@ -80,9 +80,11 @@
 		var rest   = 100 - ratio;
 		var isHoriz = (layout === 'horizontal');
 
-		var showName  = $('#wcbp-field-name').is(':checked');
-		var showPrice = $('#wcbp-field-price').is(':checked');
-		var showSku   = $('#wcbp-field-sku').is(':checked');
+		var showCompany = $('#wcbp-field-company_name').is(':checked');
+		var companyName = $('#wcbp-mock-company').val() || '';
+		var showName    = $('#wcbp-field-name').is(':checked');
+		var showPrice   = $('#wcbp-field-price').is(':checked');
+		var showSku     = $('#wcbp-field-sku').is(':checked');
 
 		var mockName  = $('#wcbp-mock-name').val()  || 'Sample Product';
 		var mockPrice = $('#wcbp-mock-price').val() || '0.00';
@@ -92,18 +94,26 @@
 		var pxH = Math.round(h * 96);
 
 		var $prev = $('#wcbp-label-preview');
+		// Outer container is always column; company name stacks at the top.
 		$prev.css({
 			width        : pxW + 'px',
 			height       : pxH + 'px',
 			display      : 'flex',
-			flexDirection: isHoriz ? 'row' : 'column',
+			flexDirection: 'column',
+			alignItems   : 'stretch',
 			background   : '#fff',
 			border       : '1px solid #c3c4c7',
 			padding      : '4px',
 			boxSizing    : 'border-box',
 			overflow     : 'hidden',
-			gap          : '3px',
+			gap          : '2px',
 		});
+
+		// Company name banner
+		var companyHtml = '';
+		if (showCompany && companyName) {
+			companyHtml = '<div style="font-size:6px;font-weight:700;text-align:center;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0">' + esc(companyName) + '</div>';
+		}
 
 		// Barcode block
 		var barcodeContent;
@@ -131,7 +141,10 @@
 			infoHtml = '<div style="' + inFlex + 'display:flex;flex-direction:column;justify-content:center;overflow:hidden;line-height:1.4;font-size:9px;font-family:sans-serif">' + infoLines + '</div>';
 		}
 
-		$prev.html(barcodeHtml + infoHtml);
+		// Inner body: barcode + info share this row/column container
+		var bodyHtml = '<div style="flex:1;min-height:0;display:flex;flex-direction:' + (isHoriz ? 'row' : 'column') + ';align-items:center;justify-content:center;gap:2px;">' + barcodeHtml + infoHtml + '</div>';
+
+		$prev.html(companyHtml + bodyHtml);
 	}
 
 	// ── Main entry: debounce + fetch ─────────────────────────────────────────
@@ -153,6 +166,18 @@
 	$('#wcbp-barcode-ratio').on('input', function () {
 		$('#wcbp-barcode-ratio-val').text($(this).val() + '%');
 		schedulePreview();
+	});
+
+	// Company name text and checkbox — redraw immediately (no barcode change)
+	$('#wcbp-mock-company, #wcbp-field-company_name').on('input change', function () {
+		clearTimeout(_barcodeTimer);
+		_barcodeTimer = setTimeout(function () {
+			var val    = $('#wcbp-mock-barcode').val() || $('#wcbp-mock-sku').val() || 'SKU-001';
+			var params = getBarcodeParams();
+			var key    = barcodeKey(val, params);
+			var cached = _barcodeCache[key];
+			renderPreview(cached !== undefined ? cached : '');
+		}, 100);
 	});
 
 	// Mock name and price — redraw immediately using cached barcode
