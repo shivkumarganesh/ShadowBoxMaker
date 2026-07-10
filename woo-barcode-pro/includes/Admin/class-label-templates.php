@@ -57,12 +57,14 @@ class LabelTemplates {
 		$fields_defaults = array( 'name' => true, 'price' => true, 'sku' => true, 'attributes' => false, 'logo' => false, 'custom_meta' => '' );
 		$fields_raw = $data['fields'] ?? array();
 		$fields = array(
-			'name'        => ! empty( $fields_raw['name'] ),
-			'price'       => ! empty( $fields_raw['price'] ),
-			'sku'         => ! empty( $fields_raw['sku'] ),
-			'attributes'  => ! empty( $fields_raw['attributes'] ),
-			'logo'        => ! empty( $fields_raw['logo'] ),
-			'custom_meta' => sanitize_text_field( $fields_raw['custom_meta'] ?? '' ),
+			'company_name'      => ! empty( $fields_raw['company_name'] ),
+			'company_name_text' => sanitize_text_field( $fields_raw['company_name_text'] ?? '' ),
+			'name'              => ! empty( $fields_raw['name'] ),
+			'price'             => ! empty( $fields_raw['price'] ),
+			'sku'               => ! empty( $fields_raw['sku'] ),
+			'attributes'        => ! empty( $fields_raw['attributes'] ),
+			'logo'              => ! empty( $fields_raw['logo'] ),
+			'custom_meta'       => sanitize_text_field( $fields_raw['custom_meta'] ?? '' ),
 		);
 
 		$allowed_page_sizes   = array( 'letter', 'A4', 'A5', 'legal' );

@@ -122,26 +122,33 @@ class LabelRenderer {
 			}
 		}
 
+		$info_ratio = 100 - $barcode_ratio;
+
 		ob_start();
 		?>
-		<?php if ( $logo_html ) : ?>
-			<?php echo $logo_html; // phpcs:ignore WordPress.Security ?>
+		<?php if ( ! empty( $fields['company_name'] ) && ! empty( $fields['company_name_text'] ) ) : ?>
+		<div class="wcbp-label-company"><?php echo esc_html( $fields['company_name_text'] ); ?></div>
 		<?php endif; ?>
-		<div class="wcbp-label-barcode" style="height:<?php echo esc_attr( $barcode_ratio ); ?>%">
-			<?php echo $barcode_svg; // phpcs:ignore WordPress.Security ?>
-		</div>
-		<div class="wcbp-label-info">
-			<?php if ( ! empty( $fields['name'] ) && $product_name ) : ?>
-				<span class="wcbp-label-name"><?php echo $product_name; // phpcs:ignore WordPress.Security ?></span>
+		<div class="wcbp-label-body">
+			<?php if ( $logo_html ) : ?>
+				<?php echo $logo_html; // phpcs:ignore WordPress.Security ?>
 			<?php endif; ?>
-			<?php if ( ! empty( $fields['price'] ) && $price_html ) : ?>
-				<span class="wcbp-label-price"><?php echo $price_html; // phpcs:ignore WordPress.Security ?></span>
-			<?php endif; ?>
-			<?php if ( ! empty( $fields['sku'] ) && $sku ) : ?>
-				<span class="wcbp-label-sku"><?php echo $sku; // phpcs:ignore WordPress.Security ?></span>
-			<?php endif; ?>
-			<?php echo $attr_html; // phpcs:ignore WordPress.Security ?>
-			<?php echo $custom_meta_html; // phpcs:ignore WordPress.Security ?>
+			<div class="wcbp-label-barcode" style="flex:<?php echo esc_attr( $barcode_ratio ); ?> 0 0%;min-height:0;min-width:0;overflow:hidden">
+				<?php echo $barcode_svg; // phpcs:ignore WordPress.Security ?>
+			</div>
+			<div class="wcbp-label-info" style="flex:<?php echo esc_attr( $info_ratio ); ?> 0 0%;min-height:0;min-width:0;overflow:hidden">
+				<?php if ( ! empty( $fields['name'] ) && $product_name ) : ?>
+					<span class="wcbp-label-name"><?php echo $product_name; // phpcs:ignore WordPress.Security ?></span>
+				<?php endif; ?>
+				<?php if ( ! empty( $fields['price'] ) && $price_html ) : ?>
+					<span class="wcbp-label-price"><?php echo $price_html; // phpcs:ignore WordPress.Security ?></span>
+				<?php endif; ?>
+				<?php if ( ! empty( $fields['sku'] ) && $sku ) : ?>
+					<span class="wcbp-label-sku"><?php echo $sku; // phpcs:ignore WordPress.Security ?></span>
+				<?php endif; ?>
+				<?php echo $attr_html; // phpcs:ignore WordPress.Security ?>
+				<?php echo $custom_meta_html; // phpcs:ignore WordPress.Security ?>
+			</div>
 		</div>
 		<?php
 		return ob_get_clean();

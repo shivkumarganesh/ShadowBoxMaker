@@ -156,8 +156,19 @@ defined( 'ABSPATH' ) || exit;
 					<tr>
 						<th><?php esc_html_e( 'Fields to show', 'woo-barcode-pro' ); ?></th>
 						<td>
+							<?php $f = $editing['fields'] ?? array(); ?>
+							<div class="wcbp-field-row">
+								<label>
+									<input type="checkbox" id="wcbp-field-company_name" name="fields[company_name]" value="1"
+										<?php checked( ! empty( $f['company_name'] ) ); ?> />
+									<?php esc_html_e( 'Company name', 'woo-barcode-pro' ); ?>
+								</label>
+								<input type="text" name="fields[company_name_text]" id="wcbp-mock-company"
+									value="<?php echo esc_attr( $f['company_name_text'] ?? '' ); ?>"
+									class="regular-text"
+									placeholder="<?php esc_attr_e( 'Your Company Name', 'woo-barcode-pro' ); ?>" />
+							</div>
 							<?php
-							$f = $editing['fields'] ?? array();
 							$field_labels = array(
 								'name'       => __( 'Product name', 'woo-barcode-pro' ),
 								'price'      => __( 'Price', 'woo-barcode-pro' ),
