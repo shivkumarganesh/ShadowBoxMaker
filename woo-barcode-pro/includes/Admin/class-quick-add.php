@@ -25,8 +25,111 @@ class QuickAdd {
 	private function __construct() {}
 
 	public function register_hooks(): void {
+		add_action( 'init',       array( $this, 'maybe_serve_pwa_asset' ) );
+		add_action( 'admin_init', array( $this, 'maybe_intercept_quick_add' ) );
 		add_action( 'wp_ajax_wcbp_quick_save_product', array( $this, 'ajax_save_product' ) );
 		add_action( 'wp_ajax_wcbp_quick_upload_image',  array( $this, 'ajax_upload_image' ) );
+	}
+
+	public function maybe_intercept_quick_add(): void {
+		if ( ! isset( $_GET['page'] ) || 'wcbp-quick-add' !== $_GET['page'] ) {
+			return;
+		}
+		if ( ! \WCBarcodePro\wcbp_current_user_can_manage() ) {
+			wp_die( esc_html__( 'Permission denied.', 'woo-barcode-pro' ) );
+		}
+		$this->render_page();
+		exit;
+	}
+
+	public function maybe_serve_pwa_asset(): void {
+		if ( empty( $_GET['wcbp_pwa'] ) ) {
+			return;
+		}
+		$type = sanitize_key( $_GET['wcbp_pwa'] );
+		if ( 'manifest' === $type ) {
+			$this->serve_manifest();
+		} elseif ( 'icon' === $type ) {
+			$size = max( 16, min( 512, (int) ( $_GET['s'] ?? 192 ) ) );
+			$this->serve_icon( $size );
+		}
+	}
+
+	private function serve_manifest(): void {
+		$start_url = admin_url( 'admin.php?page=wcbp-quick-add' );
+		$icon_base = home_url( '/?wcbp_pwa=icon' );
+		$manifest  = array(
+			'name'             => 'WooBarcode Quick Add',
+			'short_name'       => 'Quick Add',
+			'description'      => 'Add products and scan barcodes from your phone.',
+			'start_url'        => $start_url,
+			'display'          => 'standalone',
+			'orientation'      => 'portrait',
+			'theme_color'      => '#2271b1',
+			'background_color' => '#1d2327',
+			'icons'            => array(
+				array(
+					'src'     => $icon_base . '&s=192',
+					'sizes'   => '192x192',
+					'type'    => 'image/png',
+					'purpose' => 'any maskable',
+				),
+				array(
+					'src'     => $icon_base . '&s=512',
+					'sizes'   => '512x512',
+					'type'    => 'image/png',
+					'purpose' => 'any maskable',
+				),
+			),
+		);
+		header( 'Content-Type: application/manifest+json; charset=utf-8' );
+		header( 'Cache-Control: max-age=3600' );
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.json_encode_json_encode
+		echo json_encode( $manifest );
+		exit;
+	}
+
+	private function serve_icon( int $size ): void {
+		header( 'Content-Type: image/png' );
+		header( 'Cache-Control: max-age=86400' );
+
+		if ( ! extension_loaded( 'gd' ) || ! function_exists( 'imagecreatetruecolor' ) ) {
+			// GD unavailable — output a 1×1 transparent PNG as fallback.
+			// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
+			echo base64_decode( 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==' );
+			exit;
+		}
+
+		$img   = imagecreatetruecolor( $size, $size );
+		$bg    = imagecolorallocate( $img, 0x22, 0x71, 0xb1 ); // #2271b1 blue
+		$white = imagecolorallocate( $img, 255, 255, 255 );
+		imagefilledrectangle( $img, 0, 0, $size - 1, $size - 1, $bg );
+
+		// Barcode bars — relative widths: bar, gap, bar, gap, ...
+		$bars  = array( 18, 10, 28, 10, 18, 10, 36, 10, 18, 28, 10, 18, 34 );
+		$gaps  = array(  0,  8,  0,  8,  0,  8,  0,  8,  0,  0,  8,  0,  0 );
+		$pad   = (int) round( $size * 0.14 );
+		$bh    = (int) round( $size * 0.52 );
+		$by    = (int) round( $size * 0.20 );
+		$bw    = $size - $pad * 2;
+
+		// Build bar segments: alternating filled and gap, derived from SVG x-positions.
+		$svg_bars = array(
+			array( 72, 18 ), array( 100, 10 ), array( 120, 28 ), array( 158, 10 ),
+			array( 178, 18 ), array( 206, 10 ), array( 226, 36 ), array( 272, 10 ),
+			array( 292, 18 ), array( 320, 28 ), array( 358, 10 ), array( 378, 18 ),
+			array( 406, 34 ),
+		);
+		$svg_total = 512.0;
+		foreach ( $svg_bars as $bar ) {
+			$bx1 = $pad + (int) round( ( $bar[0] / $svg_total ) * $bw );
+			$bx2 = $pad + (int) round( ( ( $bar[0] + $bar[1] ) / $svg_total ) * $bw ) - 1;
+			imagefilledrectangle( $img, $bx1, $by, $bx2, $by + $bh - 1, $white );
+		}
+
+		imagepng( $img );
+		imagedestroy( $img );
+		exit;
 	}
 
 	public function render_page(): void {

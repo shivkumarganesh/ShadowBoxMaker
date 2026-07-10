@@ -16,9 +16,12 @@ defined( 'ABSPATH' ) || exit;
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="theme-color" content="#2271b1" />
 <title><?php esc_html_e( 'Quick Add — WooBarcode Pro', 'woo-barcode-pro' ); ?></title>
-<?php wp_print_styles( 'wcbp-quick-add' ); ?>
+<link rel="manifest" href="<?php echo esc_url( home_url( '/?wcbp_pwa=manifest' ) ); ?>" />
+<link rel="apple-touch-icon" href="<?php echo esc_url( home_url( '/?wcbp_pwa=icon&s=180' ) ); ?>" />
+<link rel="stylesheet" href="<?php echo esc_url( WCBP_PLUGIN_URL . 'assets/css/quick-add.css?ver=' . WCBP_VERSION ); ?>" />
 </head>
 <body class="wcbp-quick-add-body">
 
@@ -165,12 +168,13 @@ defined( 'ABSPATH' ) || exit;
 
 </div>
 
-<?php
-wp_localize_script( 'wcbp-quick-add', 'wcbpQuickAdd', array(
-	'ajax_url'  => admin_url( 'admin-ajax.php' ),
-	'nonce'     => wp_create_nonce( 'wcbp_quick_add' ),
-	'inv_nonce' => wp_create_nonce( 'wcbp_inventory' ),
-	'strings'   => array(
+<script>
+window.wcbpQuickAdd = <?php echo wp_json_encode( array(
+	'ajax_url'   => admin_url( 'admin-ajax.php' ),
+	'nonce'      => wp_create_nonce( 'wcbp_quick_add' ),
+	'inv_nonce'  => wp_create_nonce( 'wcbp_inventory' ),
+	'plugin_url' => WCBP_PLUGIN_URL,
+	'strings'    => array(
 		'looking_up'      => __( 'Looking up barcode…', 'woo-barcode-pro' ),
 		'template_found'  => __( 'Template found', 'woo-barcode-pro' ),
 		'product_exists'  => __( 'Product already exists', 'woo-barcode-pro' ),
@@ -189,9 +193,10 @@ wp_localize_script( 'wcbp-quick-add', 'wcbpQuickAdd', array(
 		'publishing'      => __( 'Publishing…', 'woo-barcode-pro' ),
 		'published_ok'    => __( 'Product published!', 'woo-barcode-pro' ),
 	),
-) );
-wp_print_scripts( 'wcbp-quick-add' );
-?>
+) ); ?>;
+</script>
+<script src="<?php echo esc_url( includes_url( 'js/jquery/jquery.min.js' ) ); ?>"></script>
+<script src="<?php echo esc_url( WCBP_PLUGIN_URL . 'assets/js/quick-add.js?ver=' . WCBP_VERSION ); ?>"></script>
 <script>
 function wcbpSwitchTab(name) {
 	document.querySelectorAll('.wcbp-qa-tab-btn').forEach(function(b){ b.classList.remove('wcbp-active'); });
