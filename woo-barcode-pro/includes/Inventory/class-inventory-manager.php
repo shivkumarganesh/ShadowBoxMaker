@@ -302,9 +302,10 @@ class InventoryManager {
 			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'woo-barcode-pro' ) ) );
 		}
 
-		$product_id = (int) ( $_POST['product_id'] ?? 0 );
-		$name       = sanitize_text_field( wp_unslash( $_POST['name'] ?? '' ) );
-		$image_id   = (int) ( $_POST['image_id'] ?? 0 );
+		$product_id   = (int) ( $_POST['product_id'] ?? 0 );
+		$name         = sanitize_text_field( wp_unslash( $_POST['name'] ?? '' ) );
+		$image_id     = (int) ( $_POST['image_id'] ?? 0 );
+		$category_ids = array_map( 'intval', (array) ( $_POST['category_ids'] ?? array() ) );
 
 		if ( ! $product_id ) {
 			wp_send_json_error( array( 'message' => __( 'Invalid product.', 'woo-barcode-pro' ) ) );
@@ -324,6 +325,9 @@ class InventoryManager {
 
 		if ( $image_id ) {
 			$product->set_image_id( $image_id );
+		}
+		if ( ! empty( $category_ids ) ) {
+			$product->set_category_ids( $category_ids );
 		}
 
 		$product->save();

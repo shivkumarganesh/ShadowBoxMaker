@@ -140,6 +140,61 @@ body.wcbp-quick-add-body {
 .wcbp-success { color: #00a32a; }
 .wcbp-error   { color: #d63638; }
 
+/* ── Tab navigation ──────────────────────────────────────────────────────── */
+.wcbp-qa-tabs {
+	display: flex;
+	gap: 4px;
+	margin-bottom: 16px;
+	border-bottom: 2px solid #c3c4c7;
+}
+.wcbp-qa-tab-btn {
+	flex: 1;
+	padding: 10px 6px;
+	background: #f0f0f1;
+	border: 1px solid #c3c4c7;
+	border-bottom: none;
+	border-radius: 6px 6px 0 0;
+	font-size: 14px;
+	font-weight: 600;
+	color: #555;
+	cursor: pointer;
+}
+.wcbp-qa-tab-btn.wcbp-active {
+	background: #fff;
+	color: #2271b1;
+	border-color: #2271b1;
+	position: relative;
+	bottom: -2px;
+	border-bottom: 2px solid #fff;
+}
+.wcbp-qa-tab-content { display: none; }
+.wcbp-qa-tab-content.wcbp-active { display: block; }
+
+/* ── Lookup button ───────────────────────────────────────────────────────── */
+#wcbp-lookup-btn {
+	background: #f0f0f1;
+	color: #1d2327;
+	border: 1px solid #c3c4c7;
+	border-radius: 6px;
+	padding: 10px 14px;
+	font-size: 18px;
+	cursor: pointer;
+	line-height: 1;
+}
+#wcbp-lookup-btn:active { background: #ddd; }
+
+/* ── Draft card category select ──────────────────────────────────────────── */
+#wcbp-qa-draft-categories {
+	width: 100%;
+	font-size: 15px;
+	padding: 8px 10px;
+	border: 1px solid #c3c4c7;
+	border-radius: 6px;
+	height: 80px;
+	outline: none;
+}
+#wcbp-qa-draft-categories:focus { border-color: #2271b1; }
+
 /* ── Landscape / tablet tweaks ───────────────────────────────────────────── */
 @media (min-width: 640px) {
 	.wcbp-qa-wrap { padding: 24px 20px; }
