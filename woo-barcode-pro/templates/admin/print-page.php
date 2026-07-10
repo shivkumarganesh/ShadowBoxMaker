@@ -19,7 +19,7 @@ $sheet_h   = 'A4' === $page_size ? '297mm' : ( 'A5' === $page_size ? '210mm' : (
 <meta charset="<?php bloginfo( 'charset' ); ?>" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title><?php esc_html_e( 'Print Labels — WooBarcode Pro', 'woo-barcode-pro' ); ?></title>
-<?php wp_print_styles( 'wcbp-print' ); ?>
+<link rel="stylesheet" href="<?php echo esc_url( WCBP_PLUGIN_URL . 'assets/css/print.css?ver=' . WCBP_VERSION ); ?>" />
 <style>
 :root {
 	--wcbp-page-size: <?php echo esc_attr( $page_size ); ?>;
@@ -37,8 +37,9 @@ $sheet_h   = 'A4' === $page_size ? '297mm' : ( 'A5' === $page_size ? '210mm' : (
 			<?php echo esc_html( strtoupper( $page_size ) ); ?>
 		</span>
 	</h2>
-	<button id="wcbp-do-print" onclick="window.print()">🖨️ <?php esc_html_e( 'Print (Ctrl+P)', 'woo-barcode-pro' ); ?></button>
-	<button onclick="window.close()" class="button" style="margin-left:4px"><?php esc_html_e( 'Close', 'woo-barcode-pro' ); ?></button>
+	<button id="wcbp-do-print" onclick="window.print()">🖨️ <?php esc_html_e( 'Print', 'woo-barcode-pro' ); ?></button>
+	<button id="wcbp-do-pdf" onclick="window.print()" title="<?php esc_attr_e( 'Opens the browser print dialog — choose Save as PDF to download', 'woo-barcode-pro' ); ?>">⬇️ <?php esc_html_e( 'Save as PDF', 'woo-barcode-pro' ); ?></button>
+	<button onclick="window.close()" style="margin-left:4px"><?php esc_html_e( 'Close', 'woo-barcode-pro' ); ?></button>
 </div>
 
 <div class="wcbp-label-sheet">

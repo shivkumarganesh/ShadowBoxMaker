@@ -24,15 +24,25 @@ class PrintPage {
 
 	public function register_hooks(): void {
 		add_action( 'wp_ajax_wcbp_render_labels', array( $this, 'ajax_render_labels' ) );
+		// Intercept before WordPress outputs the admin chrome so the page is standalone.
+		add_action( 'admin_init', array( $this, 'maybe_intercept_print_page' ) );
 	}
 
-	/**
-	 * Render the print-preview page (full-screen iframe target).
-	 */
-	public function render_page(): void {
+	public function maybe_intercept_print_page(): void {
+		if ( ! isset( $_GET['page'] ) || 'wcbp-print' !== $_GET['page'] ) { // phpcs:ignore WordPress.Security
+			return;
+		}
 		if ( ! \WCBarcodePro\wcbp_current_user_can_manage() ) {
 			wp_die( esc_html__( 'Permission denied.', 'woo-barcode-pro' ) );
 		}
+		$this->render_page();
+		exit;
+	}
+
+	/**
+	 * Render the standalone print-preview page (no WP admin chrome).
+	 */
+	public function render_page(): void {
 
 		$queue_ids   = array_map( 'intval', (array) ( $_GET['ids'] ?? array() ) ); // phpcs:ignore WordPress.Security
 		$template_id = (int) ( $_GET['template_id'] ?? 0 );
