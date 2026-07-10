@@ -79,14 +79,55 @@
 /* ── Label designer ──────────────────────────────────────────────────────── */
 .wcbp-designer-wrap { display: flex; gap: 24px; align-items: flex-start; }
 .wcbp-designer-form { flex: 1 1 340px; }
-.wcbp-designer-preview { flex: 0 0 280px; position: sticky; top: 32px; }
-#wcbp-label-preview { border: 1px dashed #bbb; background: #fff; }
+.wcbp-designer-preview { flex: 0 0 300px; position: sticky; top: 32px; }
+#wcbp-label-preview { border: 1px solid #c3c4c7; background: #fff; }
 
 .wcbp-field-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .wcbp-field-row label { min-width: 100px; }
 
 .wcbp-ratio-wrap { display: flex; align-items: center; gap: 8px; }
 #wcbp-barcode-ratio { flex: 1; }
+
+/* ── Mock values panel ───────────────────────────────────────────────────── */
+.wcbp-mock-panel {
+	background: #f6f7f7;
+	border: 1px solid #e2e4e7;
+	border-radius: 4px;
+	padding: 10px 12px;
+	margin-bottom: 14px;
+}
+.wcbp-mock-title {
+	margin: 0 0 8px;
+	font-size: 11px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: .4px;
+	color: #777;
+}
+.wcbp-mock-row {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin-bottom: 6px;
+}
+.wcbp-mock-row:last-child { margin-bottom: 0; }
+.wcbp-mock-row label {
+	min-width: 52px;
+	font-size: 12px;
+	font-weight: 600;
+	color: #555;
+}
+.wcbp-mock-row input[type="text"] {
+	flex: 1;
+	min-width: 0;
+	font-size: 12px;
+	padding: 3px 6px;
+	height: 26px;
+	border: 1px solid #ddd;
+	border-radius: 3px;
+}
+.wcbp-mock-row input[type="text"]:focus { border-color: #2271b1; outline: none; }
+.wcbp-mock-currency { font-size: 12px; color: #555; flex-shrink: 0; }
 
 /* ── Print queue ─────────────────────────────────────────────────────────── */
 .wcbp-queue-toolbar {
