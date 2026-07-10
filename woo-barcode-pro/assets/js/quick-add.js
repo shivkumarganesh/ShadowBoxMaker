@@ -34,6 +34,7 @@
 				}
 
 				$('#wcbp-scan-status').text(wcbpQuickAdd.strings.template_found + ' — ' + d.template.name).addClass('wcbp-success');
+				if (typeof wcbpSwitchTab === 'function') wcbpSwitchTab('add');
 				$('#wcbp-name').focus();
 			} else if ('product' === d.type) {
 				if (d.product.status === 'draft') {
@@ -196,6 +197,7 @@
 		draftImageUploading = false;
 		barcodeScanned      = '';
 		$('#wcbp-qa-draft-card').hide();
+		$('#wcbp-qa-draft-categories').val(null);
 		$('#wcbp-barcode-input').val('');
 		$('#wcbp-name').val('');
 		$('#wcbp-sku').val('');
@@ -253,12 +255,15 @@
 		if (!name) { $('#wcbp-qa-draft-name').focus(); return; }
 		if (draftImageUploading) return;
 		var $btn = $(this).prop('disabled', true).text(wcbpQuickAdd.strings.publishing);
+		var draftCats = [];
+		$('#wcbp-qa-draft-categories option:selected').each(function () { draftCats.push($(this).val()); });
 		$.post(wcbpQuickAdd.ajax_url, {
-			action     : 'wcbp_inv_publish_draft',
-			nonce      : wcbpQuickAdd.inv_nonce,
-			product_id : pid,
-			name       : name,
-			image_id   : draftImageId || 0,
+			action       : 'wcbp_inv_publish_draft',
+			nonce        : wcbpQuickAdd.inv_nonce,
+			product_id   : pid,
+			name         : name,
+			image_id     : draftImageId || 0,
+			category_ids : draftCats,
 		}, function (res) {
 			$btn.prop('disabled', false).text('✓ ' + wcbpQuickAdd.strings.publish_btn);
 			if (res.success) {
