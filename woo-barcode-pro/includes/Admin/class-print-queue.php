@@ -29,6 +29,11 @@ class PrintQueue {
 		add_action( 'wp_ajax_wcbp_update_qty',        array( $this, 'ajax_update_qty' ) );
 		add_action( 'wp_ajax_wcbp_clear_queue',       array( $this, 'ajax_clear' ) );
 		add_action( 'wp_ajax_wcbp_mark_printed',      array( $this, 'ajax_mark_printed' ) );
+
+		// Keep queue in sync with product lifecycle.
+		add_action( 'wp_trash_post',          array( $this, 'on_product_trashed_or_deleted' ) );
+		add_action( 'before_delete_post',     array( $this, 'on_product_trashed_or_deleted' ) );
+		add_action( 'transition_post_status', array( $this, 'on_product_published' ), 10, 3 );
 	}
 
 	// ── Data methods ──────────────────────────────────────────────────────────
@@ -118,6 +123,29 @@ class PrintQueue {
 			}
 		}
 		return $count;
+	}
+
+	public function remove_by_product( int $product_id ): bool {
+		global $wpdb;
+		return (bool) $wpdb->delete( // phpcs:ignore WordPress.DB
+			$wpdb->prefix . 'wcbp_print_queue',
+			array( 'product_id' => $product_id ),
+			array( '%d' )
+		);
+	}
+
+	public function on_product_trashed_or_deleted( int $post_id ): void {
+		if ( 'product' !== get_post_type( $post_id ) ) {
+			return;
+		}
+		$this->remove_by_product( $post_id );
+	}
+
+	public function on_product_published( string $new_status, string $old_status, \WP_Post $post ): void {
+		if ( 'publish' !== $new_status || $new_status === $old_status || 'product' !== $post->post_type ) {
+			return;
+		}
+		$this->remove_by_product( $post->ID );
 	}
 
 	// ── AJAX handlers ─────────────────────────────────────────────────────────
