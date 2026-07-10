@@ -65,23 +65,33 @@ class LabelTemplates {
 			'custom_meta' => sanitize_text_field( $fields_raw['custom_meta'] ?? '' ),
 		);
 
-		$allowed_page_sizes = array( 'letter', 'A4', 'A5', 'legal' );
-		$row = array(
-			'name'          => sanitize_text_field( $data['name'] ?? 'Untitled' ),
-			'preset'        => sanitize_key( $data['preset'] ?? 'custom' ),
-			'width_in'      => (float) ( $data['width_in']      ?? 2.625 ),
-			'height_in'     => (float) ( $data['height_in']     ?? 1.0 ),
-			'cols'          => (int)   ( $data['cols']          ?? 3 ),
-			'rows_per_page' => (int)   ( $data['rows_per_page'] ?? 10 ),
-			'gap_in'        => (float) ( $data['gap_in']        ?? 0.0 ),
-			'margin_in'     => (float) ( $data['margin_in']     ?? 0.5 ),
-			'layout'        => in_array( $data['layout'] ?? 'vertical', array( 'vertical', 'horizontal' ), true ) ? $data['layout'] : 'vertical',
-			'fields'        => wp_json_encode( $fields ),
-			'barcode_ratio' => max( 30, min( 80, (int) ( $data['barcode_ratio'] ?? 60 ) ) ),
-			'logo_id'       => (int) ( $data['logo_id'] ?? 0 ),
-			'page_size'     => in_array( $data['page_size'] ?? 'letter', $allowed_page_sizes, true ) ? $data['page_size'] : 'letter',
+		$allowed_page_sizes   = array( 'letter', 'A4', 'A5', 'legal' );
+		$allowed_symbologies  = array( 'code128', 'ean13', 'upca', 'itf14' );
+		$bc_color_raw         = $data['bc_color'] ?? '#000000';
+		$bc_opts = array(
+			'symbology'    => in_array( $data['bc_symbology'] ?? 'code128', $allowed_symbologies, true ) ? $data['bc_symbology'] : 'code128',
+			'height'       => max( 20, min( 200, (int) ( $data['bc_height'] ?? 60 ) ) ),
+			'module_width' => max( 1, min( 4, (int) ( $data['bc_module_width'] ?? 2 ) ) ),
+			'show_text'    => ! empty( $data['bc_show_text'] ),
+			'color'        => preg_match( '/^#[0-9a-fA-F]{6}$/', $bc_color_raw ) ? $bc_color_raw : '#000000',
 		);
-		$fmt = array( '%s','%s','%f','%f','%d','%d','%f','%f','%s','%s','%d','%d','%s' );
+		$row = array(
+			'name'            => sanitize_text_field( $data['name'] ?? 'Untitled' ),
+			'preset'          => sanitize_key( $data['preset'] ?? 'custom' ),
+			'width_in'        => (float) ( $data['width_in']      ?? 2.625 ),
+			'height_in'       => (float) ( $data['height_in']     ?? 1.0 ),
+			'cols'            => (int)   ( $data['cols']          ?? 3 ),
+			'rows_per_page'   => (int)   ( $data['rows_per_page'] ?? 10 ),
+			'gap_in'          => (float) ( $data['gap_in']        ?? 0.0 ),
+			'margin_in'       => (float) ( $data['margin_in']     ?? 0.5 ),
+			'layout'          => in_array( $data['layout'] ?? 'vertical', array( 'vertical', 'horizontal' ), true ) ? $data['layout'] : 'vertical',
+			'fields'          => wp_json_encode( $fields ),
+			'barcode_ratio'   => max( 30, min( 80, (int) ( $data['barcode_ratio'] ?? 60 ) ) ),
+			'logo_id'         => (int) ( $data['logo_id'] ?? 0 ),
+			'page_size'       => in_array( $data['page_size'] ?? 'letter', $allowed_page_sizes, true ) ? $data['page_size'] : 'letter',
+			'barcode_options' => wp_json_encode( $bc_opts ),
+		);
+		$fmt = array( '%s','%s','%f','%f','%d','%d','%f','%f','%s','%s','%d','%d','%s','%s' );
 
 		if ( ! empty( $data['id'] ) ) {
 			$wpdb->update( $table, $row, array( 'id' => (int) $data['id'] ), $fmt, array( '%d' ) ); // phpcs:ignore WordPress.DB
@@ -178,11 +188,22 @@ class LabelTemplates {
 		if ( '' === $value ) {
 			wp_send_json_error();
 		}
-		$settings = \WCBarcodePro\wcbp_settings();
+		$allowed_sym = array( 'code128', 'ean13', 'upca', 'itf14' );
+		$symbology   = in_array( $_POST['symbology'] ?? 'code128', $allowed_sym, true ) ? sanitize_key( $_POST['symbology'] ) : 'code128'; // phpcs:ignore WordPress.Security
+		$show_text   = ! empty( $_POST['show_text'] ) && '1' === $_POST['show_text']; // phpcs:ignore WordPress.Security
+		$module_width = max( 1, min( 4, (int) ( $_POST['module_width'] ?? 2 ) ) ); // phpcs:ignore WordPress.Security
+		$color_raw   = sanitize_text_field( wp_unslash( $_POST['color'] ?? '#000000' ) );
+		$color       = preg_match( '/^#[0-9a-fA-F]{6}$/', $color_raw ) ? $color_raw : '#000000';
+		$height      = max( 20, min( 200, (int) ( $_POST['bc_height'] ?? 60 ) ) ); // phpcs:ignore WordPress.Security
 		$svg = \WCBarcodePro\Barcode\BarcodeGenerator::get_instance()->generate_svg(
 			$value,
-			$settings['symbology'] ?? 'code128',
-			array( 'show_text' => true, 'height' => 60 )
+			$symbology,
+			array(
+				'show_text'    => $show_text,
+				'height'       => $height,
+				'module_width' => $module_width,
+				'color'        => $color,
+			)
 		);
 		wp_send_json_success( array( 'svg' => $svg ) );
 	}
@@ -198,6 +219,9 @@ class LabelTemplates {
 		$editing   = ( 'edit' === $action || 'new' === $action ) ? ( $edit_id ? $this->get( $edit_id ) : array() ) : null;
 		if ( $editing && isset( $editing['fields'] ) ) {
 			$editing['fields'] = json_decode( $editing['fields'], true );
+		}
+		if ( $editing && ! empty( $editing['barcode_options'] ) ) {
+			$editing['barcode_options'] = json_decode( $editing['barcode_options'], true );
 		}
 		include WCBP_PLUGIN_DIR . 'templates/admin/label-templates.php';
 	}

@@ -20,20 +20,41 @@
 		schedulePreview();
 	});
 
+	// ── Barcode design params ────────────────────────────────────────────────
+	function getBarcodeParams() {
+		return {
+			sym:      $('#wcbp-bc-symbology').val()          || 'code128',
+			showText: $('#wcbp-bc-show-text').is(':checked') ? '1' : '0',
+			mw:       $('#wcbp-bc-module-width').val()       || '2',
+			color:    $('#wcbp-bc-color').val()              || '#000000',
+			height:   $('#wcbp-bc-height').val()             || '60',
+		};
+	}
+
+	function barcodeKey(value, p) {
+		return value + '|' + p.sym + '|' + p.showText + '|' + p.mw + '|' + p.color + '|' + p.height;
+	}
+
 	// ── Barcode AJAX (cached + debounced) ────────────────────────────────────
-	function fetchBarcode(value, callback) {
+	function fetchBarcode(value, params, callback) {
 		if (!value) { callback(''); return; }
-		if (_barcodeCache[value] !== undefined) { callback(_barcodeCache[value]); return; }
+		var key = barcodeKey(value, params);
+		if (_barcodeCache[key] !== undefined) { callback(_barcodeCache[key]); return; }
 		$.post(wcbpDesigner.ajax_url, {
-			action: 'wcbp_preview_barcode',
-			nonce : wcbpDesigner.nonce,
-			value : value,
+			action      : 'wcbp_preview_barcode',
+			nonce       : wcbpDesigner.nonce,
+			value       : value,
+			symbology   : params.sym,
+			show_text   : params.showText,
+			module_width: params.mw,
+			color       : params.color,
+			bc_height   : params.height,
 		}, function (res) {
 			var svg = (res.success && res.data && res.data.svg) ? res.data.svg : '';
-			_barcodeCache[value] = svg;
+			_barcodeCache[key] = svg;
 			callback(svg);
 		}).fail(function () {
-			_barcodeCache[value] = '';
+			_barcodeCache[key] = '';
 			callback('');
 		});
 	}
@@ -115,16 +136,17 @@
 
 	// ── Main entry: debounce + fetch ─────────────────────────────────────────
 	function schedulePreview() {
-		var val = $('#wcbp-mock-barcode').val() || $('#wcbp-mock-sku').val() || 'SKU-001';
+		var val    = $('#wcbp-mock-barcode').val() || $('#wcbp-mock-sku').val() || 'SKU-001';
+		var params = getBarcodeParams();
 		clearTimeout(_barcodeTimer);
 		_barcodeTimer = setTimeout(function () {
-			fetchBarcode(val, renderPreview);
+			fetchBarcode(val, params, renderPreview);
 		}, 350);
 	}
 
 	// ── Event bindings ───────────────────────────────────────────────────────
 
-	// All template form controls
+	// All template form controls (layout, dimensions, fields, etc.)
 	$('#wcbp-template-form input, #wcbp-template-form select').on('change input', schedulePreview);
 
 	// Barcode ratio slider — also update the % label
@@ -137,8 +159,10 @@
 	$('#wcbp-mock-name, #wcbp-mock-price').on('input', function () {
 		clearTimeout(_barcodeTimer);
 		_barcodeTimer = setTimeout(function () {
-			var val = $('#wcbp-mock-barcode').val() || $('#wcbp-mock-sku').val() || 'SKU-001';
-			var cached = _barcodeCache[val];
+			var val    = $('#wcbp-mock-barcode').val() || $('#wcbp-mock-sku').val() || 'SKU-001';
+			var params = getBarcodeParams();
+			var key    = barcodeKey(val, params);
+			var cached = _barcodeCache[key];
 			renderPreview(cached !== undefined ? cached : '');
 		}, 150);
 	});
@@ -151,10 +175,20 @@
 		schedulePreview();
 	});
 
-	// Mock barcode — mark as custom so SKU mirroring stops, clear cache, fetch fresh
+	// Mock barcode — mark as custom, clear cache for fresh fetch
 	$('#wcbp-mock-barcode').on('input', function () {
 		$(this).data('custom', true);
-		delete _barcodeCache[$(this).val()];
+		_barcodeCache = {};
+		schedulePreview();
+	});
+
+	// Barcode design options — clear cache so changed params fetch a new SVG
+	$('#wcbp-bc-symbology, #wcbp-bc-module-width, #wcbp-bc-color, #wcbp-bc-height').on('change input', function () {
+		_barcodeCache = {};
+		schedulePreview();
+	});
+	$('#wcbp-bc-show-text').on('change', function () {
+		_barcodeCache = {};
 		schedulePreview();
 	});
 

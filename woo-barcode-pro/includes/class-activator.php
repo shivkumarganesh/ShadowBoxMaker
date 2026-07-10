@@ -35,6 +35,7 @@ class Activator {
 			logo_id bigint(20) UNSIGNED DEFAULT 0,
 			is_default tinyint(1) DEFAULT 0,
 			page_size varchar(10) NOT NULL DEFAULT 'letter',
+			barcode_options text DEFAULT NULL,
 			created_at datetime DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY (id)
 		) $charset;";
