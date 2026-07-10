@@ -27,6 +27,7 @@ class LabelTemplates {
 		add_action( 'admin_post_wcbp_delete_label_template', array( $this, 'handle_delete' ) );
 		add_action( 'wp_ajax_wcbp_get_label_template',       array( $this, 'ajax_get' ) );
 		add_action( 'wp_ajax_wcbp_set_default_template',     array( $this, 'ajax_set_default' ) );
+		add_action( 'wp_ajax_wcbp_preview_barcode',           array( $this, 'ajax_preview_barcode' ) );
 	}
 
 	public function get_all(): array {
@@ -166,6 +167,24 @@ class LabelTemplates {
 		}
 		$id = (int) ( $_POST['id'] ?? 0 );
 		wp_send_json_success( array( 'result' => $this->set_default( $id ) ) );
+	}
+
+	public function ajax_preview_barcode(): void {
+		check_ajax_referer( 'wcbp_admin', 'nonce' );
+		if ( ! \WCBarcodePro\wcbp_current_user_can_manage() ) {
+			wp_send_json_error();
+		}
+		$value = sanitize_text_field( wp_unslash( $_POST['value'] ?? '' ) );
+		if ( '' === $value ) {
+			wp_send_json_error();
+		}
+		$settings = \WCBarcodePro\wcbp_settings();
+		$svg = \WCBarcodePro\Barcode\BarcodeGenerator::get_instance()->generate_svg(
+			$value,
+			$settings['symbology'] ?? 'code128',
+			array( 'show_text' => true, 'height' => 60 )
+		);
+		wp_send_json_success( array( 'svg' => $svg ) );
 	}
 
 	public function render_page(): void {

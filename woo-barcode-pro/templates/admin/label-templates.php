@@ -155,7 +155,30 @@ defined( 'ABSPATH' ) || exit;
 		<div class="wcbp-designer-preview">
 			<div class="wcbp-card">
 				<h3><?php esc_html_e( 'Preview', 'woo-barcode-pro' ); ?></h3>
+
+				<div class="wcbp-mock-panel">
+					<p class="wcbp-mock-title"><?php esc_html_e( 'Test data', 'woo-barcode-pro' ); ?></p>
+					<div class="wcbp-mock-row">
+						<label for="wcbp-mock-name"><?php esc_html_e( 'Name', 'woo-barcode-pro' ); ?></label>
+						<input id="wcbp-mock-name" type="text" value="<?php esc_attr_e( 'Sample Product', 'woo-barcode-pro' ); ?>" />
+					</div>
+					<div class="wcbp-mock-row">
+						<label for="wcbp-mock-price"><?php esc_html_e( 'Price', 'woo-barcode-pro' ); ?></label>
+						<span class="wcbp-mock-currency"><?php echo esc_html( get_woocommerce_currency_symbol() ); ?></span>
+						<input id="wcbp-mock-price" type="text" value="9.99" style="flex:0 0 60px;min-width:0" />
+					</div>
+					<div class="wcbp-mock-row">
+						<label for="wcbp-mock-sku"><?php esc_html_e( 'SKU', 'woo-barcode-pro' ); ?></label>
+						<input id="wcbp-mock-sku" type="text" value="SKU-001" />
+					</div>
+					<div class="wcbp-mock-row">
+						<label for="wcbp-mock-barcode"><?php esc_html_e( 'Barcode', 'woo-barcode-pro' ); ?></label>
+						<input id="wcbp-mock-barcode" type="text" value="SKU-001" />
+					</div>
+				</div>
+
 				<div id="wcbp-label-preview"></div>
+				<p class="description" style="margin-top:8px;font-size:11px;color:#888"><?php esc_html_e( 'Approximate size at 96 dpi. Print output may vary.', 'woo-barcode-pro' ); ?></p>
 			</div>
 		</div>
 	</div>
