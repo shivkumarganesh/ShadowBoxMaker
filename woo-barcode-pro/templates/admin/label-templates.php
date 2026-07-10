@@ -104,6 +104,55 @@ defined( 'ABSPATH' ) || exit;
 							</div>
 						</td>
 					</tr>
+
+					<?php
+					$bc_opts = $editing['barcode_options'] ?? array();
+					$bc_opts = is_array( $bc_opts ) ? $bc_opts : array();
+					?>
+					<tr><th colspan="2" class="wcbp-section-heading"><?php esc_html_e( 'Barcode Design', 'woo-barcode-pro' ); ?></th></tr>
+					<tr>
+						<th><?php esc_html_e( 'Symbology', 'woo-barcode-pro' ); ?></th>
+						<td>
+							<select name="bc_symbology" id="wcbp-bc-symbology">
+								<?php
+								$sym_labels = array(
+									'code128' => 'Code 128',
+									'ean13'   => 'EAN-13',
+									'upca'    => 'UPC-A',
+									'itf14'   => 'ITF-14',
+								);
+								$cur_sym = $bc_opts['symbology'] ?? 'code128';
+								foreach ( $sym_labels as $sym_val => $sym_lbl ) :
+								?>
+								<option value="<?php echo esc_attr( $sym_val ); ?>" <?php selected( $cur_sym, $sym_val ); ?>><?php echo esc_html( $sym_lbl ); ?></option>
+								<?php endforeach; ?>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<th><?php esc_html_e( 'Bar height (px)', 'woo-barcode-pro' ); ?></th>
+						<td><input type="number" id="wcbp-bc-height" name="bc_height" value="<?php echo esc_attr( $bc_opts['height'] ?? 60 ); ?>" min="20" max="200" class="small-text" /></td>
+					</tr>
+					<tr>
+						<th><?php esc_html_e( 'Bar width', 'woo-barcode-pro' ); ?></th>
+						<td>
+							<select name="bc_module_width" id="wcbp-bc-module-width">
+								<?php for ( $mw = 1; $mw <= 4; $mw++ ) : ?>
+								<option value="<?php echo esc_attr( $mw ); ?>" <?php selected( (int) ( $bc_opts['module_width'] ?? 2 ), $mw ); ?>><?php echo esc_html( $mw ); ?></option>
+								<?php endfor; ?>
+							</select>
+							<span class="description"><?php esc_html_e( '1 = narrowest, 4 = widest', 'woo-barcode-pro' ); ?></span>
+						</td>
+					</tr>
+					<tr>
+						<th><?php esc_html_e( 'Show text below bars', 'woo-barcode-pro' ); ?></th>
+						<td><input type="checkbox" id="wcbp-bc-show-text" name="bc_show_text" value="1" <?php checked( isset( $bc_opts['show_text'] ) ? (bool) $bc_opts['show_text'] : true ); ?> /></td>
+					</tr>
+					<tr>
+						<th><?php esc_html_e( 'Bar color', 'woo-barcode-pro' ); ?></th>
+						<td><input type="color" id="wcbp-bc-color" name="bc_color" value="<?php echo esc_attr( $bc_opts['color'] ?? '#000000' ); ?>" /></td>
+					</tr>
+
 					<tr>
 						<th><?php esc_html_e( 'Fields to show', 'woo-barcode-pro' ); ?></th>
 						<td>

@@ -76,7 +76,9 @@ class LabelRenderer {
 		$variation_id = (int) ( $item['variation_id'] ?? 0 );
 		$barcode_ratio = max( 30, min( 80, (int) ( $tpl['barcode_ratio'] ?? 60 ) ) );
 
-		$barcode_svg  = \WCBarcodePro\wcbp_product_barcode_svg( $product_id, $variation_id );
+		$bc_opts_raw = $tpl['barcode_options'] ?? null;
+		$bc_opts     = ( $bc_opts_raw && is_string( $bc_opts_raw ) ) ? (array) json_decode( $bc_opts_raw, true ) : array();
+		$barcode_svg = \WCBarcodePro\wcbp_product_barcode_svg( $product_id, $variation_id, $bc_opts );
 		$product_name = esc_html( $item['product_name'] ?? '' );
 		$sku          = esc_html( $item['sku'] ?? '' );
 

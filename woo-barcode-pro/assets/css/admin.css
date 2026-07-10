@@ -88,6 +88,18 @@
 .wcbp-ratio-wrap { display: flex; align-items: center; gap: 8px; }
 #wcbp-barcode-ratio { flex: 1; }
 
+/* ── Label template form section heading ─────────────────────────────────── */
+.wcbp-section-heading {
+	padding-top: 18px !important;
+	padding-bottom: 4px !important;
+	font-size: 13px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: .4px;
+	color: #555;
+	border-top: 1px solid #e2e4e7;
+}
+
 /* ── Mock values panel ───────────────────────────────────────────────────── */
 .wcbp-mock-panel {
 	background: #f6f7f7;
