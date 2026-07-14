@@ -107,6 +107,13 @@ body.wcbp-quick-add-body {
 	font-weight: 600;
 }
 .wcbp-photo-btn:active { background: #e0e0e0; }
+.wcbp-photo-btn--upload {
+	background: #fff;
+	border-style: solid;
+	border-color: #2271b1;
+	color: #2271b1;
+}
+.wcbp-photo-btn--upload:active { background: #f0f4ff; }
 .wcbp-photo-icon { font-size: 24px; }
 #wcbp-photo-preview {
 	width: 72px;

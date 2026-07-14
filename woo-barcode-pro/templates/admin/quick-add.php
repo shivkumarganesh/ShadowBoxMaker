@@ -80,12 +80,17 @@ defined( 'ABSPATH' ) || exit;
 			<div class="wcbp-qa-field">
 				<label><?php esc_html_e( 'Photo', 'woo-barcode-pro' ); ?></label>
 				<div class="wcbp-photo-wrap">
-					<label class="wcbp-photo-btn" for="wcbp-qa-draft-photo">
-						<span class="wcbp-photo-icon">📸</span>
+					<label class="wcbp-photo-btn" for="wcbp-qa-draft-photo-camera">
+						<span class="wcbp-photo-icon">📷</span>
 						<?php esc_html_e( 'Take photo', 'woo-barcode-pro' ); ?>
 					</label>
-					<input id="wcbp-qa-draft-photo" type="file" accept="image/*" capture="environment" style="display:none" />
-					<img id="wcbp-qa-draft-preview" src="" alt="" style="display:none;max-width:100px;max-height:100px;margin-top:8px;border-radius:4px;object-fit:cover;" />
+					<input id="wcbp-qa-draft-photo-camera" type="file" accept="image/*" capture="environment" style="display:none" />
+					<label class="wcbp-photo-btn wcbp-photo-btn--upload" for="wcbp-qa-draft-photo-upload">
+						<span class="wcbp-photo-icon">🖼</span>
+						<?php esc_html_e( 'Upload', 'woo-barcode-pro' ); ?>
+					</label>
+					<input id="wcbp-qa-draft-photo-upload" type="file" accept="image/*" style="display:none" />
+					<img id="wcbp-qa-draft-preview" src="" alt="" style="display:none;max-width:80px;max-height:80px;border-radius:4px;object-fit:cover;" />
 				</div>
 				<div id="wcbp-qa-draft-photo-status" style="font-size:13px;margin-top:4px;"></div>
 			</div>
@@ -150,11 +155,16 @@ defined( 'ABSPATH' ) || exit;
 			<div class="wcbp-qa-field">
 				<label><?php esc_html_e( 'Photo', 'woo-barcode-pro' ); ?></label>
 				<div class="wcbp-photo-wrap">
-					<label class="wcbp-photo-btn" for="wcbp-photo-input">
-						<span class="wcbp-photo-icon">📸</span>
+					<label class="wcbp-photo-btn" for="wcbp-photo-camera">
+						<span class="wcbp-photo-icon">📷</span>
 						<?php esc_html_e( 'Take photo', 'woo-barcode-pro' ); ?>
 					</label>
-					<input id="wcbp-photo-input" type="file" accept="image/*" capture="environment" style="display:none" />
+					<input id="wcbp-photo-camera" type="file" accept="image/*" capture="environment" style="display:none" />
+					<label class="wcbp-photo-btn wcbp-photo-btn--upload" for="wcbp-photo-upload">
+						<span class="wcbp-photo-icon">🖼</span>
+						<?php esc_html_e( 'Upload', 'woo-barcode-pro' ); ?>
+					</label>
+					<input id="wcbp-photo-upload" type="file" accept="image/*" style="display:none" />
 					<img id="wcbp-photo-preview" src="" alt="" />
 				</div>
 				<div id="wcbp-photo-status"></div>
