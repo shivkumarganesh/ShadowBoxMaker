@@ -89,7 +89,7 @@
 	});
 
 	// ── Camera image upload ───────────────────────────────────────────────────
-	$('#wcbp-photo-input').on('change', function () {
+	$('#wcbp-photo-camera, #wcbp-photo-upload').on('change', function () {
 		var file = this.files[0];
 		if (!file) return;
 
@@ -209,7 +209,7 @@
 	}
 
 	// ── Draft publish card ────────────────────────────────────────────────────
-	$('#wcbp-qa-draft-photo').on('change', function () {
+	$('#wcbp-qa-draft-photo-camera, #wcbp-qa-draft-photo-upload').on('change', function () {
 		var file = this.files[0];
 		if (!file) return;
 		var reader = new FileReader();
