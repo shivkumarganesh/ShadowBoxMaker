@@ -78,7 +78,7 @@ defined( 'ABSPATH' ) || exit;
 			<?php endif; ?>
 
 			<div class="wcbp-qa-field">
-				<label><?php esc_html_e( 'Photo', 'woo-barcode-pro' ); ?></label>
+				<label><?php esc_html_e( 'Photos', 'woo-barcode-pro' ); ?> <span style="font-weight:400;color:#999">(<?php esc_html_e( 'up to 5', 'woo-barcode-pro' ); ?>)</span></label>
 				<div class="wcbp-photo-wrap">
 					<label class="wcbp-photo-btn" for="wcbp-qa-draft-photo-camera">
 						<span class="wcbp-photo-icon">📷</span>
@@ -90,8 +90,9 @@ defined( 'ABSPATH' ) || exit;
 						<?php esc_html_e( 'Upload', 'woo-barcode-pro' ); ?>
 					</label>
 					<input id="wcbp-qa-draft-photo-upload" type="file" accept="image/*" style="display:none" />
-					<img id="wcbp-qa-draft-preview" src="" alt="" style="display:none;max-width:80px;max-height:80px;border-radius:4px;object-fit:cover;" />
+					<span class="wcbp-photo-count" id="wcbp-qa-draft-photo-count">0 / 5</span>
 				</div>
+				<div class="wcbp-photo-gallery" id="wcbp-qa-draft-gallery"></div>
 				<div id="wcbp-qa-draft-photo-status" style="font-size:13px;margin-top:4px;"></div>
 			</div>
 
@@ -153,7 +154,7 @@ defined( 'ABSPATH' ) || exit;
 			</div>
 
 			<div class="wcbp-qa-field">
-				<label><?php esc_html_e( 'Photo', 'woo-barcode-pro' ); ?></label>
+				<label><?php esc_html_e( 'Photos', 'woo-barcode-pro' ); ?> <span style="font-weight:400;color:#999">(<?php esc_html_e( 'up to 5', 'woo-barcode-pro' ); ?>)</span></label>
 				<div class="wcbp-photo-wrap">
 					<label class="wcbp-photo-btn" for="wcbp-photo-camera">
 						<span class="wcbp-photo-icon">📷</span>
@@ -165,8 +166,9 @@ defined( 'ABSPATH' ) || exit;
 						<?php esc_html_e( 'Upload', 'woo-barcode-pro' ); ?>
 					</label>
 					<input id="wcbp-photo-upload" type="file" accept="image/*" style="display:none" />
-					<img id="wcbp-photo-preview" src="" alt="" />
+					<span class="wcbp-photo-count" id="wcbp-photo-count">0 / 5</span>
 				</div>
+				<div class="wcbp-photo-gallery" id="wcbp-photo-gallery"></div>
 				<div id="wcbp-photo-status"></div>
 			</div>
 

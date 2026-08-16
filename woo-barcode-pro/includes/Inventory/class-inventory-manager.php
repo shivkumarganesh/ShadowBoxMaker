@@ -304,7 +304,7 @@ class InventoryManager {
 
 		$product_id   = (int) ( $_POST['product_id'] ?? 0 );
 		$name         = sanitize_text_field( wp_unslash( $_POST['name'] ?? '' ) );
-		$image_id     = (int) ( $_POST['image_id'] ?? 0 );
+		$image_ids    = array_filter( array_map( 'intval', (array) ( $_POST['image_ids'] ?? array() ) ) );
 		$category_ids = array_map( 'intval', (array) ( $_POST['category_ids'] ?? array() ) );
 
 		if ( ! $product_id ) {
@@ -323,8 +323,12 @@ class InventoryManager {
 		$product->set_status( 'publish' );
 		$product->set_catalog_visibility( 'visible' );
 
-		if ( $image_id ) {
-			$product->set_image_id( $image_id );
+		if ( ! empty( $image_ids ) ) {
+			$image_ids = array_values( $image_ids );
+			$product->set_image_id( $image_ids[0] );
+			if ( count( $image_ids ) > 1 ) {
+				$product->set_gallery_image_ids( array_slice( $image_ids, 1 ) );
+			}
 		}
 		if ( ! empty( $category_ids ) ) {
 			$product->set_category_ids( $category_ids );
