@@ -180,6 +180,7 @@
 					$('#wcbp-qa-draft-photo-status').text('').removeClass('wcbp-error');
 					$('#wcbp-qa-draft-result').text('').removeClass('wcbp-success wcbp-error');
 					$('#wcbp-qa-publish-btn').prop('disabled', false).text('✓ ' + wcbpQuickAdd.strings.publish_btn);
+					$('#wcbp-qa-draft-stock-qty').val('1');
 					draftPhotos.ids = []; draftPhotos.thumbUrls = {};
 					draftUploading.count = 0;
 					renderGallery(draftPhotos, DRAFT_CFG);
@@ -247,6 +248,7 @@
 			category_ids      : categories,
 			image_ids         : mainPhotos.ids,
 			sku               : $('#wcbp-sku').val(),
+			stock_qty         : parseInt($('#wcbp-stock-qty').val(), 10) || 1,
 			label_template_id : $('#wcbp-template-id').val() || 0,
 		}, function (res) {
 			$('#wcbp-save-btn').prop('disabled', false).text(wcbpQuickAdd.strings.save);
@@ -271,6 +273,7 @@
 		$('#wcbp-qa-draft-categories').val(null);
 		$('#wcbp-barcode-input').val('');
 		$('#wcbp-name, #wcbp-sku, #wcbp-price, #wcbp-template-id').val('');
+		$('#wcbp-stock-qty').val('1');
 		$('#wcbp-scan-status, #wcbp-photo-status').text('').removeClass('wcbp-error wcbp-success');
 		setTimeout(function () { $('#wcbp-result').hide(); }, 3000);
 	}
@@ -291,6 +294,7 @@
 			name         : name,
 			image_ids    : draftPhotos.ids,
 			category_ids : draftCats,
+			stock_qty    : parseInt($('#wcbp-qa-draft-stock-qty').val(), 10) || 1,
 		}, function (res) {
 			$btn.prop('disabled', false).text('✓ ' + wcbpQuickAdd.strings.publish_btn);
 			if (res.success) {

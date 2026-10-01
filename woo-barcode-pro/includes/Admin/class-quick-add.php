@@ -156,6 +156,7 @@ class QuickAdd {
 		$tag_ids      = array_map( 'intval', (array) ( $_POST['tag_ids']      ?? array() ) );
 		$image_ids    = array_filter( array_map( 'intval', (array) ( $_POST['image_ids'] ?? array() ) ) );
 		$sku          = sanitize_text_field( wp_unslash( $_POST['sku'] ?? '' ) );
+		$stock_qty    = max( 0, (int) ( $_POST['stock_qty'] ?? 1 ) );
 		$attributes   = (array) ( $_POST['attributes'] ?? array() );
 		$label_tpl_id = (int) ( $_POST['label_template_id'] ?? 0 );
 
@@ -180,6 +181,11 @@ class QuickAdd {
 				$product->set_gallery_image_ids( array_slice( $image_ids, 1 ) );
 			}
 		}
+
+		// Stock.
+		$product->set_manage_stock( true );
+		$product->set_stock_quantity( $stock_qty );
+		$product->set_stock_status( $stock_qty > 0 ? 'instock' : 'outofstock' );
 		if ( ! empty( $category_ids ) ) {
 			$product->set_category_ids( $category_ids );
 		}
@@ -211,8 +217,8 @@ class QuickAdd {
 			\WCBarcodePro\Barcode\SkuManager::get_instance()->auto_generate_sku( $product_id );
 		}
 
-		// Add to print queue automatically.
-		PrintQueue::get_instance()->add( $product_id, 1, 0, $label_tpl_id );
+		// Add to print queue — one label per unit.
+		PrintQueue::get_instance()->add( $product_id, max( 1, $stock_qty ), 0, $label_tpl_id );
 
 		wp_send_json_success( array(
 			'product_id' => $product_id,
