@@ -306,6 +306,7 @@ class InventoryManager {
 		$name         = sanitize_text_field( wp_unslash( $_POST['name'] ?? '' ) );
 		$image_ids    = array_filter( array_map( 'intval', (array) ( $_POST['image_ids'] ?? array() ) ) );
 		$category_ids = array_map( 'intval', (array) ( $_POST['category_ids'] ?? array() ) );
+		$stock_qty    = max( 0, (int) ( $_POST['stock_qty'] ?? 1 ) );
 
 		if ( ! $product_id ) {
 			wp_send_json_error( array( 'message' => __( 'Invalid product.', 'woo-barcode-pro' ) ) );
@@ -330,6 +331,11 @@ class InventoryManager {
 				$product->set_gallery_image_ids( array_slice( $image_ids, 1 ) );
 			}
 		}
+
+		// Stock.
+		$product->set_manage_stock( true );
+		$product->set_stock_quantity( $stock_qty );
+		$product->set_stock_status( $stock_qty > 0 ? 'instock' : 'outofstock' );
 		if ( ! empty( $category_ids ) ) {
 			$product->set_category_ids( $category_ids );
 		}

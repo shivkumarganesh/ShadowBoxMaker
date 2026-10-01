@@ -66,6 +66,11 @@ defined( 'ABSPATH' ) || exit;
 				       placeholder="<?php esc_attr_e( 'Enter a name for this product…', 'woo-barcode-pro' ); ?>" />
 			</div>
 
+			<div class="wcbp-qa-field wcbp-qa-field--inline">
+				<label for="wcbp-qa-draft-stock-qty"><?php esc_html_e( 'Units in stock', 'woo-barcode-pro' ); ?></label>
+				<input id="wcbp-qa-draft-stock-qty" type="number" min="0" step="1" value="1" class="wcbp-qty-input" />
+			</div>
+
 			<?php if ( ! empty( $categories ) ) : ?>
 			<div class="wcbp-qa-field">
 				<label for="wcbp-qa-draft-categories"><?php esc_html_e( 'Categories', 'woo-barcode-pro' ); ?></label>
@@ -151,6 +156,11 @@ defined( 'ABSPATH' ) || exit;
 			<div class="wcbp-qa-field">
 				<label for="wcbp-sku"><?php esc_html_e( 'SKU', 'woo-barcode-pro' ); ?> <span style="font-weight:400;color:#999">(<?php esc_html_e( 'optional', 'woo-barcode-pro' ); ?>)</span></label>
 				<input id="wcbp-sku" name="sku" type="text" placeholder="<?php esc_attr_e( 'Leave blank to auto-generate', 'woo-barcode-pro' ); ?>" />
+			</div>
+
+			<div class="wcbp-qa-field wcbp-qa-field--inline">
+				<label for="wcbp-stock-qty"><?php esc_html_e( 'Units in stock', 'woo-barcode-pro' ); ?></label>
+				<input id="wcbp-stock-qty" name="stock_qty" type="number" min="0" step="1" value="1" class="wcbp-qty-input" />
 			</div>
 
 			<div class="wcbp-qa-field">
