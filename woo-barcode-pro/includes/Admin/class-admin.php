@@ -177,6 +177,8 @@ class Admin {
 					'creating_n'      => __( 'Creating %n% draft products…', 'woo-barcode-pro' ),
 					'create_btn'      => __( 'Create Draft Products', 'woo-barcode-pro' ),
 					'success'         => __( '%n% draft products created and added to print queue.', 'woo-barcode-pro' ),
+					'success_same'    => __( '1 product created with %n% units in stock and added to print queue.', 'woo-barcode-pro' ),
+					'creating_n_same' => __( 'Creating 1 product with %n% units in stock…', 'woo-barcode-pro' ),
 					'go_to_queue'     => __( 'Go to Print Queue', 'woo-barcode-pro' ),
 					'print_now'       => __( 'Print Now', 'woo-barcode-pro' ),
 					'show_skus'       => __( 'Show generated SKUs', 'woo-barcode-pro' ),
