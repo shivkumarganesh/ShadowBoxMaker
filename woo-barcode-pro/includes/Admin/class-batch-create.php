@@ -41,9 +41,11 @@ class BatchCreate {
 			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'woo-barcode-pro' ) ) );
 		}
 
-		$template_id      = (int) ( $_POST['template_id']      ?? 0 );
-		$quantity         = min( max( (int) ( $_POST['quantity'] ?? 1 ), 1 ), 500 );
-		$label_tpl_id     = (int) ( $_POST['label_template_id'] ?? 0 );
+		$template_id  = (int) ( $_POST['template_id']      ?? 0 );
+		$quantity     = min( max( (int) ( $_POST['quantity'] ?? 1 ), 1 ), 500 );
+		$label_tpl_id = (int) ( $_POST['label_template_id'] ?? 0 );
+		$default_name = sanitize_text_field( wp_unslash( $_POST['default_name'] ?? '' ) );
+		$unique_items = (bool) (int) ( $_POST['unique_items'] ?? 1 );
 
 		if ( ! $template_id ) {
 			wp_send_json_error( array( 'message' => __( 'Please select a price template.', 'woo-barcode-pro' ) ) );
@@ -54,16 +56,57 @@ class BatchCreate {
 			wp_send_json_error( array( 'message' => __( 'Price template not found.', 'woo-barcode-pro' ) ) );
 		}
 
-		$category_ids  = json_decode( $template['category_ids'] ?? '[]', true ) ?: array();
-		$tag_ids       = json_decode( $template['tag_ids']      ?? '[]', true ) ?: array();
-		$price         = (float) $template['price'];
-		$label_tpl_id  = $label_tpl_id ?: (int) ( $template['label_template_id'] ?? 0 );
-		$settings      = \WCBarcodePro\wcbp_settings();
+		$category_ids = json_decode( $template['category_ids'] ?? '[]', true ) ?: array();
+		$tag_ids      = json_decode( $template['tag_ids']      ?? '[]', true ) ?: array();
+		$price        = (float) $template['price'];
+		$label_tpl_id = $label_tpl_id ?: (int) ( $template['label_template_id'] ?? 0 );
+		$settings     = \WCBarcodePro\wcbp_settings();
+		$name_base    = $default_name ?: sprintf( __( 'Draft — %s', 'woo-barcode-pro' ), $template['name'] );
 
+		if ( ! $unique_items ) {
+			// Same items: one product, $quantity units in stock, one shared barcode.
+			$product = new \WC_Product_Simple();
+			$product->set_name( $name_base );
+			$product->set_regular_price( (string) $price );
+			$product->set_status( 'draft' );
+			$product->set_catalog_visibility( 'hidden' );
+			$product->set_manage_stock( true );
+			$product->set_stock_quantity( $quantity );
+			$product->set_stock_status( 'instock' );
+
+			if ( ! empty( $category_ids ) ) {
+				$product->set_category_ids( $category_ids );
+			}
+			if ( ! empty( $tag_ids ) ) {
+				$product->set_tag_ids( $tag_ids );
+			}
+
+			$product_id = $product->save();
+			if ( ! $product_id ) {
+				wp_send_json_error( array( 'message' => __( 'Failed to create product.', 'woo-barcode-pro' ) ) );
+			}
+
+			$sku = '';
+			if ( $settings['auto_sku'] ) {
+				$sku = \WCBarcodePro\Barcode\SkuManager::get_instance()->auto_generate_sku( $product_id );
+			}
+
+			PrintQueue::get_instance()->add( $product_id, $quantity, 0, $label_tpl_id );
+
+			wp_send_json_success( array(
+				'same_items' => true,
+				'created'    => 1,
+				'units'      => $quantity,
+				'products'   => array( array( 'id' => $product_id, 'sku' => $sku ) ),
+				'print_url'  => admin_url( 'admin.php?page=wcbp-print-queue' ),
+			) );
+		}
+
+		// Unique items: N separate draft products, each with its own barcode.
 		$created = array();
 		for ( $i = 0; $i < $quantity; $i++ ) {
 			$product = new \WC_Product_Simple();
-			$product->set_name( sprintf( __( 'Draft — %s', 'woo-barcode-pro' ), $template['name'] ) );
+			$product->set_name( $name_base );
 			$product->set_regular_price( (string) $price );
 			$product->set_status( 'draft' );
 			$product->set_catalog_visibility( 'hidden' );
@@ -97,9 +140,11 @@ class BatchCreate {
 		}
 
 		wp_send_json_success( array(
-			'created'   => count( $created ),
-			'products'  => $created,
-			'print_url' => admin_url( 'admin.php?page=wcbp-print-queue' ),
+			'same_items' => false,
+			'created'    => count( $created ),
+			'units'      => count( $created ),
+			'products'   => $created,
+			'print_url'  => admin_url( 'admin.php?page=wcbp-print-queue' ),
 		) );
 	}
 }

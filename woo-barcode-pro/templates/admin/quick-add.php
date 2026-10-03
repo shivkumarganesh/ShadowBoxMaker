@@ -55,6 +55,20 @@ defined( 'ABSPATH' ) || exit;
 		<div id="wcbp-scan-status"></div>
 		<?php include WCBP_PLUGIN_DIR . 'templates/admin/camera-modal.php'; ?>
 
+		<!-- Draft inventory panel -->
+		<div id="wcbp-draft-panel" style="margin-bottom:16px">
+			<button type="button" id="wcbp-draft-toggle" class="wcbp-draft-toggle">
+				📋 <?php esc_html_e( 'Draft Inventory', 'woo-barcode-pro' ); ?>
+				<span id="wcbp-draft-badge" class="wcbp-queue-count" style="display:none"></span>
+				<span id="wcbp-draft-chevron" style="margin-left:auto;font-size:12px">▾</span>
+			</button>
+			<div id="wcbp-draft-list" style="display:none;background:#fff;border:1px solid #e0e0e0;border-top:none;border-radius:0 0 8px 8px;overflow:hidden">
+				<div id="wcbp-draft-list-inner" style="padding:8px">
+					<p style="margin:8px 4px;font-size:13px;color:#888"><?php esc_html_e( 'Loading…', 'woo-barcode-pro' ); ?></p>
+				</div>
+			</div>
+		</div>
+
 		<!-- Draft product: Scan-to-Publish card -->
 		<div id="wcbp-qa-draft-card" style="display:none;margin:16px 0;padding:18px;background:#fff8e1;border:2px solid #ffe082;border-radius:8px;">
 			<p style="margin:0 0 4px;font-weight:600;color:#92400e;">⚠️ <?php esc_html_e( 'Draft product scanned — complete to publish', 'woo-barcode-pro' ); ?></p>
@@ -211,9 +225,13 @@ window.wcbpQuickAdd = <?php echo wp_json_encode( array(
 		'error'           => __( 'Something went wrong.', 'woo-barcode-pro' ),
 		'no_camera_api'   => __( 'Live scanning not supported on this browser. Please type the barcode manually.', 'woo-barcode-pro' ),
 		'camera_error'    => __( 'Could not access camera:', 'woo-barcode-pro' ),
-		'publish_btn'     => __( 'Publish Product', 'woo-barcode-pro' ),
-		'publishing'      => __( 'Publishing…', 'woo-barcode-pro' ),
-		'published_ok'    => __( 'Product published!', 'woo-barcode-pro' ),
+		'publish_btn'       => __( 'Publish Product', 'woo-barcode-pro' ),
+		'publishing'        => __( 'Publishing…', 'woo-barcode-pro' ),
+		'published_ok'      => __( 'Product published!', 'woo-barcode-pro' ),
+		'no_drafts'         => __( 'No draft products found.', 'woo-barcode-pro' ),
+		'tap_to_complete'   => __( 'Tap to complete & publish', 'woo-barcode-pro' ),
+		'unit'              => __( 'unit', 'woo-barcode-pro' ),
+		'units'             => __( 'units', 'woo-barcode-pro' ),
 	),
 ) ); ?>;
 </script>

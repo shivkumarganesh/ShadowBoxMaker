@@ -62,6 +62,33 @@ defined( 'ABSPATH' ) || exit;
 				</td>
 			</tr>
 			<?php endif; ?>
+			<tr>
+				<th><label for="wcbp-batch-name"><?php esc_html_e( 'Default Name', 'woo-barcode-pro' ); ?></label></th>
+				<td>
+					<input id="wcbp-batch-name" type="text" style="min-width:280px"
+					       placeholder="<?php esc_attr_e( 'Leave blank to use template name', 'woo-barcode-pro' ); ?>" />
+					<p class="description"><?php esc_html_e( 'Printed on the barcode label. All products in this batch will use this name.', 'woo-barcode-pro' ); ?></p>
+				</td>
+			</tr>
+			<tr>
+				<th><?php esc_html_e( 'Item Type', 'woo-barcode-pro' ); ?></th>
+				<td>
+					<fieldset>
+						<label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer">
+							<input id="wcbp-batch-unique" type="checkbox" checked style="margin-top:3px;flex-shrink:0" />
+							<span>
+								<strong><?php esc_html_e( 'Unique items', 'woo-barcode-pro' ); ?></strong><br>
+								<span class="description"><?php esc_html_e( 'Create one product per barcode — scan each to add a photo and publish.', 'woo-barcode-pro' ); ?></span>
+							</span>
+						</label>
+						<div id="wcbp-batch-same-note" style="display:none;margin-top:8px;padding:10px 14px;background:#f0f6fc;border-left:4px solid #2271b1;border-radius:0 4px 4px 0;font-size:13px;line-height:1.5">
+							<?php esc_html_e( 'Same items: creates one product with the shared barcode and sets its stock to', 'woo-barcode-pro' ); ?>
+							<strong id="wcbp-batch-qty-preview">1</strong>
+							<?php esc_html_e( 'units. All labels in the print queue will point to this single product.', 'woo-barcode-pro' ); ?>
+						</div>
+					</fieldset>
+				</td>
+			</tr>
 		</table>
 
 		<p>
@@ -79,6 +106,26 @@ defined( 'ABSPATH' ) || exit;
 		<!-- Result -->
 		<div id="wcbp-batch-result" style="display:none;margin-top:20px"></div>
 	</div>
+
+	<script>
+	(function () {
+		var $unique = document.getElementById('wcbp-batch-unique');
+		var $note   = document.getElementById('wcbp-batch-same-note');
+		var $preview = document.getElementById('wcbp-batch-qty-preview');
+		var $qty    = document.getElementById('wcbp-batch-qty');
+		function syncNote() {
+			var checked = $unique.checked;
+			$note.style.display = checked ? 'none' : 'block';
+			if (!checked && $qty) $preview.textContent = $qty.value || '1';
+		}
+		$unique.addEventListener('change', syncNote);
+		if ($qty) {
+			$qty.addEventListener('input', function () {
+				if (!$unique.checked) $preview.textContent = this.value || '1';
+			});
+		}
+	}());
+	</script>
 
 	<?php endif; ?>
 </div>

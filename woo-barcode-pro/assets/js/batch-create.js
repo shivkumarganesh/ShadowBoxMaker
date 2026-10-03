@@ -3,9 +3,11 @@
 	'use strict';
 
 	$('#wcbp-batch-run').on('click', function () {
-		var templateId = $('#wcbp-batch-template').val();
-		var qty        = parseInt($('#wcbp-batch-qty').val(), 10);
-		var labelTplId = $('#wcbp-batch-label-tpl').val() || 0;
+		var templateId   = $('#wcbp-batch-template').val();
+		var qty          = parseInt($('#wcbp-batch-qty').val(), 10);
+		var labelTplId   = $('#wcbp-batch-label-tpl').val() || 0;
+		var defaultName  = $('#wcbp-batch-name').val().trim();
+		var uniqueItems  = $('#wcbp-batch-unique').is(':checked') ? 1 : 0;
 
 		if (!templateId) {
 			alert(wcbpBatch.strings.select_template);
@@ -20,10 +22,10 @@
 
 		var $btn = $(this).prop('disabled', true).text(wcbpBatch.strings.creating);
 		$('#wcbp-batch-result').hide();
-		$('#wcbp-batch-progress')
-			.show()
-			.find('#wcbp-batch-progress-text')
-			.text(wcbpBatch.strings.creating_n.replace('%n%', qty));
+		var progressMsg = uniqueItems
+			? wcbpBatch.strings.creating_n.replace('%n%', qty)
+			: wcbpBatch.strings.creating_n_same.replace('%n%', qty);
+		$('#wcbp-batch-progress').show().find('#wcbp-batch-progress-text').text(progressMsg);
 
 		$.post(wcbpBatch.ajax_url, {
 			action            : 'wcbp_batch_create',
@@ -31,6 +33,8 @@
 			template_id       : templateId,
 			quantity          : qty,
 			label_template_id : labelTplId,
+			default_name      : defaultName,
+			unique_items      : uniqueItems,
 		}, function (res) {
 			$('#wcbp-batch-progress').hide();
 			$btn.prop('disabled', false).text(wcbpBatch.strings.create_btn);
@@ -42,10 +46,12 @@
 				return;
 			}
 
-			var d = res.data;
-			var html = '<div class="notice notice-success inline"><p>' +
-				wcbpBatch.strings.success.replace('%n%', d.created) +
-				'</p></div>' +
+			var d   = res.data;
+			var msg = d.same_items
+				? wcbpBatch.strings.success_same.replace('%n%', d.units)
+				: wcbpBatch.strings.success.replace('%n%', d.created);
+
+			var html = '<div class="notice notice-success inline"><p>' + msg + '</p></div>' +
 				'<p style="margin-top:12px">' +
 				'<a href="' + escHtml(d.print_url) + '" class="button button-primary">' +
 				wcbpBatch.strings.go_to_queue + '</a>' +

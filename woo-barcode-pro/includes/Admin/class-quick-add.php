@@ -29,6 +29,7 @@ class QuickAdd {
 		add_action( 'admin_init', array( $this, 'maybe_intercept_quick_add' ) );
 		add_action( 'wp_ajax_wcbp_quick_save_product', array( $this, 'ajax_save_product' ) );
 		add_action( 'wp_ajax_wcbp_quick_upload_image',  array( $this, 'ajax_upload_image' ) );
+		add_action( 'wp_ajax_wcbp_qa_get_drafts',       array( $this, 'ajax_get_drafts' ) );
 	}
 
 	public function maybe_intercept_quick_add(): void {
@@ -225,6 +226,39 @@ class QuickAdd {
 			'edit_url'   => get_edit_post_link( $product_id, 'raw' ),
 			'message'    => __( 'Product created and added to print queue.', 'woo-barcode-pro' ),
 		) );
+	}
+
+	public function ajax_get_drafts(): void {
+		check_ajax_referer( 'wcbp_quick_add', 'nonce' );
+		if ( ! \WCBarcodePro\wcbp_current_user_can_manage() ) {
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'woo-barcode-pro' ) ) );
+		}
+
+		$ids = get_posts( array(
+			'post_type'      => 'product',
+			'post_status'    => 'draft',
+			'posts_per_page' => 40,
+			'orderby'        => 'modified',
+			'order'          => 'DESC',
+			'fields'         => 'ids',
+		) );
+
+		$drafts = array();
+		foreach ( $ids as $id ) {
+			$product = wc_get_product( $id );
+			if ( ! $product ) {
+				continue;
+			}
+			$drafts[] = array(
+				'id'    => $id,
+				'name'  => $product->get_name(),
+				'sku'   => $product->get_sku(),
+				'price' => $product->get_regular_price(),
+				'stock' => (int) $product->get_stock_quantity(),
+			);
+		}
+
+		wp_send_json_success( array( 'drafts' => $drafts ) );
 	}
 
 	public function ajax_upload_image(): void {
