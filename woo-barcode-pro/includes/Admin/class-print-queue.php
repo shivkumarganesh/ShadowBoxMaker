@@ -134,6 +134,14 @@ class PrintQueue {
 		);
 	}
 
+	public function remove_pending_row( int $product_id, int $variation_id = 0 ): bool {
+		global $wpdb;
+		return (bool) $wpdb->query( $wpdb->prepare( // phpcs:ignore WordPress.DB
+			"DELETE FROM {$wpdb->prefix}wcbp_print_queue WHERE product_id=%d AND variation_id=%d AND status='pending'",
+			$product_id, $variation_id
+		) );
+	}
+
 	public function on_product_trashed_or_deleted( int $post_id ): void {
 		if ( 'product' !== get_post_type( $post_id ) ) {
 			return;
@@ -164,6 +172,8 @@ class PrintQueue {
 			wp_send_json_error( array( 'message' => __( 'Invalid product.', 'woo-barcode-pro' ) ) );
 		}
 
+		// Replace any existing pending row so the count always reflects what was requested.
+		$this->remove_pending_row( $product_id, $variation_id );
 		$this->add( $product_id, $qty, $variation_id, $label_id );
 		wp_send_json_success( array(
 			'count'   => $this->get_count(),

@@ -280,6 +280,8 @@ class Admin {
 		$svg        = \WCBarcodePro\wcbp_product_barcode_svg( $product_id, 0, array( 'height' => 50, 'module_width' => 1 ) );
 		$value      = \WCBarcodePro\wcbp_barcode_value( $product_id );
 		$ean        = \WCBarcodePro\Barcode\EanManager::get_instance()->get_ean( $product_id );
+		$product    = wc_get_product( $product_id );
+		$stock_qty  = ( $product && $product->managing_stock() ) ? max( 1, (int) $product->get_stock_quantity() ) : 1;
 		wp_nonce_field( 'wcbp_metabox', 'wcbp_metabox_nonce' );
 		?>
 		<div class="wcbp-metabox">
@@ -301,7 +303,9 @@ class Admin {
 			</p>
 
 			<p>
-				<button type="button" class="button wcbp-add-single-queue" data-product-id="<?php echo esc_attr( (string) $product_id ); ?>">
+				<button type="button" class="button wcbp-add-single-queue"
+					data-product-id="<?php echo esc_attr( (string) $product_id ); ?>"
+					data-stock-qty="<?php echo esc_attr( (string) $stock_qty ); ?>">
 					<?php esc_html_e( '+ Add to Print Queue', 'woo-barcode-pro' ); ?>
 				</button>
 			</p>
@@ -346,8 +350,12 @@ class Admin {
 		}
 		$svg = \WCBarcodePro\wcbp_product_barcode_svg( $post_id, 0, array( 'height' => 32, 'module_width' => 1, 'show_text' => false ) );
 		if ( $svg ) {
+			$product   = wc_get_product( $post_id );
+			$stock_qty = ( $product && $product->managing_stock() ) ? max( 1, (int) $product->get_stock_quantity() ) : 1;
 			echo $svg; // phpcs:ignore WordPress.Security
-			echo '<br><button type="button" class="button button-small wcbp-add-single-queue" data-product-id="' . esc_attr( (string) $post_id ) . '">' .
+			echo '<br><button type="button" class="button button-small wcbp-add-single-queue"' .
+				' data-product-id="' . esc_attr( (string) $post_id ) . '"' .
+				' data-stock-qty="' . esc_attr( (string) $stock_qty ) . '">' .
 				esc_html__( '+Queue', 'woo-barcode-pro' ) . '</button>';
 		} else {
 			echo '<span class="wcbp-no-barcode">—</span>';

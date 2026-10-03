@@ -33,11 +33,12 @@
 	$(document).on('click', '.wcbp-add-single-queue', function () {
 		var $btn = $(this);
 		$btn.prop('disabled', true).text(wcbpAdmin.strings.adding);
+		var stockQty = parseInt($btn.data('stock-qty'), 10) || 1;
 		$.post(wcbpAdmin.ajax_url, {
 			action     : 'wcbp_add_to_queue',
 			nonce      : wcbpAdmin.queue_nonce,
 			product_id : $btn.data('product-id'),
-			qty        : 1,
+			qty        : stockQty,
 		}, function (res) {
 			$btn.prop('disabled', false);
 			if (res.success) {
