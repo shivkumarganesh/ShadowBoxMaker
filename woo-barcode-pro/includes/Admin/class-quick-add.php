@@ -218,7 +218,8 @@ class QuickAdd {
 			\WCBarcodePro\Barcode\SkuManager::get_instance()->auto_generate_sku( $product_id );
 		}
 
-		// Add to print queue — one label per unit.
+		// Add to print queue — one label per unit. Clear first to avoid phantom merges.
+		PrintQueue::get_instance()->remove_by_product( $product_id );
 		PrintQueue::get_instance()->add( $product_id, max( 1, $stock_qty ), 0, $label_tpl_id );
 
 		wp_send_json_success( array(
