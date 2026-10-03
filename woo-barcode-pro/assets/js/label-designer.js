@@ -80,8 +80,10 @@
 		var rest   = 100 - ratio;
 		var isHoriz = (layout === 'horizontal');
 
-		var showCompany = $('#wcbp-field-company_name').is(':checked');
-		var companyName = $('#wcbp-mock-company').val() || '';
+		var showCompany     = $('#wcbp-field-company_name').is(':checked');
+		var companyName     = $('#wcbp-mock-company').val() || '';
+		var companyFontSize = parseInt($('#wcbp-company-font-size').val(), 10) || 10;
+		var companyPadding  = parseInt($('#wcbp-company-padding').val(), 10)   || 2;
 		var showName    = $('#wcbp-field-name').is(':checked');
 		var showPrice   = $('#wcbp-field-price').is(':checked');
 		var showSku     = $('#wcbp-field-sku').is(':checked');
@@ -112,7 +114,8 @@
 		// Company name banner
 		var companyHtml = '';
 		if (showCompany && companyName) {
-			companyHtml = '<div style="font-size:6px;font-weight:700;text-align:center;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0">' + esc(companyName) + '</div>';
+			var coStyle = 'font-size:' + companyFontSize + 'px;padding-bottom:' + companyPadding + 'px;font-weight:700;text-align:center;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0';
+			companyHtml = '<div style="' + coStyle + '">' + esc(companyName) + '</div>';
 		}
 
 		// Barcode block
@@ -168,8 +171,8 @@
 		schedulePreview();
 	});
 
-	// Company name text and checkbox — redraw immediately (no barcode change)
-	$('#wcbp-mock-company, #wcbp-field-company_name').on('input change', function () {
+	// Company name text, checkbox, font size, padding — redraw immediately (no barcode change)
+	$('#wcbp-mock-company, #wcbp-field-company_name, #wcbp-company-font-size, #wcbp-company-padding').on('input change', function () {
 		clearTimeout(_barcodeTimer);
 		_barcodeTimer = setTimeout(function () {
 			var val    = $('#wcbp-mock-barcode').val() || $('#wcbp-mock-sku').val() || 'SKU-001';

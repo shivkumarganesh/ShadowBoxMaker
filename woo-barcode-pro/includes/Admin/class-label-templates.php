@@ -57,9 +57,11 @@ class LabelTemplates {
 		$fields_defaults = array( 'name' => true, 'price' => true, 'sku' => true, 'attributes' => false, 'logo' => false, 'custom_meta' => '' );
 		$fields_raw = $data['fields'] ?? array();
 		$fields = array(
-			'company_name'      => ! empty( $fields_raw['company_name'] ),
-			'company_name_text' => sanitize_text_field( $fields_raw['company_name_text'] ?? '' ),
-			'name'              => ! empty( $fields_raw['name'] ),
+			'company_name'             => ! empty( $fields_raw['company_name'] ),
+			'company_name_text'        => sanitize_text_field( $fields_raw['company_name_text'] ?? '' ),
+			'company_name_font_size'   => max( 6, min( 30, (int) ( $fields_raw['company_name_font_size'] ?? 10 ) ) ),
+			'company_name_padding_bottom' => max( 0, min( 20, (int) ( $fields_raw['company_name_padding_bottom'] ?? 2 ) ) ),
+			'name'                     => ! empty( $fields_raw['name'] ),
 			'price'             => ! empty( $fields_raw['price'] ),
 			'sku'               => ! empty( $fields_raw['sku'] ),
 			'attributes'        => ! empty( $fields_raw['attributes'] ),

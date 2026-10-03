@@ -168,6 +168,20 @@ defined( 'ABSPATH' ) || exit;
 									class="regular-text"
 									placeholder="<?php esc_attr_e( 'Your Company Name', 'woo-barcode-pro' ); ?>" />
 							</div>
+							<div class="wcbp-field-row" id="wcbp-company-settings" style="padding-left:28px;gap:16px;margin-top:4px">
+								<label style="font-weight:400;color:#555;font-size:12px;white-space:nowrap" for="wcbp-company-font-size">
+									<?php esc_html_e( 'Font size (px)', 'woo-barcode-pro' ); ?>
+								</label>
+								<input type="number" name="fields[company_name_font_size]" id="wcbp-company-font-size"
+									value="<?php echo esc_attr( $f['company_name_font_size'] ?? 10 ); ?>"
+									min="6" max="30" style="width:64px" />
+								<label style="font-weight:400;color:#555;font-size:12px;white-space:nowrap" for="wcbp-company-padding">
+									<?php esc_html_e( 'Padding below (px)', 'woo-barcode-pro' ); ?>
+								</label>
+								<input type="number" name="fields[company_name_padding_bottom]" id="wcbp-company-padding"
+									value="<?php echo esc_attr( $f['company_name_padding_bottom'] ?? 2 ); ?>"
+									min="0" max="20" style="width:64px" />
+							</div>
 							<?php
 							$field_labels = array(
 								'name'       => __( 'Product name', 'woo-barcode-pro' ),
