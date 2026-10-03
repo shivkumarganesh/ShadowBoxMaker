@@ -31,6 +31,14 @@ class PluginUpdater {
 		add_filter( 'plugins_api', array( $this, 'plugins_api_details' ), 20, 3 );
 		add_action( 'upgrader_process_complete', array( $this, 'purge_cache' ), 10, 2 );
 		add_filter( 'plugin_row_meta', array( $this, 'filter_row_meta' ), 10, 2 );
+		add_action( 'wp_ajax_wcbp_force_update_check', array( $this, 'ajax_force_check' ) );
+		// Handle force-check redirect (non-AJAX fallback).
+		if ( isset( $_GET['wcbp_force_check'] ) && check_admin_referer( 'wcbp_force_check' ) ) {
+			delete_transient( self::CACHE_KEY );
+			delete_site_transient( 'update_plugins' );
+			wp_safe_redirect( self_admin_url( 'plugins.php' ) );
+			exit;
+		}
 	}
 
 	private function plugin_basename(): string {
@@ -143,13 +151,26 @@ class PluginUpdater {
 		}
 	}
 
-	public function filter_row_meta( array $plugin_meta, string $plugin_file ): array {
-		if ( $this->plugin_basename() === $plugin_file ) {
-			$metadata = $this->get_remote_metadata();
-			if ( null !== $metadata && ! empty( $metadata['homepage'] ) ) {
-				$plugin_meta[] = '<a href="' . esc_url( $metadata['homepage'] ) . '" target="_blank">' . esc_html__( 'Changelog', 'woo-barcode-pro' ) . '</a>';
-			}
+	public function ajax_force_check(): void {
+		check_ajax_referer( 'wcbp_force_check', 'nonce' );
+		if ( ! current_user_can( 'update_plugins' ) ) {
+			wp_send_json_error();
 		}
+		delete_transient( self::CACHE_KEY );
+		delete_site_transient( 'update_plugins' );
+		wp_send_json_success();
+	}
+
+	public function filter_row_meta( array $plugin_meta, string $plugin_file ): array {
+		if ( $this->plugin_basename() !== $plugin_file ) {
+			return $plugin_meta;
+		}
+		$metadata = $this->get_remote_metadata();
+		if ( null !== $metadata && ! empty( $metadata['homepage'] ) ) {
+			$plugin_meta[] = '<a href="' . esc_url( $metadata['homepage'] ) . '" target="_blank">' . esc_html__( 'Changelog', 'woo-barcode-pro' ) . '</a>';
+		}
+		$check_url = wp_nonce_url( self_admin_url( 'plugins.php?wcbp_force_check=1' ), 'wcbp_force_check' );
+		$plugin_meta[] = '<a href="' . esc_url( $check_url ) . '">' . esc_html__( 'Check for updates', 'woo-barcode-pro' ) . '</a>';
 		return $plugin_meta;
 	}
 }
