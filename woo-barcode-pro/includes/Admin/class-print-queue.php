@@ -172,8 +172,10 @@ class PrintQueue {
 			wp_send_json_error( array( 'message' => __( 'Invalid product.', 'woo-barcode-pro' ) ) );
 		}
 
-		// Replace any existing pending row so the count always reflects what was requested.
-		$this->remove_pending_row( $product_id, $variation_id );
+		// "Add Stock To Print" sends replace=1 to set the count; "+1" omits it to merge.
+		if ( ! empty( $_POST['replace'] ) ) {
+			$this->remove_pending_row( $product_id, $variation_id );
+		}
 		$this->add( $product_id, $qty, $variation_id, $label_id );
 		wp_send_json_success( array(
 			'count'   => $this->get_count(),

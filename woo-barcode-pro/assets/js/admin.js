@@ -29,8 +29,8 @@
 		});
 	});
 
-	// ── "Add to Queue" button on product list ─────────────────────────────────
-	$(document).on('click', '.wcbp-add-single-queue', function () {
+	// ── "Add Stock To Print" — replaces queue entry with current stock qty ────
+	$(document).on('click', '.wcbp-add-stock-queue', function () {
 		var $btn = $(this);
 		$btn.prop('disabled', true).text(wcbpAdmin.strings.adding);
 		var stockQty = parseInt($btn.data('stock-qty'), 10) || 1;
@@ -39,6 +39,7 @@
 			nonce      : wcbpAdmin.queue_nonce,
 			product_id : $btn.data('product-id'),
 			qty        : stockQty,
+			replace    : 1,
 		}, function (res) {
 			$btn.prop('disabled', false);
 			if (res.success) {
@@ -46,6 +47,29 @@
 				$('.wcbp-queue-count').text(res.data.count);
 			} else {
 				$btn.text(wcbpAdmin.strings.error);
+			}
+		});
+	});
+
+	// ── "Add to Queue +1" — increments existing queue entry by 1 ─────────────
+	$(document).on('click', '.wcbp-add-one-queue', function () {
+		var $btn = $(this);
+		var origText = $btn.text();
+		$btn.prop('disabled', true).text(wcbpAdmin.strings.adding);
+		$.post(wcbpAdmin.ajax_url, {
+			action     : 'wcbp_add_to_queue',
+			nonce      : wcbpAdmin.queue_nonce,
+			product_id : $btn.data('product-id'),
+			qty        : 1,
+		}, function (res) {
+			$btn.prop('disabled', false);
+			if (res.success) {
+				$btn.text(wcbpAdmin.strings.added_one);
+				$('.wcbp-queue-count').text(res.data.count);
+				setTimeout(function () { $btn.text(origText); }, 2000);
+			} else {
+				$btn.text(wcbpAdmin.strings.error);
+				setTimeout(function () { $btn.text(origText); }, 2000);
 			}
 		});
 	});

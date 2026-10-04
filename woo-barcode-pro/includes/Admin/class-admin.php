@@ -81,6 +81,7 @@ class Admin {
 				'strings'    => array(
 					'adding'          => __( 'Adding…', 'woo-barcode-pro' ),
 					'added'           => __( 'Added!', 'woo-barcode-pro' ),
+					'added_one'       => __( '+1 Added!', 'woo-barcode-pro' ),
 					'error'           => __( 'Error', 'woo-barcode-pro' ),
 					'select_products' => __( 'Please select products first.', 'woo-barcode-pro' ),
 				),
@@ -302,11 +303,15 @@ class Admin {
 					class="widefat" />
 			</p>
 
-			<p>
-				<button type="button" class="button wcbp-add-single-queue"
+			<p style="display:flex;gap:6px;flex-wrap:wrap;">
+				<button type="button" class="button wcbp-add-stock-queue"
 					data-product-id="<?php echo esc_attr( (string) $product_id ); ?>"
 					data-stock-qty="<?php echo esc_attr( (string) $stock_qty ); ?>">
-					<?php esc_html_e( '+ Add to Print Queue', 'woo-barcode-pro' ); ?>
+					<?php esc_html_e( 'Add Stock To Print', 'woo-barcode-pro' ); ?>
+				</button>
+				<button type="button" class="button wcbp-add-one-queue"
+					data-product-id="<?php echo esc_attr( (string) $product_id ); ?>">
+					<?php esc_html_e( 'Add to Queue +1', 'woo-barcode-pro' ); ?>
 				</button>
 			</p>
 		</div>
@@ -353,10 +358,13 @@ class Admin {
 			$product   = wc_get_product( $post_id );
 			$stock_qty = ( $product && $product->managing_stock() ) ? max( 1, (int) $product->get_stock_quantity() ) : 1;
 			echo $svg; // phpcs:ignore WordPress.Security
-			echo '<br><button type="button" class="button button-small wcbp-add-single-queue"' .
+			echo '<br><button type="button" class="button button-small wcbp-add-stock-queue"' .
 				' data-product-id="' . esc_attr( (string) $post_id ) . '"' .
 				' data-stock-qty="' . esc_attr( (string) $stock_qty ) . '">' .
-				esc_html__( '+Queue', 'woo-barcode-pro' ) . '</button>';
+				esc_html__( 'Add Stock To Print', 'woo-barcode-pro' ) . '</button>' .
+				'&nbsp;<button type="button" class="button button-small wcbp-add-one-queue"' .
+				' data-product-id="' . esc_attr( (string) $post_id ) . '">' .
+				esc_html__( '+1', 'woo-barcode-pro' ) . '</button>';
 		} else {
 			echo '<span class="wcbp-no-barcode">—</span>';
 		}
