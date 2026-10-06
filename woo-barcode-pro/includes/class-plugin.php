@@ -55,6 +55,7 @@ class Plugin {
 		Integration\OrderQueue::get_instance()->register_hooks();
 		Inventory\InventoryManager::get_instance()->register_hooks();
 		Admin\BatchCreate::get_instance()->register_hooks();
+		Admin\StockView::get_instance()->register_hooks();
 	}
 
 	public static function get_default_settings(): array {

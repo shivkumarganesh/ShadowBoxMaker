@@ -53,6 +53,7 @@ class Admin {
 		add_submenu_page( 'wcbp-settings', __( 'Quick Add', 'woo-barcode-pro' ),        __( '📱 Quick Add', 'woo-barcode-pro' ),    'manage_woocommerce', 'wcbp-quick-add',        array( QuickAdd::get_instance(),      'render_page' ) );
 		add_submenu_page( 'wcbp-settings', __( 'Inventory', 'woo-barcode-pro' ),       __( 'Inventory', 'woo-barcode-pro' ),       'manage_woocommerce', 'wcbp-inventory',        array( \WCBarcodePro\Inventory\InventoryManager::get_instance(), 'render_page' ) );
 		add_submenu_page( 'wcbp-settings', __( 'Batch Create', 'woo-barcode-pro' ),    __( '⚡ Batch Create', 'woo-barcode-pro' ),  'manage_woocommerce', 'wcbp-batch-create',     array( BatchCreate::get_instance(), 'render_page' ) );
+		add_submenu_page( 'wcbp-settings', __( 'Stock View', 'woo-barcode-pro' ),      __( '📦 Stock View', 'woo-barcode-pro' ),    'manage_woocommerce', 'wcbp-stock-view',        array( StockView::get_instance(),   'render_page' ) );
 		// Tutorial — hidden from nav but accessible via URL.
 		add_submenu_page( null,            __( 'Tutorial', 'woo-barcode-pro' ),         __( 'Tutorial', 'woo-barcode-pro' ),         'manage_woocommerce', 'wcbp-tutorial',         array( Tutorial::get_instance(),      'render_page' ) );
 		// Print page — hidden, full-screen.
@@ -67,7 +68,7 @@ class Admin {
 
 		wp_enqueue_style( 'wcbp-admin', WCBP_PLUGIN_URL . 'assets/css/admin.css', array(), WCBP_VERSION );
 
-		$wcbp_pages  = array( 'wcbp-settings', 'wcbp-label-templates', 'wcbp-price-templates', 'wcbp-print-queue', 'wcbp-quick-add', 'wcbp-tutorial', 'wcbp-print', 'wcbp-inventory', 'wcbp-batch-create' );
+		$wcbp_pages  = array( 'wcbp-settings', 'wcbp-label-templates', 'wcbp-price-templates', 'wcbp-print-queue', 'wcbp-quick-add', 'wcbp-tutorial', 'wcbp-print', 'wcbp-inventory', 'wcbp-batch-create', 'wcbp-stock-view' );
 		$page        = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : ''; // phpcs:ignore WordPress.Security
 		$on_product  = 'product' === $screen->post_type && in_array( $screen->base, array( 'post', 'edit' ), true );
 
