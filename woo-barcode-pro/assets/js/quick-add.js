@@ -244,7 +244,7 @@
 				barcodeScanned = value;
 				priceFromTpl   = parseFloat(d.template.price) || 0;
 				$('#wcbp-price').val(priceFromTpl.toFixed(2));
-				$('#wcbp-template-id').val(d.template.id);
+				$('#wcbp-template-id').val(d.template.label_template_id || 0);
 				if (d.template.category_ids && d.template.category_ids.length) {
 					$('#wcbp-categories').val(d.template.category_ids).trigger('change');
 				}
