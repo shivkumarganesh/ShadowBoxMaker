@@ -218,6 +218,11 @@ class QuickAdd {
 			\WCBarcodePro\Barcode\SkuManager::get_instance()->auto_generate_sku( $product_id );
 		}
 
+		// Persist label template so future queue additions (buttons, bulk) use the same layout.
+		if ( $label_tpl_id ) {
+			update_post_meta( $product_id, '_wcbp_label_template_id', $label_tpl_id );
+		}
+
 		// Add to print queue — one label per unit. Clear first to avoid phantom merges.
 		PrintQueue::get_instance()->remove_by_product( $product_id );
 		PrintQueue::get_instance()->add( $product_id, max( 1, $stock_qty ), 0, $label_tpl_id );

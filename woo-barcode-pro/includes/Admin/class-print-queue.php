@@ -115,10 +115,12 @@ class PrintQueue {
 	}
 
 	public function handle_bulk_add( array $product_ids ): int {
-		$count    = 0;
-		$label_id = (int) ( LabelTemplates::get_instance()->get_default()['id'] ?? 0 );
+		$count         = 0;
+		$default_label = (int) ( LabelTemplates::get_instance()->get_default()['id'] ?? 0 );
 		foreach ( $product_ids as $pid ) {
-			if ( $this->add( (int) $pid, 1, 0, $label_id ) ) {
+			$pid      = (int) $pid;
+			$label_id = (int) get_post_meta( $pid, '_wcbp_label_template_id', true ) ?: $default_label;
+			if ( $this->add( $pid, 1, 0, $label_id ) ) {
 				$count++;
 			}
 		}
@@ -170,6 +172,11 @@ class PrintQueue {
 
 		if ( ! $product_id ) {
 			wp_send_json_error( array( 'message' => __( 'Invalid product.', 'woo-barcode-pro' ) ) );
+		}
+
+		// Fall back to the product's stored label template when none is explicitly passed.
+		if ( ! $label_id ) {
+			$label_id = (int) get_post_meta( $product_id, '_wcbp_label_template_id', true );
 		}
 
 		// "Add Stock To Print" sends replace=1 to set the count; "+1" omits it to merge.

@@ -277,12 +277,14 @@ class Admin {
 	}
 
 	public function render_product_metabox( \WP_Post $post ): void {
-		$product_id = $post->ID;
-		$svg        = \WCBarcodePro\wcbp_product_barcode_svg( $product_id, 0, array( 'height' => 50, 'module_width' => 1 ) );
-		$value      = \WCBarcodePro\wcbp_barcode_value( $product_id );
-		$ean        = \WCBarcodePro\Barcode\EanManager::get_instance()->get_ean( $product_id );
-		$product    = wc_get_product( $product_id );
-		$stock_qty  = ( $product && $product->managing_stock() ) ? max( 1, (int) $product->get_stock_quantity() ) : 1;
+		$product_id         = $post->ID;
+		$svg                = \WCBarcodePro\wcbp_product_barcode_svg( $product_id, 0, array( 'height' => 50, 'module_width' => 1 ) );
+		$value              = \WCBarcodePro\wcbp_barcode_value( $product_id );
+		$ean                = \WCBarcodePro\Barcode\EanManager::get_instance()->get_ean( $product_id );
+		$product            = wc_get_product( $product_id );
+		$stock_qty          = ( $product && $product->managing_stock() ) ? max( 1, (int) $product->get_stock_quantity() ) : 1;
+		$saved_label_tpl_id = (int) get_post_meta( $product_id, '_wcbp_label_template_id', true );
+		$label_templates    = LabelTemplates::get_instance()->get_all();
 		wp_nonce_field( 'wcbp_metabox', 'wcbp_metabox_nonce' );
 		?>
 		<div class="wcbp-metabox">
@@ -302,6 +304,20 @@ class Admin {
 					placeholder="<?php esc_attr_e( 'Optional EAN-13 or custom', 'woo-barcode-pro' ); ?>"
 					class="widefat" />
 			</p>
+
+			<?php if ( ! empty( $label_templates ) ) : ?>
+			<p>
+				<label for="wcbp_label_template_id"><strong><?php esc_html_e( 'Label Template', 'woo-barcode-pro' ); ?></strong></label>
+				<select name="wcbp_label_template_id" id="wcbp_label_template_id" style="width:100%;margin-top:4px;">
+					<option value="0"><?php esc_html_e( '— Default template —', 'woo-barcode-pro' ); ?></option>
+					<?php foreach ( $label_templates as $lt ) : ?>
+						<option value="<?php echo esc_attr( $lt['id'] ); ?>" <?php selected( $saved_label_tpl_id, (int) $lt['id'] ); ?>>
+							<?php echo esc_html( $lt['name'] ); ?>
+						</option>
+					<?php endforeach; ?>
+				</select>
+			</p>
+			<?php endif; ?>
 
 			<p style="display:flex;gap:6px;flex-wrap:wrap;">
 				<button type="button" class="button wcbp-add-stock-queue"
@@ -334,6 +350,14 @@ class Admin {
 				update_post_meta( $product_id, \WCBarcodePro\Barcode\EanManager::META_KEY, $ean );
 			} else {
 				delete_post_meta( $product_id, \WCBarcodePro\Barcode\EanManager::META_KEY );
+			}
+		}
+		if ( isset( $_POST['wcbp_label_template_id'] ) ) {
+			$tpl_id = (int) $_POST['wcbp_label_template_id'];
+			if ( $tpl_id > 0 ) {
+				update_post_meta( $product_id, '_wcbp_label_template_id', $tpl_id );
+			} else {
+				delete_post_meta( $product_id, '_wcbp_label_template_id' );
 			}
 		}
 	}
