@@ -3,6 +3,7 @@
 	'use strict';
 
 	var presets       = wcbpDesigner.presets || {};
+	var LINEAR        = { code128: true, itf14: true };
 	var _barcodeCache = {};
 	var _barcodeTimer = null;
 
@@ -45,7 +46,7 @@
 			nonce       : wcbpDesigner.nonce,
 			value       : value,
 			symbology   : params.sym,
-			show_text   : params.showText,
+			show_text   : LINEAR[params.sym] ? '0' : params.showText,
 			module_width: params.mw,
 			color       : params.color,
 			bc_height   : params.height,
@@ -69,6 +70,40 @@
 	// Minimal XSS escape for text inserted as innerHTML.
 	function esc(str) {
 		return $('<span>').text(String(str)).html();
+	}
+
+	var BC_PLACEHOLDER = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#f5f5f5;color:#bbb;font-size:9px;font-family:monospace">▊▋▊▌▋▊▋</div>';
+
+	// Mirrors LabelRenderer::barcode_html() + BarcodeGenerator::svg_open() so preview == print.
+	function barcodeBlock(svg, availIn) {
+		if (!svg) { return BC_PLACEHOLDER; }
+		var p  = getBarcodeParams();
+		var vb = /viewBox="0 0 (\d+) (\d+)"/.exec(svg);
+		if (!vb) { return responsiveSvg(svg); }
+
+		var vbW = parseInt(vb[1], 10), vbH = parseInt(vb[2], 10);
+		var modules = vbW / (parseInt(p.mw, 10) || 2);
+		var avail = Math.max(0.2, availIn - 0.02);
+		var moduleIn = avail / Math.max(1, modules);
+		var steps = [0.02, 0.01, 1 / 150];
+		for (var i = 0; i < steps.length; i++) {
+			if (modules * steps[i] <= avail) { moduleIn = steps[i]; break; }
+		}
+		var wPx = modules * moduleIn * 96;
+		var linear = !!LINEAR[p.sym];
+		var textInSvg = !linear && p.showText === '1';
+
+		svg = svg
+			.replace(/(<svg[^>]*?)\swidth="[^"]*"/, '$1 width="' + wPx.toFixed(2) + 'px"')
+			.replace(/(<svg[^>]*?)\sheight="[^"]*"/, '$1 height="' + (textInSvg ? (wPx * vbH / vbW).toFixed(2) + 'px' : '100%') + '"')
+			.replace('<svg ', '<svg style="display:block;max-width:100%;min-height:0;flex:' + (textInSvg ? '0 1 auto' : '1 1 0') + '"' + (textInSvg ? '' : ' preserveAspectRatio="none"') + ' ');
+
+		var text = '';
+		if (linear && p.showText === '1') {
+			var val = $('#wcbp-mock-barcode').val() || $('#wcbp-mock-sku').val() || 'SKU-001';
+			text = '<div style="font:6pt/1.1 \'Courier New\',monospace;letter-spacing:.5px;flex-shrink:0;padding-top:1px">' + esc(val) + '</div>';
+		}
+		return '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;min-height:0">' + svg + text + '</div>';
 	}
 
 	// ── Preview renderer ─────────────────────────────────────────────────────
@@ -111,10 +146,11 @@
 				background : '#fff',
 				border     : '1px solid #c3c4c7',
 				boxSizing  : 'border-box',
-				padding    : '0',
+				padding    : '1px 3px',
 				display    : 'block',
 			});
 
+			var innerIn = Math.max(0.25, w - 6 / 96);
 			var vHtml = '';
 			vEls.forEach(function (el) {
 				if (!el.visible) { return; }
@@ -124,9 +160,7 @@
 
 				if (el.id === 'barcode') {
 					style  += 'display:flex;align-items:center;justify-content:center;';
-					content = barcodeSvg
-						? responsiveSvg(barcodeSvg)
-						: '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#f5f5f5;color:#bbb;font-size:9px;font-family:monospace">▊▋▊▌▋▊▋</div>';
+					content = barcodeBlock(barcodeSvg, innerIn * el.w / 100);
 				} else {
 					style  += 'font-size:' + (el.fontSize || 8) + 'pt;font-weight:' + (el.bold ? '700' : '400') + ';text-align:' + (el.align || 'left') + ';display:flex;align-items:center;justify-content:' + jc + ';font-family:Arial,sans-serif;';
 					if      (el.id === 'company') { content = esc(companyName || ''); }
@@ -137,7 +171,7 @@
 				vHtml += '<div style="' + style + '">' + content + '</div>';
 			});
 
-			$prev.html(vHtml);
+			$prev.html('<div style="position:relative;width:100%;height:100%;overflow:hidden">' + vHtml + '</div>');
 			return;
 		}
 
@@ -150,7 +184,7 @@
 			alignItems   : 'stretch',
 			background   : '#fff',
 			border       : '1px solid #c3c4c7',
-			padding      : '4px',
+			padding      : '1px 3px',
 			boxSizing    : 'border-box',
 			overflow     : 'hidden',
 			gap          : '2px',
@@ -163,15 +197,11 @@
 			companyHtml = '<div style="' + coStyle + '">' + esc(companyName) + '</div>';
 		}
 
-		// Barcode block
-		var barcodeContent;
-		if (barcodeSvg) {
-			barcodeContent = responsiveSvg(barcodeSvg);
-		} else {
-			barcodeContent = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#f5f5f5;color:#bbb;font-size:9px;font-family:monospace">▊▋▊▌▋▊▋</div>';
-		}
+		// Barcode block — available width matches LabelRenderer (label minus 3px side padding)
+		var innerW = Math.max(0.25, w - 6 / 96);
+		var barcodeContent = barcodeBlock(barcodeSvg, isHoriz ? innerW * ratio / 100 : innerW);
 		var bcFlex = isHoriz
-			? 'flex:' + ratio + ' 0 0%;min-width:0;height:100%;'
+			? 'flex:' + ratio + ' 0 0%;min-width:0;align-self:stretch;'
 			: 'flex:' + ratio + ' 0 0%;min-height:0;width:100%;';
 		var barcodeHtml = '<div style="' + bcFlex + 'overflow:hidden;display:flex;align-items:center;justify-content:center;">' + barcodeContent + '</div>';
 

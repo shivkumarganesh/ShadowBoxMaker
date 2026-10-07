@@ -78,7 +78,8 @@ class LabelRenderer {
 
 		$bc_opts_raw = $tpl['barcode_options'] ?? null;
 		$bc_opts     = ( $bc_opts_raw && is_string( $bc_opts_raw ) ) ? (array) json_decode( $bc_opts_raw, true ) : array();
-		$barcode_svg  = \WCBarcodePro\wcbp_product_barcode_svg( $product_id, $variation_id, $bc_opts );
+		// Label content width: label width minus 3px left/right padding (see .wcbp-label in print.css).
+		$inner_w_in   = max( 0.25, (float) ( $tpl['width_in'] ?? 2.625 ) - 6 / 96 );
 		$raw_name     = $item['product_name'] ?? '';
 		$raw_name     = mb_strlen( $raw_name ) > 12 ? mb_substr( $raw_name, 0, 12 ) . '…' : $raw_name;
 		$product_name = esc_html( $raw_name );
@@ -143,7 +144,8 @@ class LabelRenderer {
 				$eh    = (float) ( $el['h'] ?? 50 );
 				$fs    = max( 6, min( 24, (int) ( $el['fontSize'] ?? 8 ) ) );
 				$fw    = ! empty( $el['bold'] ) ? '700' : '400';
-				$align = in_array( $el['align'] ?? 'left', array( 'left', 'center', 'right' ), true ) ? $el['align'] : 'left';
+				$align = $el['align'] ?? 'left';
+				$align = in_array( $align, array( 'left', 'center', 'right' ), true ) ? $align : 'left';
 				$jc    = $align === 'right' ? 'flex-end' : ( $align === 'center' ? 'center' : 'flex-start' );
 
 				$style = sprintf(
@@ -160,7 +162,7 @@ class LabelRenderer {
 				echo '<div style="' . esc_attr( $style ) . '">';
 				switch ( $type ) {
 					case 'barcode':
-						echo $barcode_svg; // phpcs:ignore WordPress.Security
+						echo $this->barcode_html( $product_id, $variation_id, $bc_opts, $inner_w_in * $ew / 100 ); // phpcs:ignore WordPress.Security
 						break;
 					case 'company':
 						echo esc_html( $fields['company_name_text'] ?? '' );
@@ -184,7 +186,9 @@ class LabelRenderer {
 			return ob_get_clean();
 		}
 
-		$info_ratio = 100 - $barcode_ratio;
+		$info_ratio  = 100 - $barcode_ratio;
+		$bc_avail_in = 'horizontal' === ( $tpl['layout'] ?? 'vertical' ) ? $inner_w_in * $barcode_ratio / 100 : $inner_w_in;
+		$barcode_svg = $this->barcode_html( $product_id, $variation_id, $bc_opts, $bc_avail_in );
 
 		ob_start();
 		?>
@@ -217,5 +221,31 @@ class LabelRenderer {
 		</div>
 		<?php
 		return ob_get_clean();
+	}
+
+	/**
+	 * Barcode sized for print: fixed physical bar width, bars stretched to the box height,
+	 * human-readable text (linear codes) drawn as HTML so it never distorts.
+	 */
+	private function barcode_html( int $product_id, int $variation_id, array $bc_opts, float $avail_in ): string {
+		$symbology = strtolower( $bc_opts['symbology'] ?? (string) \WCBarcodePro\wcbp_get_setting( 'symbology', 'code128' ) );
+		$show_text = (bool) ( $bc_opts['show_text'] ?? \WCBarcodePro\wcbp_get_setting( 'show_text', true ) );
+		$linear    = ! in_array( $symbology, array( 'ean13', 'upca' ), true );
+
+		$bc_opts['print_width_in'] = max( 0.2, $avail_in - 0.02 );
+		if ( $linear ) {
+			$bc_opts['show_text'] = false;
+		}
+
+		$svg = \WCBarcodePro\wcbp_product_barcode_svg( $product_id, $variation_id, $bc_opts );
+		if ( '' === $svg ) {
+			return '';
+		}
+
+		$text = '';
+		if ( $linear && $show_text ) {
+			$text = '<div class="wcbp-bc-text">' . esc_html( \WCBarcodePro\wcbp_barcode_value( $product_id, $variation_id ) ) . '</div>';
+		}
+		return '<div class="wcbp-bc">' . $svg . $text . '</div>';
 	}
 }
