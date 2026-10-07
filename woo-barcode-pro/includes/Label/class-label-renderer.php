@@ -78,7 +78,7 @@ class LabelRenderer {
 
 		$bc_opts_raw = $tpl['barcode_options'] ?? null;
 		$bc_opts     = ( $bc_opts_raw && is_string( $bc_opts_raw ) ) ? (array) json_decode( $bc_opts_raw, true ) : array();
-		$barcode_svg = \WCBarcodePro\wcbp_product_barcode_svg( $product_id, $variation_id, $bc_opts );
+		$barcode_svg  = \WCBarcodePro\wcbp_product_barcode_svg( $product_id, $variation_id, $bc_opts );
 		$raw_name     = $item['product_name'] ?? '';
 		$raw_name     = mb_strlen( $raw_name ) > 12 ? mb_substr( $raw_name, 0, 12 ) . '…' : $raw_name;
 		$product_name = esc_html( $raw_name );
@@ -122,6 +122,66 @@ class LabelRenderer {
 			if ( $parts ) {
 				$attr_html = '<span class="wcbp-label-attrs">' . implode( ' | ', $parts ) . '</span>';
 			}
+		}
+
+		// ── Visual (drag-and-drop) layout ────────────────────────────────────────
+		if ( 'visual' === ( $tpl['layout'] ?? '' ) ) {
+			$elements = $fields['visual_elements'] ?? array();
+			if ( empty( $elements ) ) {
+				return '<div class="wcbp-label-visual-empty">No visual layout.</div>';
+			}
+			ob_start();
+			echo '<div class="wcbp-label-visual">';
+			foreach ( $elements as $el ) {
+				if ( empty( $el['visible'] ) ) {
+					continue;
+				}
+				$type  = $el['id'] ?? '';
+				$ex    = (float) ( $el['x'] ?? 0 );
+				$ey    = (float) ( $el['y'] ?? 0 );
+				$ew    = (float) ( $el['w'] ?? 50 );
+				$eh    = (float) ( $el['h'] ?? 50 );
+				$fs    = max( 6, min( 24, (int) ( $el['fontSize'] ?? 8 ) ) );
+				$fw    = ! empty( $el['bold'] ) ? '700' : '400';
+				$align = in_array( $el['align'] ?? 'left', array( 'left', 'center', 'right' ), true ) ? $el['align'] : 'left';
+				$jc    = $align === 'right' ? 'flex-end' : ( $align === 'center' ? 'center' : 'flex-start' );
+
+				$style = sprintf(
+					'position:absolute;left:%.1f%%;top:%.1f%%;width:%.1f%%;height:%.1f%%;overflow:hidden;box-sizing:border-box;',
+					$ex, $ey, $ew, $eh
+				);
+
+				if ( 'barcode' !== $type ) {
+					$style .= "font-size:{$fs}pt;font-weight:{$fw};text-align:{$align};display:flex;align-items:center;justify-content:{$jc};";
+				} else {
+					$style .= 'display:flex;align-items:center;justify-content:center;';
+				}
+
+				echo '<div style="' . esc_attr( $style ) . '">';
+				switch ( $type ) {
+					case 'barcode':
+						echo $barcode_svg; // phpcs:ignore WordPress.Security
+						break;
+					case 'company':
+						echo esc_html( $fields['company_name_text'] ?? '' );
+						break;
+					case 'name':
+						echo $product_name; // phpcs:ignore WordPress.Security
+						break;
+					case 'price':
+						echo $price_html; // phpcs:ignore WordPress.Security
+						break;
+					case 'sku':
+						echo $sku; // phpcs:ignore WordPress.Security
+						break;
+					case 'logo':
+						echo $logo_html; // phpcs:ignore WordPress.Security
+						break;
+				}
+				echo '</div>';
+			}
+			echo '</div>';
+			return ob_get_clean();
 		}
 
 		$info_ratio = 100 - $barcode_ratio;

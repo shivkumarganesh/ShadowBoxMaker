@@ -91,7 +91,9 @@ class Admin {
 
 		if ( 'wcbp-label-templates' === $page ) {
 			wp_enqueue_media();
-			wp_enqueue_script( 'wcbp-label-designer', WCBP_PLUGIN_URL . 'assets/js/label-designer.js', array( 'jquery' ), WCBP_VERSION, true );
+			wp_enqueue_script(  'wcbp-label-designer',   WCBP_PLUGIN_URL . 'assets/js/label-designer.js',   array( 'jquery' ), WCBP_VERSION, true );
+			wp_enqueue_style(   'wcbp-visual-designer',  WCBP_PLUGIN_URL . 'assets/css/visual-designer.css', array(), WCBP_VERSION );
+			wp_enqueue_script(  'wcbp-visual-designer',  WCBP_PLUGIN_URL . 'assets/js/visual-designer.js',   array(), WCBP_VERSION, true );
 			wp_localize_script( 'wcbp-label-designer', 'wcbpDesigner', array(
 				'ajax_url' => admin_url( 'admin-ajax.php' ),
 				'nonce'    => wp_create_nonce( 'wcbp_admin' ),
