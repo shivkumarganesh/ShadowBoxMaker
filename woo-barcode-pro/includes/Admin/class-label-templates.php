@@ -69,6 +69,34 @@ class LabelTemplates {
 			'custom_meta'       => sanitize_text_field( $fields_raw['custom_meta'] ?? '' ),
 		);
 
+		// Persist visual layout elements when the designer was used.
+		if ( 'visual' === ( $data['layout'] ?? '' ) && ! empty( $data['visual_layout'] ) ) {
+			$raw_els = json_decode( wp_unslash( $data['visual_layout'] ), true );
+			if ( is_array( $raw_els ) ) {
+				$allowed_types  = array( 'barcode', 'company', 'name', 'price', 'sku', 'logo' );
+				$allowed_aligns = array( 'left', 'center', 'right' );
+				$sanitized      = array();
+				foreach ( $raw_els as $el ) {
+					$id = sanitize_key( $el['id'] ?? '' );
+					if ( ! in_array( $id, $allowed_types, true ) ) { continue; }
+					$sanitized[] = array(
+						'id'       => $id,
+						'label'    => sanitize_text_field( $el['label'] ?? $id ),
+						'color'    => preg_match( '/^#[0-9a-fA-F]{6}$/', $el['color'] ?? '' ) ? $el['color'] : '#e8e8e8',
+						'x'        => max( 0.0,  min( 99.0, (float) ( $el['x'] ?? 0 ) ) ),
+						'y'        => max( 0.0,  min( 99.0, (float) ( $el['y'] ?? 0 ) ) ),
+						'w'        => max( 1.0,  min( 100.0, (float) ( $el['w'] ?? 50 ) ) ),
+						'h'        => max( 1.0,  min( 100.0, (float) ( $el['h'] ?? 50 ) ) ),
+						'fontSize' => max( 6, min( 24, (int) ( $el['fontSize'] ?? 8 ) ) ),
+						'bold'     => ! empty( $el['bold'] ),
+						'align'    => in_array( $el['align'] ?? 'left', $allowed_aligns, true ) ? $el['align'] : 'left',
+						'visible'  => ! empty( $el['visible'] ),
+					);
+				}
+				$fields['visual_elements'] = $sanitized;
+			}
+		}
+
 		$allowed_page_sizes   = array( 'letter', 'A4', 'A5', 'legal' );
 		$allowed_symbologies  = array( 'code128', 'ean13', 'upca', 'itf14' );
 		$bc_color_raw         = $data['bc_color'] ?? '#000000';
@@ -88,7 +116,7 @@ class LabelTemplates {
 			'rows_per_page'   => (int)   ( $data['rows_per_page'] ?? 10 ),
 			'gap_in'          => (float) ( $data['gap_in']        ?? 0.0 ),
 			'margin_in'       => (float) ( $data['margin_in']     ?? 0.5 ),
-			'layout'          => in_array( $data['layout'] ?? 'vertical', array( 'vertical', 'horizontal' ), true ) ? $data['layout'] : 'vertical',
+			'layout'          => in_array( $data['layout'] ?? 'vertical', array( 'vertical', 'horizontal', 'visual' ), true ) ? $data['layout'] : 'vertical',
 			'fields'          => wp_json_encode( $fields ),
 			'barcode_ratio'   => max( 30, min( 80, (int) ( $data['barcode_ratio'] ?? 60 ) ) ),
 			'logo_id'         => (int) ( $data['logo_id'] ?? 0 ),

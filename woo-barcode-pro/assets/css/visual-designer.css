@@ -1,0 +1,227 @@
+/* WooBarcode Pro — Visual Label Designer */
+
+/* ── Overlay ─────────────────────────────────────────────────────────────── */
+#wcbp-vd-overlay {
+	display: none;
+	position: fixed;
+	inset: 0;
+	z-index: 100000;
+	background: rgba(0,0,0,.88);
+	align-items: center;
+	justify-content: center;
+}
+#wcbp-vd-overlay.open { display: flex; }
+
+/* ── Modal shell ─────────────────────────────────────────────────────────── */
+.wcbp-vd-modal {
+	background: #1d2327;
+	color: #f0f0f1;
+	border-radius: 8px;
+	width: min(96vw, 880px);
+	max-height: 92vh;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	box-shadow: 0 12px 48px rgba(0,0,0,.7);
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+.wcbp-vd-header {
+	background: #2c3338;
+	padding: 11px 16px;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	border-bottom: 1px solid #3c434a;
+	flex-shrink: 0;
+}
+.wcbp-vd-title {
+	font-size: 15px;
+	font-weight: 700;
+	flex: 1;
+	color: #fff;
+}
+.wcbp-vd-tip {
+	font-size: 11px;
+	color: #a7aaad;
+}
+
+/* ── Body ────────────────────────────────────────────────────────────────── */
+.wcbp-vd-body {
+	display: flex;
+	flex: 1;
+	min-height: 0;
+	overflow: hidden;
+}
+
+/* ── Canvas area ─────────────────────────────────────────────────────────── */
+.wcbp-vd-canvas-wrap {
+	flex: 1;
+	min-width: 0;
+	overflow: auto;
+	display: flex;
+	align-items: flex-start;
+	justify-content: center;
+	padding: 28px 24px;
+	background: #2c3338;
+}
+
+#wcbp-vd-canvas {
+	position: relative;
+	background: #fff;
+	box-shadow: 0 2px 16px rgba(0,0,0,.5);
+	user-select: none;
+	flex-shrink: 0;
+	cursor: default;
+}
+
+/* ── Element blocks ──────────────────────────────────────────────────────── */
+.wcbp-vd-el {
+	position: absolute;
+	border: 1.5px solid rgba(0,0,0,.2);
+	border-radius: 2px;
+	cursor: move;
+	box-sizing: border-box;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+	transition: border-color .1s, box-shadow .1s;
+}
+.wcbp-vd-el:hover { border-color: rgba(0,0,0,.4); }
+.wcbp-vd-el.selected {
+	border: 2px solid #2271b1;
+	box-shadow: 0 0 0 3px rgba(34,113,177,.3);
+	z-index: 10 !important;
+}
+.wcbp-vd-el.el-hidden { opacity: .3; }
+
+.wcbp-vd-el-inner {
+	font-size: 9px;
+	font-weight: 700;
+	color: rgba(0,0,0,.55);
+	text-align: center;
+	pointer-events: none;
+	width: 100%;
+	padding: 0 3px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.wcbp-vd-rz {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	width: 10px;
+	height: 10px;
+	cursor: se-resize;
+	background: rgba(0,0,0,.25);
+	z-index: 12;
+}
+.wcbp-vd-el.selected .wcbp-vd-rz { background: #2271b1; }
+
+/* ── Sidebar ─────────────────────────────────────────────────────────────── */
+.wcbp-vd-sidebar {
+	width: 196px;
+	flex-shrink: 0;
+	background: #1d2327;
+	border-left: 1px solid #3c434a;
+	display: flex;
+	flex-direction: column;
+	overflow-y: auto;
+}
+
+.wcbp-vd-section {
+	padding: 12px 14px 8px;
+	border-bottom: 1px solid #3c434a;
+}
+.wcbp-vd-section h4 {
+	font-size: 10px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: .6px;
+	color: #a7aaad;
+	margin: 0 0 8px;
+}
+
+/* Element list */
+.wcbp-vd-list-item {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 5px 2px;
+	cursor: pointer;
+	border-radius: 4px;
+	font-size: 13px;
+	color: #f0f0f1;
+}
+.wcbp-vd-list-item:hover { color: #fff; }
+.wcbp-vd-list-item.sel { color: #72aee6; font-weight: 700; }
+
+.wcbp-vd-swatch {
+	width: 11px;
+	height: 11px;
+	border-radius: 2px;
+	flex-shrink: 0;
+	border: 1px solid rgba(255,255,255,.18);
+}
+
+/* Properties */
+#wcbp-vd-props { padding: 12px 14px; flex: 1; }
+#wcbp-vd-props .vd-ph { font-size: 12px; color: #a7aaad; font-style: italic; }
+
+.vd-prop-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 9px;
+}
+.vd-prop-row label {
+	font-size: 12px;
+	color: #a7aaad;
+	min-width: 66px;
+}
+.vd-prop-row input[type=number] {
+	width: 50px;
+	padding: 3px 5px;
+	background: #2c3338;
+	border: 1px solid #3c434a;
+	color: #f0f0f1;
+	border-radius: 3px;
+	font-size: 12px;
+}
+.vd-prop-row span { font-size: 12px; color: #a7aaad; }
+
+.vd-align-btns { display: flex; gap: 3px; }
+.vd-align-btns button {
+	padding: 3px 9px;
+	background: #2c3338;
+	border: 1px solid #3c434a;
+	color: #a7aaad;
+	border-radius: 3px;
+	cursor: pointer;
+	font-size: 11px;
+	font-weight: 700;
+}
+.vd-align-btns button:hover { color: #f0f0f1; }
+.vd-align-btns button.active { background: #2271b1; border-color: #2271b1; color: #fff; }
+
+.vd-pos-info {
+	margin-top: 14px;
+	font-size: 10px;
+	color: #5b6370;
+	font-family: monospace;
+	line-height: 1.7;
+}
+
+/* ── Footer coords ───────────────────────────────────────────────────────── */
+.wcbp-vd-footer {
+	background: #2c3338;
+	border-top: 1px solid #3c434a;
+	padding: 6px 14px;
+	font-size: 10px;
+	color: #5b6370;
+	font-family: monospace;
+	flex-shrink: 0;
+}

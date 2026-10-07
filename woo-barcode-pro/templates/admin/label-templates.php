@@ -92,7 +92,14 @@ defined( 'ABSPATH' ) || exit;
 						<th><?php esc_html_e( 'Layout', 'woo-barcode-pro' ); ?></th>
 						<td>
 							<label><input type="radio" name="layout" value="vertical"   <?php checked( $editing['layout'] ?? 'vertical', 'vertical'   ); ?> /> <?php esc_html_e( 'Vertical (barcode top)', 'woo-barcode-pro' ); ?></label><br/>
-							<label><input type="radio" name="layout" value="horizontal" <?php checked( $editing['layout'] ?? 'vertical', 'horizontal' ); ?> /> <?php esc_html_e( 'Horizontal (barcode left)', 'woo-barcode-pro' ); ?></label>
+							<label><input type="radio" name="layout" value="horizontal" <?php checked( $editing['layout'] ?? 'vertical', 'horizontal' ); ?> /> <?php esc_html_e( 'Horizontal (barcode left)', 'woo-barcode-pro' ); ?></label><br/>
+							<label><input type="radio" name="layout" value="visual"     <?php checked( $editing['layout'] ?? 'vertical', 'visual'     ); ?> /> <?php esc_html_e( 'Visual (custom drag-and-drop)', 'woo-barcode-pro' ); ?></label>
+							<input type="hidden" name="visual_layout" id="wcbp-visual-layout-json" value="<?php echo esc_attr( wp_json_encode( $editing['fields']['visual_elements'] ?? [] ) ); ?>">
+							<div style="margin-top:8px;">
+								<button type="button" id="wcbp-vd-open-btn" class="button">
+									🎨 <?php esc_html_e( 'Open Visual Designer', 'woo-barcode-pro' ); ?>
+								</button>
+							</div>
 						</td>
 					</tr>
 					<tr>
@@ -254,6 +261,34 @@ defined( 'ABSPATH' ) || exit;
 				<div id="wcbp-label-preview"></div>
 				<p class="description" style="margin-top:8px;font-size:11px;color:#888"><?php esc_html_e( 'Approximate size at 96 dpi. Print output may vary.', 'woo-barcode-pro' ); ?></p>
 			</div>
+		</div>
+	</div>
+
+	<!-- ── Visual Designer Modal ──────────────────────────────────────── -->
+	<div id="wcbp-vd-overlay">
+		<div class="wcbp-vd-modal">
+			<div class="wcbp-vd-header">
+				<span class="wcbp-vd-title">🎨 <?php esc_html_e( 'Visual Label Designer', 'woo-barcode-pro' ); ?></span>
+				<span class="wcbp-vd-tip"><?php esc_html_e( 'Drag elements to reposition · Drag corner to resize · Click to edit properties', 'woo-barcode-pro' ); ?></span>
+				<button type="button" id="wcbp-vd-reset" class="button"><?php esc_html_e( 'Reset', 'woo-barcode-pro' ); ?></button>
+				<button type="button" id="wcbp-vd-cancel" class="button"><?php esc_html_e( 'Cancel', 'woo-barcode-pro' ); ?></button>
+				<button type="button" id="wcbp-vd-apply" class="button button-primary"><?php esc_html_e( 'Apply Layout', 'woo-barcode-pro' ); ?></button>
+			</div>
+			<div class="wcbp-vd-body">
+				<div class="wcbp-vd-canvas-wrap">
+					<div id="wcbp-vd-canvas"></div>
+				</div>
+				<div class="wcbp-vd-sidebar">
+					<div class="wcbp-vd-section">
+						<h4><?php esc_html_e( 'Elements', 'woo-barcode-pro' ); ?></h4>
+						<div id="wcbp-vd-el-list"></div>
+					</div>
+					<div id="wcbp-vd-props" class="wcbp-vd-section" style="border-bottom:none;">
+						<p class="vd-ph"><?php esc_html_e( 'Click an element to edit its properties.', 'woo-barcode-pro' ); ?></p>
+					</div>
+				</div>
+			</div>
+			<div class="wcbp-vd-footer" id="wcbp-vd-footer"><?php esc_html_e( 'No element selected', 'woo-barcode-pro' ); ?></div>
 		</div>
 	</div>
 
