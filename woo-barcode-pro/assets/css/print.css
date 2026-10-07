@@ -36,20 +36,24 @@ body.wcbp-print-body {
 #wcbp-do-pdf:hover { background: #008a20; }
 
 /* ── Label grid ────────────────────────────────────────────────────────────── */
+/* Sheet must never be wider than the paper, or the browser shrinks the whole print to fit. */
 .wcbp-label-sheet {
 	margin: 20px auto;
 	background: #fff;
 	width: var(--wcbp-sheet-w, 8.5in);
 	min-height: var(--wcbp-sheet-h, 11in);
-	padding: var(--wcbp-margin, 0.5in);
+	padding: 0;
+	box-sizing: border-box;
 	box-shadow: 0 2px 8px rgba(0,0,0,.15);
 }
 
+/* Template margin is top/bottom; columns are centred so left/right margins stay symmetric. */
 .wcbp-label-grid {
 	display: grid;
 	grid-template-columns: repeat(var(--wcbp-cols, 3), var(--wcbp-label-w, 2.625in));
 	gap: var(--wcbp-gap, 0in);
-	justify-content: start;
+	justify-content: center;
+	padding: var(--wcbp-margin, 0.5in) 0;
 }
 
 .wcbp-label {
@@ -94,8 +98,27 @@ body.wcbp-print-body {
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	align-self: stretch;
 }
-.wcbp-label-barcode svg { max-width: 100%; max-height: 100%; }
+
+/* Barcode: fixed physical width from the renderer; bars-only SVGs stretch to the box height. */
+.wcbp-bc {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 100%;
+	min-height: 0;
+}
+.wcbp-bc svg { max-width: 100%; min-height: 0; flex: 0 1 auto; }
+.wcbp-bc svg[preserveAspectRatio="none"] { flex: 1 1 0; }
+.wcbp-bc-text {
+	font: 6pt/1.1 "Courier New", monospace;
+	letter-spacing: 0.5px;
+	flex-shrink: 0;
+	padding-top: 1px;
+}
 
 .wcbp-label-info {
 	display: flex;
@@ -113,7 +136,6 @@ body.wcbp-print-body {
 /* Visual (drag-and-drop) layout */
 .wcbp-layout-visual { position: relative !important; }
 .wcbp-label-visual  { position: relative; width: 100%; height: 100%; overflow: hidden; }
-.wcbp-label-visual svg { max-width: 100%; max-height: 100%; }
 
 /* Horizontal layout — right-align info column for a tighter, more premium look */
 .wcbp-layout-horizontal .wcbp-label-info {
@@ -137,7 +159,6 @@ body.wcbp-print-body {
 
 	.wcbp-label-sheet {
 		margin: 0;
-		padding: var(--wcbp-margin, 0.5in);
 		box-shadow: none;
 		width: 100%;
 		min-height: auto;

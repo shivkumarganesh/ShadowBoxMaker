@@ -183,7 +183,7 @@ class BarcodeGenerator {
 		$total_w      = $pad_l + $bar_w + $pad_r;
 		$total_h      = $h + $guard_extra + $txt_h;
 
-		$svg  = sprintf( '<svg xmlns="http://www.w3.org/2000/svg" width="%d" height="%d" viewBox="0 0 %d %d">', $total_w, $total_h, $total_w, $total_h );
+		$svg  = $this->svg_open( $total_w, $total_h, $mw, $opts, $txt );
 
 		// Guard bar positions (extend guard_extra below).
 		$guard_positions = array_merge(
@@ -281,8 +281,7 @@ class BarcodeGenerator {
 		$txt_h    = $txt ? $fs + 4 : 0;
 		$total_h  = $h + $txt_h;
 
-		$svg = sprintf( '<svg xmlns="http://www.w3.org/2000/svg" width="%d" height="%d" viewBox="0 0 %d %d">',
-			$total_w, $total_h, $total_w, $total_h );
+		$svg = $this->svg_open( $total_w, $total_h, $mw, $opts, $txt );
 
 		$x      = $pad;
 		$is_bar = true;
@@ -305,5 +304,47 @@ class BarcodeGenerator {
 
 		$svg .= '</svg>';
 		return $svg;
+	}
+
+	/**
+	 * Opening <svg> tag. With print_width_in set, the barcode gets a physical size whose
+	 * narrowest bar lands on a whole number of printer dots instead of being squeezed to fit.
+	 */
+	private function svg_open( int $w, int $h, int $mw, array $opts, bool $has_text ): string {
+		$avail = (float) ( $opts['print_width_in'] ?? 0 );
+		if ( $avail <= 0 ) {
+			return sprintf(
+				'<svg xmlns="http://www.w3.org/2000/svg" width="%d" height="%d" viewBox="0 0 %d %d" shape-rendering="crispEdges">',
+				$w, $h, $w, $h
+			);
+		}
+
+		$module_in = self::print_module_in( $w / max( 1, $mw ), $avail );
+		$width_in  = ( $w / max( 1, $mw ) ) * $module_in;
+
+		// Bars-only barcodes stretch vertically to fill the box; 1D scanners only read bar widths.
+		if ( $has_text ) {
+			$size = sprintf( 'width="%.4fin" height="%.4fin"', $width_in, $width_in * $h / $w );
+		} else {
+			$size = sprintf( 'width="%.4fin" height="100%%" preserveAspectRatio="none"', $width_in );
+		}
+
+		return sprintf(
+			'<svg xmlns="http://www.w3.org/2000/svg" %s viewBox="0 0 %d %d" shape-rendering="crispEdges" style="display:block;flex-shrink:0">',
+			$size, $w, $h
+		);
+	}
+
+	/**
+	 * Narrowest bar width (inches) for a barcode of $modules modules in $avail inches.
+	 * 0.02in / 0.01in are whole dots at 203, 300 and 600 dpi; 1/150in is whole dots at 300 and 600 dpi.
+	 */
+	public static function print_module_in( float $modules, float $avail ): float {
+		foreach ( array( 0.02, 0.01, 1 / 150 ) as $m ) {
+			if ( $modules * $m <= $avail ) {
+				return $m;
+			}
+		}
+		return $avail / max( 1, $modules );
 	}
 }
