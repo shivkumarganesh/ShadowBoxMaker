@@ -199,6 +199,14 @@
 
 		// Barcode block — available width matches LabelRenderer (label minus 3px side padding)
 		var innerW = Math.max(0.25, w - 6 / 96);
+		// Mirrors LabelRenderer::scannable_ratio(): widen the barcode box until bars can be 1/150in.
+		var vbMatch = barcodeSvg ? /viewBox="0 0 (\d+) /.exec(barcodeSvg) : null;
+		if (isHoriz && vbMatch) {
+			var bcModules = parseInt(vbMatch[1], 10) / (parseInt(getBarcodeParams().mw, 10) || 2);
+			var needed = Math.ceil((bcModules / 150 + 0.02) / innerW * 100);
+			ratio = Math.max(ratio, Math.min(72, needed));
+			rest  = 100 - ratio;
+		}
 		var barcodeContent = barcodeBlock(barcodeSvg, isHoriz ? innerW * ratio / 100 : innerW);
 		var bcFlex = isHoriz
 			? 'flex:' + ratio + ' 0 0%;min-width:0;align-self:stretch;'
@@ -209,7 +217,10 @@
 		var infoLines = '';
 		if (showName)  infoLines += '<div style="font-weight:700;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">' + esc(mockName) + '</div>';
 		if (showPrice) infoLines += '<div>' + esc(mockPrice) + '</div>';
-		if (showSku)   infoLines += '<div style="color:#888;font-size:8px">' + esc(mockSku) + '</div>';
+		// Mirrors the renderer: skip SKU when the same value is printed under the bars.
+		var mockBc = $('#wcbp-mock-barcode').val() || mockSku;
+		var skuDup = getBarcodeParams().showText === '1' && mockBc === mockSku;
+		if (showSku && !skuDup) infoLines += '<div style="color:#888;font-size:8px">' + esc(mockSku) + '</div>';
 
 		var infoHtml = '';
 		if (infoLines) {
