@@ -96,6 +96,51 @@
 		var pxH = Math.round(h * 96);
 
 		var $prev = $('#wcbp-label-preview');
+
+		// ── Visual layout preview ──────────────────────────────────────────────
+		if (layout === 'visual') {
+			var jsonStr = (document.getElementById('wcbp-visual-layout-json') || {value: ''}).value || '';
+			var vEls = [];
+			try { vEls = jsonStr ? JSON.parse(jsonStr) : []; } catch (e) { vEls = []; }
+
+			$prev.css({
+				width      : pxW + 'px',
+				height     : pxH + 'px',
+				position   : 'relative',
+				overflow   : 'hidden',
+				background : '#fff',
+				border     : '1px solid #c3c4c7',
+				boxSizing  : 'border-box',
+				padding    : '0',
+				display    : 'block',
+			});
+
+			var vHtml = '';
+			vEls.forEach(function (el) {
+				if (!el.visible) { return; }
+				var jc    = el.align === 'right' ? 'flex-end' : (el.align === 'center' ? 'center' : 'flex-start');
+				var style = 'position:absolute;left:' + el.x + '%;top:' + el.y + '%;width:' + el.w + '%;height:' + el.h + '%;overflow:hidden;box-sizing:border-box;';
+				var content = '';
+
+				if (el.id === 'barcode') {
+					style  += 'display:flex;align-items:center;justify-content:center;';
+					content = barcodeSvg
+						? responsiveSvg(barcodeSvg)
+						: '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#f5f5f5;color:#bbb;font-size:9px;font-family:monospace">▊▋▊▌▋▊▋</div>';
+				} else {
+					style  += 'font-size:' + (el.fontSize || 8) + 'pt;font-weight:' + (el.bold ? '700' : '400') + ';text-align:' + (el.align || 'left') + ';display:flex;align-items:center;justify-content:' + jc + ';font-family:Arial,sans-serif;';
+					if      (el.id === 'company') { content = esc(companyName || ''); }
+					else if (el.id === 'name')    { content = esc(mockName); }
+					else if (el.id === 'price')   { content = esc(mockPrice); }
+					else if (el.id === 'sku')     { content = esc(mockSku); }
+				}
+				vHtml += '<div style="' + style + '">' + content + '</div>';
+			});
+
+			$prev.html(vHtml);
+			return;
+		}
+
 		// Outer container is always column; company name stacks at the top.
 		$prev.css({
 			width        : pxW + 'px',
