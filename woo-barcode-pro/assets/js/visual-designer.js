@@ -88,9 +88,12 @@
 		if (D.jsonField) {
 			D.jsonField.value = JSON.stringify(S.elements);
 		}
-		// Switch the layout radio to "visual".
+		// Switch the layout radio to "visual" and trigger preview update.
 		var radio = document.querySelector('input[name="layout"][value="visual"]');
-		if (radio) { radio.checked = true; }
+		if (radio) {
+			radio.checked = true;
+			radio.dispatchEvent(new Event('change', { bubbles: true }));
+		}
 		closeDesigner();
 	}
 
