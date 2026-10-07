@@ -80,7 +80,7 @@ class LabelRenderer {
 		$bc_opts     = ( $bc_opts_raw && is_string( $bc_opts_raw ) ) ? (array) json_decode( $bc_opts_raw, true ) : array();
 		$barcode_svg = \WCBarcodePro\wcbp_product_barcode_svg( $product_id, $variation_id, $bc_opts );
 		$raw_name     = $item['product_name'] ?? '';
-		$raw_name     = mb_strlen( $raw_name ) > 10 ? mb_substr( $raw_name, 0, 10 ) . '…' : $raw_name;
+		$raw_name     = mb_strlen( $raw_name ) > 12 ? mb_substr( $raw_name, 0, 12 ) . '…' : $raw_name;
 		$product_name = esc_html( $raw_name );
 		$sku          = esc_html( $item['sku'] ?? '' );
 
