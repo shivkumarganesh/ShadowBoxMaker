@@ -118,32 +118,86 @@ class BarcodeGenerator {
 	// ── Private generators ────────────────────────────────────────────────────
 
 	private function svg_code128( string $text, array $opts ): string {
-		$patterns = self::CODE128_PATTERNS;
+		return $this->render_linear_svg( $this->code128_pattern( $text ), $text, $opts, 10 );
+	}
 
-		// Build symbol values: START_B + data + check.
-		$vals = [ self::CODE128_START_B ];
+	/**
+	 * Code 128 bar pattern. Uses set B, switching to set C (two digits per symbol)
+	 * for digit runs where that makes the barcode shorter.
+	 */
+	private function code128_pattern( string $text ): string {
+		$s = '';
 		foreach ( str_split( $text ) as $ch ) {
-			$v = ord( $ch ) - 32;
-			if ( $v < 0 || $v > 95 ) {
-				continue; // skip non-Code-128-B characters.
+			if ( ord( $ch ) >= 32 && ord( $ch ) <= 127 ) {
+				$s .= $ch; // skip non-Code-128-B characters.
 			}
-			$vals[] = $v;
 		}
-		// Check character.
-		$check = self::CODE128_START_B;
-		foreach ( array_slice( $vals, 1 ) as $i => $v ) {
-			$check += ( $i + 1 ) * $v;
+		$n         = strlen( $s );
+		$digit_run = static function ( int $i ) use ( $s, $n ): int {
+			$j = $i;
+			while ( $j < $n && ctype_digit( $s[ $j ] ) ) {
+				$j++;
+			}
+			return $j - $i;
+		};
+
+		$lead = $digit_run( 0 );
+		$set  = ( $lead >= 4 && 0 === $lead % 2 ) ? 'C' : 'B';
+		$vals = array( 'C' === $set ? 105 : self::CODE128_START_B );
+
+		$i = 0;
+		while ( $i < $n ) {
+			if ( 'C' === $set ) {
+				if ( $i + 1 < $n && ctype_digit( $s[ $i ] ) && ctype_digit( $s[ $i + 1 ] ) ) {
+					$vals[] = (int) substr( $s, $i, 2 );
+					$i     += 2;
+					continue;
+				}
+				$vals[] = 100; // CODE B.
+				$set    = 'B';
+				continue;
+			}
+			$run = $digit_run( $i );
+			if ( $run >= 6 || ( $run >= 4 && $i + $run === $n ) ) {
+				if ( $run % 2 ) {
+					$vals[] = ord( $s[ $i ] ) - 32;
+					$i++;
+				}
+				$vals[] = 99; // CODE C.
+				$set    = 'C';
+				continue;
+			}
+			$vals[] = ord( $s[ $i ] ) - 32;
+			$i++;
+		}
+
+		// Checksum: start value + sum of position × value.
+		$check = $vals[0];
+		foreach ( $vals as $pos => $v ) {
+			$check += $pos * $v;
 		}
 		$vals[] = $check % 103;
 
-		// Build pattern string.
 		$pattern = '';
 		foreach ( $vals as $v ) {
-			$pattern .= $patterns[ $v ];
+			$pattern .= self::CODE128_PATTERNS[ $v ];
 		}
-		$pattern .= self::CODE128_STOP;
+		return $pattern . self::CODE128_STOP;
+	}
 
-		return $this->render_linear_svg( $pattern, $text, $opts, 10 );
+	/**
+	 * Width of the barcode in modules, including quiet zones (matches the generated SVG viewBox / module_width).
+	 */
+	public function module_count( string $value, string $type ): int {
+		$type = strtolower( $type );
+		if ( 'ean13' === $type && ! ctype_digit( preg_replace( '/\D/', '', $value ) ) ) {
+			$type = 'code128';
+		}
+		if ( in_array( $type, array( 'ean13', 'upca' ), true ) ) {
+			return 11 + 95 + 7;
+		}
+		$pattern = 'itf14' === $type ? $this->itf14_pattern( $value ) : $this->code128_pattern( $value );
+		return array_sum( array_map( 'intval', str_split( $pattern ) ) ) + 20;
 	}
 
 	private function svg_ean13( string $value, array $opts ): string {
@@ -227,6 +281,11 @@ class BarcodeGenerator {
 	}
 
 	private function svg_itf14( string $value, array $opts ): string {
+		$digits = substr( str_pad( preg_replace( '/\D/', '', $value ), 14, '0', STR_PAD_LEFT ), 0, 14 );
+		return $this->render_linear_svg( $this->itf14_pattern( $value ), $digits, $opts, 10 );
+	}
+
+	private function itf14_pattern( string $value ): string {
 		// ITF-14: Interleaved 2 of 5 — 14 digits.
 		$digits = preg_replace( '/\D/', '', $value );
 		$digits = substr( str_pad( $digits, 14, '0', STR_PAD_LEFT ), 0, 14 );
@@ -237,7 +296,7 @@ class BarcodeGenerator {
 			'10100','01100','00011','10010','01010',
 		];
 
-		$pattern = '0000'; // Start: 4 narrow bars.
+		$pattern = '1111'; // Start: narrow bar, space, bar, space.
 		for ( $i = 0; $i < 14; $i += 2 ) {
 			$d1 = (int) $digits[ $i ];
 			$d2 = (int) $digits[ $i + 1 ];
@@ -249,9 +308,7 @@ class BarcodeGenerator {
 				$pattern .= $b2[ $j ] === '1' ? '3' : '1'; // space width.
 			}
 		}
-		$pattern .= '300'; // Stop: wide bar + 2 narrow.
-
-		return $this->render_linear_svg( $pattern, $digits, $opts, 10 );
+		return $pattern . '311'; // Stop: wide bar, narrow space, narrow bar.
 	}
 
 	/**

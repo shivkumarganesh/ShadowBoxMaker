@@ -186,9 +186,18 @@ class LabelRenderer {
 			return ob_get_clean();
 		}
 
+		if ( 'horizontal' === ( $tpl['layout'] ?? 'vertical' ) ) {
+			$barcode_ratio = $this->scannable_ratio( $product_id, $variation_id, $bc_opts, $inner_w_in, $barcode_ratio );
+		}
 		$info_ratio  = 100 - $barcode_ratio;
 		$bc_avail_in = 'horizontal' === ( $tpl['layout'] ?? 'vertical' ) ? $inner_w_in * $barcode_ratio / 100 : $inner_w_in;
 		$barcode_svg = $this->barcode_html( $product_id, $variation_id, $bc_opts, $bc_avail_in );
+
+		// Skip the SKU line when the identical value is already printed under the bars.
+		$bc_text_shown = (bool) ( $bc_opts['show_text'] ?? \WCBarcodePro\wcbp_get_setting( 'show_text', true ) );
+		if ( $bc_text_shown && '' !== $sku && \WCBarcodePro\wcbp_barcode_value( $product_id, $variation_id ) === ( $item['sku'] ?? '' ) ) {
+			$sku = '';
+		}
 
 		ob_start();
 		?>
@@ -221,6 +230,21 @@ class LabelRenderer {
 		</div>
 		<?php
 		return ob_get_clean();
+	}
+
+	/**
+	 * Smallest barcode share (%) of the label width at which bars can be 1/150in
+	 * (whole dots at 300/600 dpi), never below the template ratio and capped at 72%.
+	 */
+	private function scannable_ratio( int $product_id, int $variation_id, array $bc_opts, float $inner_w_in, int $ratio ): int {
+		$value = \WCBarcodePro\wcbp_barcode_value( $product_id, $variation_id );
+		if ( '' === $value ) {
+			return $ratio;
+		}
+		$symbology = (string) ( $bc_opts['symbology'] ?? \WCBarcodePro\wcbp_get_setting( 'symbology', 'code128' ) );
+		$modules   = \WCBarcodePro\Barcode\BarcodeGenerator::get_instance()->module_count( $value, $symbology );
+		$needed    = (int) ceil( ( $modules / 150 + 0.02 ) / $inner_w_in * 100 );
+		return max( $ratio, min( 72, $needed ) );
 	}
 
 	/**
