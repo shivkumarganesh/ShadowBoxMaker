@@ -22,9 +22,13 @@ $sheet_h   = 'A4' === $page_size ? '297mm' : ( 'A5' === $page_size ? '210mm' : (
 <link rel="stylesheet" href="<?php echo esc_url( WCBP_PLUGIN_URL . 'assets/css/print.css?ver=' . WCBP_VERSION ); ?>" />
 <style>
 :root {
-	--wcbp-page-size: <?php echo esc_attr( $page_size ); ?>;
-	--wcbp-sheet-w:   <?php echo esc_attr( $sheet_w ); ?>;
-	--wcbp-sheet-h:   <?php echo esc_attr( $sheet_h ); ?>;
+	--wcbp-sheet-w: <?php echo esc_attr( $sheet_w ); ?>;
+	--wcbp-sheet-h: <?php echo esc_attr( $sheet_h ); ?>;
+}
+/* @page size must be a literal value — CSS custom properties don't work inside @page in Chrome/Safari */
+@page {
+	size: <?php echo esc_attr( $page_size ); ?>;
+	margin: 0;
 }
 </style>
 </head>
