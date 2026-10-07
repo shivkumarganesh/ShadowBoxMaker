@@ -115,7 +115,11 @@ body.wcbp-print-body {
 	align-items: flex-end;
 	padding-right: 1px;
 }
-.wcbp-layout-horizontal .wcbp-label-name  { text-align: right; }
+.wcbp-layout-horizontal .wcbp-label-name {
+	text-align: left;
+	align-self: flex-start;
+	width: 100%;
+}
 .wcbp-layout-horizontal .wcbp-label-price { text-align: right; }
 .wcbp-layout-horizontal .wcbp-label-sku   { text-align: right; }
 .wcbp-layout-horizontal .wcbp-label-attrs { text-align: right; }
