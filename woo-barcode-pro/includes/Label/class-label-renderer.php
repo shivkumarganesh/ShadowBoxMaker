@@ -128,7 +128,7 @@ class LabelRenderer {
 		?>
 		<?php if ( ! empty( $fields['company_name'] ) && ! empty( $fields['company_name_text'] ) ) :
 			$co_fs  = max( 6, min( 30, (int) ( $fields['company_name_font_size']      ?? 10 ) ) );
-			$co_pb  = max( 0, min( 20, (int) ( $fields['company_name_padding_bottom'] ?? 2  ) ) );
+			$co_pb  = max( 0, min( 20, (int) ( $fields['company_name_padding_bottom'] ?? 0  ) ) );
 		?>
 		<div class="wcbp-label-company" style="font-size:<?php echo esc_attr( $co_fs ); ?>px;padding-bottom:<?php echo esc_attr( $co_pb ); ?>px"><?php echo esc_html( $fields['company_name_text'] ); ?></div>
 		<?php endif; ?>

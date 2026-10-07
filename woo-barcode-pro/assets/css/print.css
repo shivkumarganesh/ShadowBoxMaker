@@ -59,7 +59,7 @@ body.wcbp-print-body {
 	display: flex;
 	flex-direction: column;
 	align-items: stretch;
-	padding: 2px 4px;
+	padding: 1px 3px;
 	box-sizing: border-box;
 }
 
@@ -75,7 +75,8 @@ body.wcbp-print-body {
 	text-overflow: ellipsis;
 	flex-shrink: 0;
 	padding: 0 2px;
-	line-height: 1.3;
+	line-height: 1.1;
+	margin-bottom: 0;
 }
 
 /* Inner flex container — gets row or column direction from layout class */
@@ -108,6 +109,17 @@ body.wcbp-print-body {
 .wcbp-label-attrs { font-size: 6.5pt; color: #555; }
 .wcbp-label-custom-meta { font-size: 6.5pt; }
 .wcbp-label-logo  { max-width: 60px; max-height: 20px; object-fit: contain; }
+
+/* Horizontal layout — right-align info column for a tighter, more premium look */
+.wcbp-layout-horizontal .wcbp-label-info {
+	align-items: flex-end;
+	padding-right: 1px;
+}
+.wcbp-layout-horizontal .wcbp-label-name  { text-align: right; }
+.wcbp-layout-horizontal .wcbp-label-price { text-align: right; }
+.wcbp-layout-horizontal .wcbp-label-sku   { text-align: right; }
+.wcbp-layout-horizontal .wcbp-label-attrs { text-align: right; }
+.wcbp-layout-horizontal .wcbp-label-custom-meta { text-align: right; }
 
 /* ── Print @media ────────────────────────────────────────────────────────── */
 @media print {
