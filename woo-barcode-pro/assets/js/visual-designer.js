@@ -6,7 +6,8 @@
 	var CATALOGUE = [
 		{ id: 'barcode',  label: 'Barcode',       color: '#c2e0ff', x: 2,  y: 4,  w: 52, h: 88, fontSize: 0,  bold: false, align: 'center', visible: true },
 		{ id: 'company',  label: 'Company Name',  color: '#ffd6a5', x: 56, y: 2,  w: 42, h: 20, fontSize: 9,  bold: true,  align: 'center', visible: true },
-		{ id: 'name',     label: 'Product Name',  color: '#caffbf', x: 56, y: 24, w: 42, h: 28, fontSize: 8,  bold: true,  align: 'left',   visible: true },
+		{ id: 'name',     label: 'Product Name',  color: '#caffbf', x: 56, y: 24, w: 42, h: 16, fontSize: 8,  bold: true,  align: 'left',   visible: true },
+		{ id: 'variant',  label: 'Variation',     color: '#e4d4ff', x: 56, y: 41, w: 42, h: 12, fontSize: 7,  bold: true,  align: 'left',   visible: true },
 		{ id: 'price',    label: 'Price',         color: '#fdffb6', x: 56, y: 54, w: 42, h: 24, fontSize: 10, bold: true,  align: 'right',  visible: true },
 		{ id: 'sku',      label: 'SKU',           color: '#e0e0e0', x: 56, y: 80, w: 42, h: 16, fontSize: 7,  bold: false, align: 'right',  visible: true },
 	];
@@ -74,6 +75,10 @@
 		} catch (e) {
 			S.elements = defaultElements();
 		}
+		// Layouts saved before an element existed get it hidden, ready to switch on.
+		CATALOGUE.forEach(function (d) {
+			if (!getEl(d.id)) { S.elements.push(Object.assign({}, d, { visible: false })); }
+		});
 
 		S.selected = null;
 		renderAll();

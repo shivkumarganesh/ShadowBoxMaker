@@ -81,6 +81,11 @@ class LabelRenderer {
 		// Label content width: label width minus 3px left/right padding (see .wcbp-label in print.css).
 		$inner_w_in   = max( 0.25, (float) ( $tpl['width_in'] ?? 2.625 ) - 6 / 96 );
 		$raw_name     = $item['product_name'] ?? '';
+		if ( $variation_id ) {
+			// Variation titles embed the attributes ("Tee - Blue, M"); those print on their own line instead.
+			$parent   = wc_get_product( $product_id );
+			$raw_name = $parent ? $parent->get_name() : $raw_name;
+		}
 		$raw_name     = mb_strlen( $raw_name ) > 12 ? mb_substr( $raw_name, 0, 12 ) . '…' : $raw_name;
 		$product_name = esc_html( $raw_name );
 		$sku          = esc_html( $item['sku'] ?? '' );
@@ -110,13 +115,17 @@ class LabelRenderer {
 			}
 		}
 
-		// Attributes.
+		$variant      = $variation_id && $product ? $this->variation_text( $product ) : '';
+		$variant_html = '' !== $variant ? '<span class="wcbp-label-variant">' . esc_html( $variant ) . '</span>' : '';
+
+		// Attributes (product-level; variations get $variant_html instead).
 		$attr_html = '';
 		if ( ! empty( $fields['attributes'] ) && $product ) {
 			$attrs = $product->get_attributes();
 			$parts = array();
 			foreach ( $attrs as $key => $attr ) {
-				if ( $attr->get_visible() ) {
+				// Variations return plain attribute strings, not WC_Product_Attribute objects.
+				if ( $attr instanceof \WC_Product_Attribute && $attr->get_visible() ) {
 					$parts[] = esc_html( wc_attribute_label( $attr->get_name() ) ) . ': ' . esc_html( implode( ', ', $attr->get_options() ) );
 				}
 			}
@@ -131,6 +140,23 @@ class LabelRenderer {
 			if ( empty( $elements ) ) {
 				return '<div class="wcbp-label-visual-empty">No visual layout.</div>';
 			}
+			// Layouts saved before the Variation element existed: show it under the name (or price, or SKU).
+			$variant_host = '';
+			if ( '' !== $variant_html && ! in_array( 'variant', array_column( $elements, 'id' ), true ) ) {
+				foreach ( array( 'name', 'price', 'sku' ) as $host ) {
+					foreach ( $elements as $el ) {
+						if ( $host === ( $el['id'] ?? '' ) && ! empty( $el['visible'] ) ) {
+							$variant_host = $host;
+							break 2;
+						}
+					}
+				}
+			}
+			$with_variant = static function ( string $html, string $type ) use ( $variant_host, $variant_html ): string {
+				// Attributes first: in a small box they matter more than the (truncated) name.
+				return $type === $variant_host ? '<div style="width:100%;max-height:100%;overflow:hidden;text-align:inherit">' . $variant_html . $html . '</div>' : $html;
+			};
+
 			ob_start();
 			echo '<div class="wcbp-label-visual">';
 			foreach ( $elements as $el ) {
@@ -168,13 +194,16 @@ class LabelRenderer {
 						echo esc_html( $fields['company_name_text'] ?? '' );
 						break;
 					case 'name':
-						echo $product_name; // phpcs:ignore WordPress.Security
+						echo $with_variant( $product_name, 'name' ); // phpcs:ignore WordPress.Security
+						break;
+					case 'variant':
+						echo $variant_html; // phpcs:ignore WordPress.Security
 						break;
 					case 'price':
-						echo $price_html; // phpcs:ignore WordPress.Security
+						echo $with_variant( $price_html, 'price' ); // phpcs:ignore WordPress.Security
 						break;
 					case 'sku':
-						echo $sku; // phpcs:ignore WordPress.Security
+						echo $with_variant( $sku, 'sku' ); // phpcs:ignore WordPress.Security
 						break;
 					case 'logo':
 						echo $logo_html; // phpcs:ignore WordPress.Security
@@ -218,6 +247,7 @@ class LabelRenderer {
 				<?php if ( ! empty( $fields['name'] ) && $product_name ) : ?>
 					<span class="wcbp-label-name"><?php echo $product_name; // phpcs:ignore WordPress.Security ?></span>
 				<?php endif; ?>
+				<?php echo $variant_html; // phpcs:ignore WordPress.Security ?>
 				<?php if ( ! empty( $fields['price'] ) && $price_html ) : ?>
 					<span class="wcbp-label-price"><?php echo $price_html; // phpcs:ignore WordPress.Security ?></span>
 				<?php endif; ?>
@@ -230,6 +260,25 @@ class LabelRenderer {
 		</div>
 		<?php
 		return ob_get_clean();
+	}
+
+	/**
+	 * Attribute values of a variation, e.g. "Blue / M". "Any …" attributes (empty values) are skipped.
+	 */
+	private function variation_text( \WC_Product $variation ): string {
+		$parts = array();
+		foreach ( $variation->get_variation_attributes() as $key => $value ) {
+			if ( '' === (string) $value ) {
+				continue;
+			}
+			$taxonomy = substr( $key, strlen( 'attribute_' ) );
+			if ( taxonomy_exists( $taxonomy ) ) {
+				$term  = get_term_by( 'slug', $value, $taxonomy );
+				$value = ( $term && ! is_wp_error( $term ) ) ? $term->name : $value;
+			}
+			$parts[] = $value;
+		}
+		return implode( ' / ', $parts );
 	}
 
 	/**

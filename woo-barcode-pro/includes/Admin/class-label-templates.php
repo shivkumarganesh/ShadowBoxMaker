@@ -73,7 +73,7 @@ class LabelTemplates {
 		if ( 'visual' === ( $data['layout'] ?? '' ) && ! empty( $data['visual_layout'] ) ) {
 			$raw_els = json_decode( wp_unslash( $data['visual_layout'] ), true );
 			if ( is_array( $raw_els ) ) {
-				$allowed_types  = array( 'barcode', 'company', 'name', 'price', 'sku', 'logo' );
+				$allowed_types  = array( 'barcode', 'company', 'name', 'variant', 'price', 'sku', 'logo' );
 				$allowed_aligns = array( 'left', 'center', 'right' );
 				$sanitized      = array();
 				foreach ( $raw_els as $el ) {

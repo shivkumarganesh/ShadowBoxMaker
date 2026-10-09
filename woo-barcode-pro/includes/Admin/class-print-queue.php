@@ -120,11 +120,91 @@ class PrintQueue {
 		foreach ( $product_ids as $pid ) {
 			$pid      = (int) $pid;
 			$label_id = (int) get_post_meta( $pid, '_wcbp_label_template_id', true ) ?: $default_label;
+			$variations = $this->get_variations( $pid );
+			if ( $variations ) {
+				$count += $this->add_variations( $pid, $variations, false, 1, $label_id )['rows'];
+				continue;
+			}
 			if ( $this->add( $pid, 1, 0, $label_id ) ) {
 				$count++;
 			}
 		}
 		return $count;
+	}
+
+	/**
+	 * Enabled variations of a variable product (empty for any other product type).
+	 *
+	 * @return \WC_Product[]
+	 */
+	public function get_variations( int $product_id ): array {
+		$product = wc_get_product( $product_id );
+		if ( ! $product || ! $product->is_type( 'variable' ) ) {
+			return array();
+		}
+		$variations = array();
+		foreach ( $product->get_children() as $vid ) {
+			$variation = wc_get_product( (int) $vid );
+			if ( $variation && 'publish' === $variation->get_status() ) {
+				$variations[] = $variation;
+			}
+		}
+		return $variations;
+	}
+
+	/**
+	 * Labels to print for a product's stock: its own stock count (min 1), or 1 when it doesn't track stock.
+	 * Variations inheriting stock from the parent report 'parent', not true, and get 1 each.
+	 */
+	public static function stock_label_qty( \WC_Product $product ): int {
+		return true === $product->managing_stock() ? max( 1, (int) $product->get_stock_quantity() ) : 1;
+	}
+
+	/**
+	 * Queue one row per variation. $use_stock: each row gets that variation's stock count and
+	 * replaces its pending row; otherwise $qty is added to each.
+	 *
+	 * @param \WC_Product[] $variations
+	 * @return array{rows:int,labels:int}
+	 */
+	public function add_variations( int $product_id, array $variations, bool $use_stock, int $qty, int $label_id ): array {
+		$rows   = 0;
+		$labels = 0;
+		if ( $use_stock ) {
+			// A parent-only row (queued before variations were supported) would print the parent barcode.
+			$this->remove_pending_row( $product_id, 0 );
+		}
+		foreach ( $variations as $variation ) {
+			$vid = $variation->get_id();
+			$this->ensure_variation_sku( $variation );
+			$n = $use_stock ? self::stock_label_qty( $variation ) : $qty;
+			if ( $use_stock ) {
+				$this->remove_pending_row( $product_id, $vid );
+			}
+			if ( $this->add( $product_id, $n, $vid, $label_id ) ) {
+				$rows++;
+				$labels += $n;
+			}
+		}
+		return array( 'rows' => $rows, 'labels' => $labels );
+	}
+
+	/**
+	 * A variation without its own SKU or EAN would share no scannable value; give it one (prefix + ID,
+	 * the same scheme as product auto-SKUs).
+	 */
+	private function ensure_variation_sku( \WC_Product $variation ): void {
+		$vid = $variation->get_id();
+		if ( '' !== (string) get_post_meta( $vid, '_sku', true )
+			|| '' !== (string) get_post_meta( $vid, \WCBarcodePro\Barcode\EanManager::META_KEY, true ) ) {
+			return;
+		}
+		try {
+			$variation->set_sku( (string) \WCBarcodePro\wcbp_get_setting( 'prefix', 'WBP-' ) . $vid );
+			$variation->save();
+		} catch ( \WC_Data_Exception $e ) {
+			unset( $e ); // SKU already taken elsewhere — leave it; the label prints without a barcode as before.
+		}
 	}
 
 	public function remove_by_product( int $product_id ): bool {
@@ -177,6 +257,22 @@ class PrintQueue {
 		// Fall back to the product's stored label template when none is explicitly passed.
 		if ( ! $label_id ) {
 			$label_id = (int) get_post_meta( $product_id, '_wcbp_label_template_id', true );
+		}
+
+		// Variable products queue each variation, so every label carries that variation's barcode and attributes.
+		$variations = $variation_id ? array() : $this->get_variations( $product_id );
+		if ( $variations ) {
+			$result = $this->add_variations( $product_id, $variations, ! empty( $_POST['replace'] ), $qty, $label_id );
+			wp_send_json_success( array(
+				'count'       => $this->get_count(),
+				'button_text' => sprintf(
+					/* translators: 1: number of variations, 2: number of labels */
+					_n( '✓ %1$d variation (%2$d labels)', '✓ %1$d variations (%2$d labels)', $result['rows'], 'woo-barcode-pro' ),
+					$result['rows'],
+					$result['labels']
+				),
+				'message'     => __( 'Added to print queue.', 'woo-barcode-pro' ),
+			) );
 		}
 
 		// "Add Stock To Print" sends replace=1 to set the count; "+1" omits it to merge.
