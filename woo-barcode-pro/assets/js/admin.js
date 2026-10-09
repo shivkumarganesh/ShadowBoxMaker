@@ -43,7 +43,7 @@
 		}, function (res) {
 			$btn.prop('disabled', false);
 			if (res.success) {
-				$btn.text(wcbpAdmin.strings.added);
+				$btn.text(res.data.button_text || wcbpAdmin.strings.added);
 				$('.wcbp-queue-count').text(res.data.count);
 			} else {
 				$btn.text(wcbpAdmin.strings.error);
@@ -64,9 +64,9 @@
 		}, function (res) {
 			$btn.prop('disabled', false);
 			if (res.success) {
-				$btn.text(wcbpAdmin.strings.added_one);
+				$btn.text(res.data.button_text || wcbpAdmin.strings.added_one);
 				$('.wcbp-queue-count').text(res.data.count);
-				setTimeout(function () { $btn.text(origText); }, 2000);
+				setTimeout(function () { $btn.text(origText); }, res.data.button_text ? 3000 : 2000);
 			} else {
 				$btn.text(wcbpAdmin.strings.error);
 				setTimeout(function () { $btn.text(origText); }, 2000);

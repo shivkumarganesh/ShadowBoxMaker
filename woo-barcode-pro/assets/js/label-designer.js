@@ -165,6 +165,7 @@
 					style  += 'font-size:' + (el.fontSize || 8) + 'pt;font-weight:' + (el.bold ? '700' : '400') + ';text-align:' + (el.align || 'left') + ';display:flex;align-items:center;justify-content:' + jc + ';font-family:Arial,sans-serif;';
 					if      (el.id === 'company') { content = esc(companyName || ''); }
 					else if (el.id === 'name')    { content = esc(mockName); }
+					else if (el.id === 'variant') { content = 'Blue / M'; }
 					else if (el.id === 'price')   { content = esc(mockPrice); }
 					else if (el.id === 'sku')     { content = esc(mockSku); }
 				}

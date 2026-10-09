@@ -333,6 +333,9 @@ class Admin {
 					<?php esc_html_e( 'Add to Queue +1', 'woo-barcode-pro' ); ?>
 				</button>
 			</p>
+			<?php if ( $product && $product->is_type( 'variable' ) ) : ?>
+				<p class="description"><?php esc_html_e( 'Variable product: each variation is queued with its own barcode, stock count and attributes.', 'woo-barcode-pro' ); ?></p>
+			<?php endif; ?>
 		</div>
 		<?php
 	}
@@ -380,11 +383,18 @@ class Admin {
 		if ( 'wcbp_barcode' !== $column ) {
 			return;
 		}
-		$svg = \WCBarcodePro\wcbp_product_barcode_svg( $post_id, 0, array( 'height' => 32, 'module_width' => 1, 'show_text' => false ) );
-		if ( $svg ) {
-			$product   = wc_get_product( $post_id );
+		$product     = wc_get_product( $post_id );
+		$is_variable = $product && $product->is_type( 'variable' );
+		$svg         = $is_variable ? '' : \WCBarcodePro\wcbp_product_barcode_svg( $post_id, 0, array( 'height' => 32, 'module_width' => 1, 'show_text' => false ) );
+		if ( $svg || $is_variable ) {
 			$stock_qty = ( $product && $product->managing_stock() ) ? max( 1, (int) $product->get_stock_quantity() ) : 1;
-			echo $svg; // phpcs:ignore WordPress.Security
+			if ( $is_variable ) {
+				$n = count( PrintQueue::get_instance()->get_variations( $post_id ) );
+				/* translators: %d: number of variations */
+				echo '<span class="description">' . esc_html( sprintf( _n( '%d variation — one barcode each', '%d variations — one barcode each', $n, 'woo-barcode-pro' ), $n ) ) . '</span>';
+			} else {
+				echo $svg; // phpcs:ignore WordPress.Security
+			}
 			echo '<br><button type="button" class="button button-small wcbp-add-stock-queue"' .
 				' data-product-id="' . esc_attr( (string) $post_id ) . '"' .
 				' data-stock-qty="' . esc_attr( (string) $stock_qty ) . '">' .

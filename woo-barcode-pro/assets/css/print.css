@@ -130,12 +130,28 @@ body.wcbp-print-body {
 .wcbp-label-price { font-size: 9pt; font-weight: 700; }
 .wcbp-label-sku   { font-size: 7pt; color: #555; }
 .wcbp-label-attrs { font-size: 6.5pt; color: #555; }
+/* Variation attributes wrap (max 2 lines) rather than truncate — the size is usually last and must stay visible. */
+.wcbp-label-variant {
+	font-size: 6.5pt;
+	font-weight: 600;
+	line-height: 1.1;
+	width: 100%;
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	line-clamp: 2;
+	overflow: hidden;
+	overflow-wrap: anywhere;
+	flex-shrink: 0;
+}
 .wcbp-label-custom-meta { font-size: 6.5pt; }
 .wcbp-label-logo  { max-width: 60px; max-height: 20px; object-fit: contain; }
 
 /* Visual (drag-and-drop) layout */
 .wcbp-layout-visual { position: relative !important; }
 .wcbp-label-visual  { position: relative; width: 100%; height: 100%; overflow: hidden; }
+/* In the visual layout the element's own font settings apply. */
+.wcbp-label-visual .wcbp-label-variant { font-size: inherit; font-weight: inherit; text-align: inherit; }
 
 /* Horizontal layout — right-align info column for a tighter, more premium look */
 .wcbp-layout-horizontal .wcbp-label-info {
@@ -150,6 +166,7 @@ body.wcbp-print-body {
 .wcbp-layout-horizontal .wcbp-label-price { display: block; width: 100%; text-align: right; }
 .wcbp-layout-horizontal .wcbp-label-sku   { text-align: right; }
 .wcbp-layout-horizontal .wcbp-label-attrs { text-align: right; }
+.wcbp-layout-horizontal .wcbp-label-variant { text-align: right; }
 .wcbp-layout-horizontal .wcbp-label-custom-meta { text-align: right; }
 
 /* ── Print @media ────────────────────────────────────────────────────────── */
