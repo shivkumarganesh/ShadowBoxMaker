@@ -176,29 +176,33 @@ defined( 'ABSPATH' ) || exit;
 				<label>
 					<input type="checkbox" id="wcbp-has-sizes" />
 					<?php esc_html_e( 'Sizes (S – XXL)', 'woo-barcode-pro' ); ?>
-					<span style="font-weight:400;color:#999"><?php esc_html_e( '— one variation per size', 'woo-barcode-pro' ); ?></span>
+					<span style="font-weight:400;color:#999"><?php esc_html_e( '— optional colors per size', 'woo-barcode-pro' ); ?></span>
 				</label>
 			</div>
 
 			<div class="wcbp-qa-field" id="wcbp-sizes-panel" style="display:none">
-				<div class="wcbp-size-head">
-					<span><?php esc_html_e( 'Size', 'woo-barcode-pro' ); ?></span>
-					<span><?php esc_html_e( 'Units', 'woo-barcode-pro' ); ?></span>
-					<span><?php esc_html_e( 'Price', 'woo-barcode-pro' ); ?></span>
-				</div>
 				<?php foreach ( \WCBarcodePro\Admin\QuickAdd::SIZES as $size_code ) : ?>
 				<div class="wcbp-size-row" data-size="<?php echo esc_attr( $size_code ); ?>">
-					<span class="wcbp-size-code"><?php echo esc_html( $size_code ); ?></span>
-					<span class="wcbp-size-stepper">
-						<button type="button" class="wcbp-size-minus" aria-label="<?php esc_attr_e( 'Less', 'woo-barcode-pro' ); ?>">−</button>
-						<input type="number" class="wcbp-size-qty" min="0" step="1" value="0" inputmode="numeric" aria-label="<?php echo esc_attr( $size_code ); ?>" />
-						<button type="button" class="wcbp-size-plus" aria-label="<?php esc_attr_e( 'More', 'woo-barcode-pro' ); ?>">+</button>
-					</span>
-					<input type="number" class="wcbp-size-price" step="0.01" min="0" inputmode="decimal" placeholder="<?php esc_attr_e( 'same', 'woo-barcode-pro' ); ?>" />
+					<div class="wcbp-size-main">
+						<span class="wcbp-size-code"><?php echo esc_html( $size_code ); ?></span>
+						<input type="text" class="wcbp-size-colors" autocomplete="off" autocapitalize="words"
+						       aria-label="<?php echo esc_attr( sprintf( /* translators: %s: size */ __( 'Colors for %s', 'woo-barcode-pro' ), $size_code ) ); ?>"
+						       placeholder="<?php esc_attr_e( 'Colors (optional): Red, Blue', 'woo-barcode-pro' ); ?>" />
+					</div>
+					<div class="wcbp-size-line wcbp-size-line--plain">
+						<span class="wcbp-line-label"></span>
+						<span class="wcbp-size-stepper">
+							<button type="button" class="wcbp-size-minus" aria-label="<?php esc_attr_e( 'Less', 'woo-barcode-pro' ); ?>">−</button>
+							<input type="number" class="wcbp-size-qty" min="0" step="1" value="0" inputmode="numeric" aria-label="<?php echo esc_attr( $size_code ); ?>" />
+							<button type="button" class="wcbp-size-plus" aria-label="<?php esc_attr_e( 'More', 'woo-barcode-pro' ); ?>">+</button>
+						</span>
+						<input type="number" class="wcbp-size-price" step="0.01" min="0" inputmode="decimal" placeholder="<?php esc_attr_e( 'price', 'woo-barcode-pro' ); ?>" />
+					</div>
+					<div class="wcbp-size-color-lines"></div>
 				</div>
 				<?php endforeach; ?>
 				<p class="wcbp-size-help">
-					<span id="wcbp-size-total">0</span> <?php esc_html_e( 'units total. Sizes left at 0 are not created. Blank price = main price.', 'woo-barcode-pro' ); ?>
+					<span id="wcbp-size-total">0</span> <?php esc_html_e( 'units total. Type colors next to a size (comma-separated) to get a line per color. Lines left at 0 are not created; a blank price uses the main price.', 'woo-barcode-pro' ); ?>
 				</p>
 			</div>
 
@@ -252,6 +256,10 @@ window.wcbpQuickAdd = <?php echo wp_json_encode( array(
 		'save'            => __( '✓ Save Product', 'woo-barcode-pro' ),
 		'saved'           => __( 'Product created!', 'woo-barcode-pro' ),
 		'sizes_required'  => __( 'Enter units for at least one size.', 'woo-barcode-pro' ),
+		/* translators: %s: list of sizes */
+		'colors_required' => __( 'Add a color for %s, or remove the colors from every size.', 'woo-barcode-pro' ),
+		'less'            => __( 'Less', 'woo-barcode-pro' ),
+		'more'            => __( 'More', 'woo-barcode-pro' ),
 		'view'            => __( 'Edit →', 'woo-barcode-pro' ),
 		'error'           => __( 'Something went wrong.', 'woo-barcode-pro' ),
 		'no_camera_api'   => __( 'Live scanning not supported on this browser. Please type the barcode manually.', 'woo-barcode-pro' ),

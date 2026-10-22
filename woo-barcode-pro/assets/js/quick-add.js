@@ -317,24 +317,103 @@
 	});
 	$('#wcbp-sizes-panel').on('input', '.wcbp-size-qty', updateSizeTotal);
 
+	// Typing colors next to a size adds a line per color, live (saved only on Save).
+	$('#wcbp-sizes-panel').on('input', '.wcbp-size-colors', function () {
+		syncColorLines($(this).closest('.wcbp-size-row'));
+	});
+
+	function textHtml(str) { return $('<span>').text(String(str)).html(); }
+
+	function parseColors(text) {
+		var seen = {}, out = [];
+		String(text).split(',').forEach(function (c) {
+			c = $.trim(c);
+			var key = c.toLowerCase();
+			if (c && !seen[key]) { seen[key] = true; out.push(c); }
+		});
+		return out;
+	}
+
+	function colorLine(color) {
+		var $line = $('#wcbp-sizes-panel .wcbp-size-line--plain').first().clone()
+			.removeClass('wcbp-size-line--plain').show();
+		$line.find('.wcbp-size-qty').val('0').attr('aria-label', color);
+		$line.find('.wcbp-size-price').val('');
+		return $line;
+	}
+
+	function syncColorLines($row) {
+		var colors = parseColors($row.find('.wcbp-size-colors').val());
+		var keys   = colors.map(function (c) { return c.toLowerCase(); });
+		var $box   = $row.find('.wcbp-size-color-lines');
+		var old    = $box.children('.wcbp-size-line').toArray();
+		var byKey  = {};
+		old.forEach(function (el) { byKey[$(el).attr('data-key')] = el; });
+
+		var lines = colors.map(function (color, i) {
+			var key = keys[i];
+			var el  = byKey[key];
+			// An edited color ("Re" → "Red") keeps the units already entered on that line.
+			if (!el && old[i] && keys.indexOf($(old[i]).attr('data-key')) === -1) { el = old[i]; }
+			var $line = el ? $(el) : colorLine(color);
+			$line.attr('data-key', key).attr('data-color', color);
+			$line.find('.wcbp-line-label').html(textHtml(color));
+			return $line.get(0);
+		});
+		$box.empty().append(lines);
+		$row.find('.wcbp-size-line--plain').toggle(colors.length === 0);
+		updateSizeTotal();
+	}
+
+	// Lines that count: the color lines when a size has colors, otherwise the plain line.
+	function sizeLines($row) {
+		var $colored = $row.find('.wcbp-size-color-lines .wcbp-size-line');
+		return $colored.length ? $colored : $row.find('.wcbp-size-line--plain');
+	}
+
+	function lineQty($line) {
+		return Math.max(0, parseInt($line.find('.wcbp-size-qty').val(), 10) || 0);
+	}
+
 	function updateSizeTotal() {
 		var total = 0;
 		$('.wcbp-size-row').each(function () {
-			var n = Math.max(0, parseInt($(this).find('.wcbp-size-qty').val(), 10) || 0);
-			$(this).toggleClass('has-qty', n > 0);
-			total += n;
+			var rowTotal = 0;
+			sizeLines($(this)).each(function () {
+				var n = lineQty($(this));
+				$(this).toggleClass('has-qty', n > 0);
+				rowTotal += n;
+			});
+			$(this).toggleClass('has-qty', rowTotal > 0);
+			total += rowTotal;
 		});
 		$('#wcbp-size-total').text(total);
 		return total;
 	}
 
+	// Sizes with units but no color, while another size uses colors.
+	function sizesMissingColor() {
+		var colored = false, missing = [];
+		$('.wcbp-size-row').each(function () {
+			var $row = $(this);
+			if ($row.find('.wcbp-size-color-lines .wcbp-size-line').length) {
+				sizeLines($row).each(function () { if (lineQty($(this)) > 0) { colored = true; } });
+			} else if (lineQty($row.find('.wcbp-size-line--plain')) > 0) {
+				missing.push($row.data('size'));
+			}
+		});
+		return colored ? missing : [];
+	}
+
 	function collectSizes() {
 		var sizes = {};
 		$('.wcbp-size-row').each(function () {
-			sizes[$(this).data('size')] = {
-				qty   : Math.max(0, parseInt($(this).find('.wcbp-size-qty').val(), 10) || 0),
-				price : $(this).find('.wcbp-size-price').val(),
-			};
+			var $row   = $(this);
+			var $plain = $row.find('.wcbp-size-line--plain');
+			var colors = $row.find('.wcbp-size-color-lines .wcbp-size-line').map(function () {
+				return { name: $(this).attr('data-color'), qty: lineQty($(this)), price: $(this).find('.wcbp-size-price').val() };
+			}).get();
+			sizes[$row.data('size')] = { qty: lineQty($plain), price: $plain.find('.wcbp-size-price').val(), colors: colors };
 		});
 		return sizes;
 	}
@@ -350,6 +429,12 @@
 		if (hasSizes && updateSizeTotal() === 0) {
 			$('#wcbp-result').html('<span class="wcbp-error">' + wcbpQuickAdd.strings.sizes_required + '</span>').show();
 			$('.wcbp-size-qty').first().focus();
+			return;
+		}
+		var missing = hasSizes ? sizesMissingColor() : [];
+		if (missing.length) {
+			$('#wcbp-result').html('<span class="wcbp-error">' + textHtml(wcbpQuickAdd.strings.colors_required.replace('%s', missing.join(', '))) + '</span>').show();
+			$('.wcbp-size-row[data-size="' + missing[0] + '"] .wcbp-size-colors').focus();
 			return;
 		}
 
@@ -395,6 +480,9 @@
 		$('#wcbp-barcode-input').val('');
 		$('#wcbp-name, #wcbp-sku, #wcbp-price, #wcbp-template-id').val('');
 		$('#wcbp-stock-qty').val('1');
+		$('.wcbp-size-color-lines').empty();
+		$('.wcbp-size-colors').val('');
+		$('.wcbp-size-line--plain').show();
 		$('.wcbp-size-qty').val('0');
 		$('.wcbp-size-price').val('');
 		updateSizeTotal();
