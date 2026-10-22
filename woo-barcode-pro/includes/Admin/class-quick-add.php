@@ -251,36 +251,45 @@ class QuickAdd {
 	}
 
 	/**
-	 * Variable product with one variation per size that has stock; labels queued per variation.
+	 * Variable product with one variation per size — or per size + color — that has units; labels queued per variation.
 	 *
-	 * @param array $sizes [ 'S' => [ 'qty' => 2, 'price' => '' ], ... ]
+	 * @param array $sizes [ 'S' => [ 'qty' => 2, 'price' => '', 'colors' => [ [ 'name' => 'Red', 'qty' => 1, 'price' => '' ] ] ], ... ]
 	 */
 	private function save_sized_product( string $name, float $price, array $category_ids, array $tag_ids, array $image_ids, string $sku, array $sizes, int $label_tpl_id ): void {
-		$wanted = array();
-		foreach ( self::SIZES as $code ) {
-			$qty = max( 0, (int) ( $sizes[ $code ]['qty'] ?? 0 ) );
-			if ( $qty > 0 ) {
-				$size_price      = trim( (string) ( $sizes[ $code ]['price'] ?? '' ) );
-				$wanted[ $code ] = array(
-					'qty'   => $qty,
-					'price' => '' !== $size_price ? (float) $size_price : $price,
+		$lines = $this->size_lines( $sizes, $price );
+		if ( is_wp_error( $lines ) ) {
+			wp_send_json_error( array( 'message' => $lines->get_error_message() ) );
+		}
+
+		$size_wanted  = array();
+		$color_wanted = array();
+		foreach ( $lines as $line ) {
+			$size_wanted[ $line['size'] ] = array( 'name' => $line['size'], 'aliases' => self::SIZE_ALIASES[ $line['size'] ] );
+			if ( '' !== $line['color'] && ! isset( $color_wanted[ strtolower( $line['color'] ) ] ) ) {
+				$color_wanted[ strtolower( $line['color'] ) ] = array(
+					'name'    => $line['color'],
+					'aliases' => array( strtolower( $line['color'] ), sanitize_title( $line['color'] ) ),
 				);
 			}
 		}
-		if ( ! $wanted ) {
-			wp_send_json_error( array( 'message' => __( 'Enter units for at least one size.', 'woo-barcode-pro' ) ) );
-		}
 
-		$size = $this->size_attribute( array_keys( $wanted ) );
+		$size = $this->global_attribute( array( 'size' ), 'Size', $size_wanted );
 		if ( is_wp_error( $size ) ) {
 			wp_send_json_error( array( 'message' => $size->get_error_message() ) );
+		}
+		$color = null;
+		if ( $color_wanted ) {
+			$color = $this->global_attribute( array( 'color', 'colour' ), 'Color', $color_wanted );
+			if ( is_wp_error( $color ) ) {
+				wp_send_json_error( array( 'message' => $color->get_error_message() ) );
+			}
 		}
 
 		$product = new \WC_Product_Variable();
 		$product->set_name( $name );
 		$product->set_status( 'publish' );
 		$product->set_catalog_visibility( 'visible' );
-		$product->set_manage_stock( false ); // Stock lives on each size.
+		$product->set_manage_stock( false ); // Stock lives on each variation.
 		if ( $sku ) {
 			try {
 				$product->set_sku( $sku );
@@ -302,13 +311,12 @@ class QuickAdd {
 			$product->set_tag_ids( $tag_ids );
 		}
 
-		$attr = new \WC_Product_Attribute();
-		$attr->set_id( $size['attribute_id'] );
-		$attr->set_name( $size['taxonomy'] );
-		$attr->set_options( array_map( static fn( $t ) => $t['term_id'], array_values( $size['terms'] ) ) );
-		$attr->set_visible( true );
-		$attr->set_variation( true );
-		$product->set_attributes( array( $attr ) );
+		// Size first, so labels read "M / Red" and the size survives on narrow labels.
+		$attrs = array( $this->variation_attribute( $size ) );
+		if ( $color ) {
+			$attrs[] = $this->variation_attribute( $color );
+		}
+		$product->set_attributes( $attrs );
 
 		$product_id = $product->save();
 		if ( ! $product_id ) {
@@ -320,15 +328,19 @@ class QuickAdd {
 			\WCBarcodePro\Barcode\SkuManager::get_instance()->auto_generate_sku( $product_id );
 		}
 
-		// No SKU here: queuing below gives each size prefix + ID (e.g. YKS-4141). Longer SKUs such as
-		// YKS-4140-M don't fit a scannable barcode on small (1.4") labels.
-		foreach ( $wanted as $code => $row ) {
+		// No SKU here: queuing below gives each variation prefix + ID (e.g. YKS-4141). Longer SKUs such as
+		// YKS-4140-M-RED don't fit a scannable barcode on small (1.4") labels.
+		foreach ( $lines as $line ) {
+			$values = array( $size['taxonomy'] => $size['terms'][ $line['size'] ]['slug'] );
+			if ( $color ) {
+				$values[ $color['taxonomy'] ] = $color['terms'][ strtolower( $line['color'] ) ]['slug'];
+			}
 			$variation = new \WC_Product_Variation();
 			$variation->set_parent_id( $product_id );
-			$variation->set_attributes( array( $size['taxonomy'] => $size['terms'][ $code ]['slug'] ) );
-			$variation->set_regular_price( (string) $row['price'] );
+			$variation->set_attributes( $values );
+			$variation->set_regular_price( (string) $line['price'] );
 			$variation->set_manage_stock( true );
-			$variation->set_stock_quantity( $row['qty'] );
+			$variation->set_stock_quantity( $line['qty'] );
 			$variation->set_stock_status( 'instock' );
 			$variation->save();
 		}
@@ -347,8 +359,8 @@ class QuickAdd {
 			'product_id' => $product_id,
 			'edit_url'   => get_edit_post_link( $product_id, 'raw' ),
 			'message'    => sprintf(
-				/* translators: 1: number of sizes, 2: number of labels */
-				__( 'Product created with %1$d sizes; %2$d labels added to print queue.', 'woo-barcode-pro' ),
+				/* translators: 1: number of variations, 2: number of labels */
+				__( 'Product created with %1$d variations; %2$d labels added to print queue.', 'woo-barcode-pro' ),
 				$result['rows'],
 				$result['labels']
 			),
@@ -356,26 +368,86 @@ class QuickAdd {
 	}
 
 	/**
-	 * The global "Size" attribute (created if missing) and a term for each requested size code,
-	 * reusing existing terms such as "Medium" or "m".
+	 * Posted size rows → one line per variation to create: [ size, color, qty, price ].
+	 * Lines with 0 units are dropped; a color typed twice for the same size is merged.
 	 *
+	 * @return array|\WP_Error
+	 */
+	private function size_lines( array $sizes, float $price ) {
+		$lines = array();
+		foreach ( self::SIZES as $code ) {
+			$row     = (array) ( $sizes[ $code ] ?? array() );
+			$colors  = array_filter( (array) ( $row['colors'] ?? array() ), 'is_array' );
+			$entries = $colors ? $colors : array( array( 'name' => '', 'qty' => $row['qty'] ?? 0, 'price' => $row['price'] ?? '' ) );
+			foreach ( $entries as $entry ) {
+				$qty = max( 0, (int) ( $entry['qty'] ?? 0 ) );
+				if ( ! $qty ) {
+					continue;
+				}
+				$color = trim( sanitize_text_field( wp_unslash( (string) ( $entry['name'] ?? '' ) ) ) );
+				$key   = $code . '|' . strtolower( $color );
+				if ( isset( $lines[ $key ] ) ) {
+					$lines[ $key ]['qty'] += $qty;
+					continue;
+				}
+				$line_price    = trim( (string) ( $entry['price'] ?? '' ) );
+				$lines[ $key ] = array(
+					'size'  => $code,
+					'color' => $color,
+					'qty'   => $qty,
+					'price' => '' !== $line_price ? (float) $line_price : $price,
+				);
+			}
+		}
+		if ( ! $lines ) {
+			return new \WP_Error( 'wcbp_no_units', __( 'Enter units for at least one size.', 'woo-barcode-pro' ) );
+		}
+
+		// Mixing colored and uncolored lines would create "any color" variations.
+		$uncolored = array_filter( $lines, static fn( $l ) => '' === $l['color'] );
+		if ( $uncolored && count( $uncolored ) !== count( $lines ) ) {
+			return new \WP_Error(
+				'wcbp_color_missing',
+				/* translators: %s: list of sizes, e.g. "S, XL" */
+				sprintf( __( 'Add a color for %s, or remove the colors from every size.', 'woo-barcode-pro' ), implode( ', ', array_unique( array_column( $uncolored, 'size' ) ) ) )
+			);
+		}
+		return array_values( $lines );
+	}
+
+	private function variation_attribute( array $attribute ): \WC_Product_Attribute {
+		$attr = new \WC_Product_Attribute();
+		$attr->set_id( $attribute['attribute_id'] );
+		$attr->set_name( $attribute['taxonomy'] );
+		$attr->set_options( array_map( static fn( $t ) => $t['term_id'], array_values( $attribute['terms'] ) ) );
+		$attr->set_visible( true );
+		$attr->set_variation( true );
+		return $attr;
+	}
+
+	/**
+	 * A global attribute (created if missing) with a term for each wanted value, reusing existing
+	 * terms whose name or slug matches (so "Medium" or "red" already in the store are not duplicated).
+	 *
+	 * @param string[] $names  Attribute slugs/labels that count as this attribute; the first is used when creating it.
+	 * @param array    $wanted key => [ 'name' => term name if created, 'aliases' => lowercase names/slugs that match ]
 	 * @return array{attribute_id:int,taxonomy:string,terms:array}|\WP_Error
 	 */
-	private function size_attribute( array $codes ) {
+	private function global_attribute( array $names, string $label, array $wanted ) {
 		$attribute_id = 0;
+		$slug         = $names[0];
 		foreach ( wc_get_attribute_taxonomies() as $tax ) {
-			if ( 'size' === strtolower( $tax->attribute_name ) || 'size' === strtolower( $tax->attribute_label ) ) {
+			if ( in_array( strtolower( $tax->attribute_name ), $names, true ) || in_array( strtolower( $tax->attribute_label ), $names, true ) ) {
 				$attribute_id = (int) $tax->attribute_id;
 				$slug         = $tax->attribute_name;
 				break;
 			}
 		}
 		if ( ! $attribute_id ) {
-			$attribute_id = wc_create_attribute( array( 'name' => 'Size', 'slug' => 'size', 'type' => 'select', 'order_by' => 'menu_order' ) );
+			$attribute_id = wc_create_attribute( array( 'name' => $label, 'slug' => $slug, 'type' => 'select', 'order_by' => 'menu_order' ) );
 			if ( is_wp_error( $attribute_id ) ) {
 				return $attribute_id;
 			}
-			$slug = 'size';
 		}
 
 		$taxonomy = wc_attribute_taxonomy_name( $slug );
@@ -388,22 +460,23 @@ class QuickAdd {
 		$existing = is_wp_error( $existing ) ? array() : $existing;
 
 		$terms = array();
-		foreach ( $codes as $code ) {
+		foreach ( $wanted as $key => $want ) {
 			$match = null;
 			foreach ( $existing as $term ) {
-				if ( in_array( strtolower( $term->name ), self::SIZE_ALIASES[ $code ], true ) || in_array( strtolower( $term->slug ), self::SIZE_ALIASES[ $code ], true ) ) {
+				if ( in_array( strtolower( $term->name ), $want['aliases'], true ) || in_array( strtolower( $term->slug ), $want['aliases'], true ) ) {
 					$match = $term;
 					break;
 				}
 			}
 			if ( ! $match ) {
-				$inserted = wp_insert_term( $code, $taxonomy, array( 'slug' => strtolower( $code ) ) );
+				$inserted = wp_insert_term( $want['name'], $taxonomy, array( 'slug' => sanitize_title( $want['name'] ) ) );
 				if ( is_wp_error( $inserted ) ) {
 					return $inserted;
 				}
-				$match = get_term( (int) $inserted['term_id'], $taxonomy );
+				$match    = get_term( (int) $inserted['term_id'], $taxonomy );
+				$existing[] = $match;
 			}
-			$terms[ $code ] = array( 'term_id' => (int) $match->term_id, 'slug' => $match->slug );
+			$terms[ $key ] = array( 'term_id' => (int) $match->term_id, 'slug' => $match->slug );
 		}
 
 		return array( 'attribute_id' => (int) $attribute_id, 'taxonomy' => $taxonomy, 'terms' => $terms );

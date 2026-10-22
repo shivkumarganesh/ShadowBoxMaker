@@ -212,25 +212,34 @@ body.wcbp-quick-add-body {
 	cursor: pointer;
 }
 .wcbp-qa-sizes-toggle input[type="checkbox"] { width: 20px; height: 20px; margin: 0; }
-.wcbp-size-head,
 .wcbp-size-row {
+	padding: 8px 2px;
+	border-top: 1px solid #f0f0f1;
+}
+.wcbp-size-main {
 	display: grid;
-	grid-template-columns: 52px 1fr 92px;
+	grid-template-columns: 52px 1fr;
 	align-items: center;
 	gap: 10px;
 }
-.wcbp-size-head {
-	font-size: 11px;
+.wcbp-qa-field input.wcbp-size-colors { padding: 8px 10px; font-size: 15px; }
+.wcbp-size-line {
+	display: grid;
+	grid-template-columns: 52px 1fr 84px;
+	align-items: center;
+	gap: 10px;
+	margin-top: 6px;
+}
+.wcbp-line-label {
+	font-size: 13px;
 	font-weight: 600;
-	color: #757575;
-	text-transform: uppercase;
-	letter-spacing: .4px;
-	padding: 0 2px 4px;
+	color: #50575e;
+	text-align: right;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
-.wcbp-size-row {
-	padding: 6px 2px;
-	border-top: 1px solid #f0f0f1;
-}
+.wcbp-size-color-lines .wcbp-size-line { padding-left: 0; }
 .wcbp-size-code {
 	font-size: 17px;
 	font-weight: 700;
