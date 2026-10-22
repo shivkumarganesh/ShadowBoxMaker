@@ -172,7 +172,37 @@ defined( 'ABSPATH' ) || exit;
 				<input id="wcbp-sku" name="sku" type="text" placeholder="<?php esc_attr_e( 'Leave blank to auto-generate', 'woo-barcode-pro' ); ?>" />
 			</div>
 
-			<div class="wcbp-qa-field wcbp-qa-field--inline">
+			<div class="wcbp-qa-field wcbp-qa-sizes-toggle">
+				<label>
+					<input type="checkbox" id="wcbp-has-sizes" />
+					<?php esc_html_e( 'Sizes (S – XXL)', 'woo-barcode-pro' ); ?>
+					<span style="font-weight:400;color:#999"><?php esc_html_e( '— one variation per size', 'woo-barcode-pro' ); ?></span>
+				</label>
+			</div>
+
+			<div class="wcbp-qa-field" id="wcbp-sizes-panel" style="display:none">
+				<div class="wcbp-size-head">
+					<span><?php esc_html_e( 'Size', 'woo-barcode-pro' ); ?></span>
+					<span><?php esc_html_e( 'Units', 'woo-barcode-pro' ); ?></span>
+					<span><?php esc_html_e( 'Price', 'woo-barcode-pro' ); ?></span>
+				</div>
+				<?php foreach ( \WCBarcodePro\Admin\QuickAdd::SIZES as $size_code ) : ?>
+				<div class="wcbp-size-row" data-size="<?php echo esc_attr( $size_code ); ?>">
+					<span class="wcbp-size-code"><?php echo esc_html( $size_code ); ?></span>
+					<span class="wcbp-size-stepper">
+						<button type="button" class="wcbp-size-minus" aria-label="<?php esc_attr_e( 'Less', 'woo-barcode-pro' ); ?>">−</button>
+						<input type="number" class="wcbp-size-qty" min="0" step="1" value="0" inputmode="numeric" aria-label="<?php echo esc_attr( $size_code ); ?>" />
+						<button type="button" class="wcbp-size-plus" aria-label="<?php esc_attr_e( 'More', 'woo-barcode-pro' ); ?>">+</button>
+					</span>
+					<input type="number" class="wcbp-size-price" step="0.01" min="0" inputmode="decimal" placeholder="<?php esc_attr_e( 'same', 'woo-barcode-pro' ); ?>" />
+				</div>
+				<?php endforeach; ?>
+				<p class="wcbp-size-help">
+					<span id="wcbp-size-total">0</span> <?php esc_html_e( 'units total. Sizes left at 0 are not created. Blank price = main price.', 'woo-barcode-pro' ); ?>
+				</p>
+			</div>
+
+			<div class="wcbp-qa-field wcbp-qa-field--inline" id="wcbp-stock-qty-field">
 				<label for="wcbp-stock-qty"><?php esc_html_e( 'Units in stock', 'woo-barcode-pro' ); ?></label>
 				<input id="wcbp-stock-qty" name="stock_qty" type="number" min="0" step="1" value="1" class="wcbp-qty-input" />
 			</div>
@@ -221,6 +251,7 @@ window.wcbpQuickAdd = <?php echo wp_json_encode( array(
 		'saving'          => __( 'Saving…', 'woo-barcode-pro' ),
 		'save'            => __( '✓ Save Product', 'woo-barcode-pro' ),
 		'saved'           => __( 'Product created!', 'woo-barcode-pro' ),
+		'sizes_required'  => __( 'Enter units for at least one size.', 'woo-barcode-pro' ),
 		'view'            => __( 'Edit →', 'woo-barcode-pro' ),
 		'error'           => __( 'Something went wrong.', 'woo-barcode-pro' ),
 		'no_camera_api'   => __( 'Live scanning not supported on this browser. Please type the barcode manually.', 'woo-barcode-pro' ),
