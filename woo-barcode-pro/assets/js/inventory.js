@@ -369,6 +369,8 @@
 
 		var video    = document.getElementById('wcbp-camera-video');
 		var $modal   = $('#wcbp-camera-modal');
+		// Inside a hidden tab the preview can't show; keep the window directly under <body>.
+		if (!$modal.parent().is('body')) { $modal.appendTo(document.body); }
 		var scanning = true;
 
 		navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } } })
@@ -382,6 +384,7 @@
 
 				function tick() {
 					if (!scanning) return;
+					if (!$modal.is(':visible')) { closeCamera(); return; } // never scan without a visible preview
 					if (video.readyState < video.HAVE_ENOUGH_DATA) { requestAnimationFrame(tick); return; }
 					detector.detect(video).then(function (codes) {
 						if (codes.length && scanning) {
@@ -403,10 +406,14 @@
 			scanning = false;
 			if (_cameraStream) { _cameraStream.getTracks().forEach(function (t) { t.stop(); }); _cameraStream = null; }
 			if (video) { video.srcObject = null; }
+			$(document).off('visibilitychange.wcbpcam');
 			$modal.hide();
 		}
 
 		$('#wcbp-camera-close').off('click').on('click', closeCamera);
+		$(document).off('visibilitychange.wcbpcam').on('visibilitychange.wcbpcam', function () {
+			if (document.hidden) { closeCamera(); }
+		});
 	}
 
 }(jQuery));

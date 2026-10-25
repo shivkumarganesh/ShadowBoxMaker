@@ -24,6 +24,7 @@ defined( 'ABSPATH' ) || exit;
 <link rel="stylesheet" href="<?php echo esc_url( WCBP_PLUGIN_URL . 'assets/css/quick-add.css?ver=' . WCBP_VERSION ); ?>" />
 </head>
 <body class="wcbp-quick-add-body">
+<?php include WCBP_PLUGIN_DIR . 'templates/admin/camera-modal.php'; // Outside the tabs so every tab can show it. ?>
 
 <div class="wcbp-qa-wrap">
 	<div class="wcbp-qa-header">
@@ -54,7 +55,6 @@ defined( 'ABSPATH' ) || exit;
 			<button id="wcbp-scan-btn" type="button" title="<?php esc_attr_e( 'Scan barcode with camera', 'woo-barcode-pro' ); ?>">📷</button>
 		</div>
 		<div id="wcbp-scan-status"></div>
-		<?php include WCBP_PLUGIN_DIR . 'templates/admin/camera-modal.php'; ?>
 
 		<!-- Draft inventory panel -->
 		<div id="wcbp-draft-panel" style="margin-bottom:16px">
