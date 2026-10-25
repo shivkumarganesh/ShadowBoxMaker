@@ -161,21 +161,37 @@ class StockView {
 			}
 			$all_cat_ids = array_merge( $all_cat_ids, $cat_ids );
 
+			// One card per variable product, with a count per size/color.
 			if ( $product->is_type( 'variable' ) ) {
+				$variants = array();
+				$total    = null;
 				foreach ( $product->get_children() as $var_id ) {
 					$variation = wc_get_product( $var_id );
-					if ( ! $variation ) {
+					if ( ! $variation || 'publish' !== $variation->get_status() ) {
 						continue;
 					}
-					$thumb_id = get_post_thumbnail_id( $var_id ) ?: get_post_thumbnail_id( $id );
-					$products[] = array(
-						'id'         => $var_id,
-						'name'       => $product->get_name() . ' — ' . wc_get_formatted_variation( $variation, true ),
-						'thumb'      => $thumb_id ? wp_get_attachment_image_url( $thumb_id, 'thumbnail' ) : '',
-						'stock'      => $variation->get_manage_stock() ? (int) $variation->get_stock_quantity() : null,
-						'categories' => $cat_ids,
+					$stock = true === $variation->managing_stock() ? (int) $variation->get_stock_quantity() : null;
+					if ( null !== $stock ) {
+						$total = (int) $total + max( 0, $stock );
+					}
+					$label      = \WCBarcodePro\wcbp_variation_label( $variation );
+					$variants[] = array(
+						'label' => '' !== $label ? $label : $variation->get_name(),
+						'stock' => $stock,
 					);
 				}
+				if ( null === $total && $product->managing_stock() ) {
+					$total = (int) $product->get_stock_quantity(); // Stock kept on the parent.
+				}
+				$thumb_id   = get_post_thumbnail_id( $id );
+				$products[] = array(
+					'id'         => $id,
+					'name'       => $product->get_name(),
+					'thumb'      => $thumb_id ? wp_get_attachment_image_url( $thumb_id, 'thumbnail' ) : '',
+					'stock'      => $total,
+					'categories' => $cat_ids,
+					'variants'   => $variants,
+				);
 				continue;
 			}
 

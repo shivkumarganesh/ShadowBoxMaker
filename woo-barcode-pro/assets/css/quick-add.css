@@ -410,3 +410,119 @@ body.wcbp-quick-add-body {
 @media (min-width: 640px) {
 	.wcbp-qa-wrap { padding: 24px 20px; }
 }
+
+/* ── Tally (scan-to-count) ───────────────────────────────────────────────── */
+#wcbp-tally-go,
+#wcbp-tally-camera {
+	border: none;
+	border-radius: 6px;
+	padding: 10px 14px;
+	font-size: 16px;
+	cursor: pointer;
+	background: #2271b1;
+	color: #fff;
+}
+#wcbp-tally-camera { font-size: 20px; line-height: 1; }
+.wcbp-tally-flash {
+	display: none;
+	margin: 6px 0 12px;
+	padding: 12px 14px;
+	border-radius: 8px;
+	text-align: center;
+	border: 2px solid transparent;
+}
+.wcbp-tally-flash[class*="is-"] { display: block; }
+.wcbp-tally-flash strong { display: block; font-size: 26px; line-height: 1.2; color: #1d2327; }
+.wcbp-tally-flash span { display: block; font-size: 14px; margin-top: 2px; color: #3c434a; }
+.wcbp-tally-flash.is-ok   { background: #edfaef; border-color: #00a32a; }
+.wcbp-tally-flash.is-warn { background: #fcf2e6; border-color: #dba617; }
+.wcbp-tally-flash.is-err  { background: #fcf0f1; border-color: #d63638; }
+.wcbp-tally-flash.is-info { background: #f0f6fc; border-color: #72aee6; }
+.wcbp-tally-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.wcbp-tally-head img { width: 48px; height: 48px; object-fit: cover; border-radius: 6px; }
+.wcbp-tally-name { font-size: 16px; font-weight: 700; color: #1d2327; }
+.wcbp-tally-summary { font-size: 13px; color: #50575e; }
+.wcbp-tally-table { width: 100%; border-collapse: collapse; font-size: 15px; }
+.wcbp-tally-table th {
+	text-align: left;
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: .4px;
+	color: #757575;
+	padding: 4px 6px;
+	border-bottom: 1px solid #dcdcde;
+}
+.wcbp-tally-table td { padding: 8px 6px; border-bottom: 1px solid #f0f0f1; vertical-align: middle; }
+.wcbp-tally-table .t-label { font-weight: 700; color: #1d2327; }
+.wcbp-tally-table .t-sub { font-size: 11px; font-weight: 400; color: #757575; margin-top: 2px; }
+.wcbp-tally-table .t-stock,
+.wcbp-tally-table .t-scan { text-align: center; font-size: 17px; font-weight: 700; white-space: nowrap; }
+.wcbp-tally-table .t-actions { text-align: right; white-space: nowrap; }
+.wcbp-tally-table tr.row-ok    td { background: #edfaef; }
+.wcbp-tally-table tr.row-short td { background: #fcf2e6; }
+.wcbp-tally-table tr.row-over  td { background: #fcf0f1; }
+.wcbp-tally-table tr.row-ok    .t-scan { color: #00a32a; }
+.wcbp-tally-table tr.row-short .t-scan { color: #b26200; }
+.wcbp-tally-table tr.row-over  .t-scan { color: #d63638; }
+.wcbp-tally-table button.t-edit,
+.wcbp-tally-table button.t-reprint,
+.wcbp-tally-table button.t-undo {
+	min-width: 36px;
+	height: 36px;
+	border: 1px solid #c3c4c7;
+	border-radius: 8px;
+	background: #fff;
+	font-size: 16px;
+	cursor: pointer;
+	touch-action: manipulation;
+}
+.wcbp-tally-table button.t-undo { min-width: 28px; height: 28px; margin-left: 6px; font-size: 16px; line-height: 1; }
+.wcbp-tally-table tr.t-editor td { background: #f6f7f7; }
+.t-editor-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.t-editor-row .t-qty {
+	width: 64px;
+	text-align: center;
+	font-size: 18px;
+	font-weight: 700;
+	padding: 8px 4px;
+	border: 1px solid #c3c4c7;
+	border-radius: 6px;
+}
+.t-editor-row .t-minus,
+.t-editor-row .t-plus {
+	width: 40px;
+	height: 40px;
+	border: 1px solid #c3c4c7;
+	border-radius: 8px;
+	background: #f6f7f7;
+	font-size: 22px;
+	line-height: 1;
+	cursor: pointer;
+}
+.wcbp-tally-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
+.wcbp-tally-actions .button { padding: 6px 12px; }
+.wcbp-tally-help { font-size: 12px; color: #757575; margin-top: 14px; line-height: 1.5; }
+.wcbp-tally-actions button,
+.t-editor-row .button {
+	border: 1px solid #2271b1;
+	border-radius: 8px;
+	background: #fff;
+	color: #2271b1;
+	font-size: 15px;
+	padding: 9px 14px;
+	cursor: pointer;
+}
+#wcbp-tally-queue-missing,
+.t-editor-row .t-save { background: #2271b1; color: #fff; }
+.wcbp-tally-actions button:disabled { opacity: .45; cursor: default; }
+#wcbp-tally-reset,
+.t-editor-row .t-cancel {
+	border: none;
+	background: none;
+	color: #b32d2e;
+	text-decoration: underline;
+	padding: 9px 4px;
+	font-size: 14px;
+	cursor: pointer;
+}
+.t-editor-row .t-cancel { color: #50575e; }

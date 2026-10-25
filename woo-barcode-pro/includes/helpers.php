@@ -58,6 +58,25 @@ function wcbp_barcode_value( int $product_id, int $variation_id = 0 ): string {
 	return '';
 }
 
+/**
+ * Attribute values of a variation, e.g. "M / Red". "Any …" attributes (empty values) are skipped.
+ */
+function wcbp_variation_label( \WC_Product $variation ): string {
+	$parts = array();
+	foreach ( $variation->get_variation_attributes() as $key => $value ) {
+		if ( '' === (string) $value ) {
+			continue;
+		}
+		$taxonomy = substr( $key, strlen( 'attribute_' ) );
+		if ( taxonomy_exists( $taxonomy ) ) {
+			$term  = get_term_by( 'slug', $value, $taxonomy );
+			$value = ( $term && ! is_wp_error( $term ) ) ? $term->name : $value;
+		}
+		$parts[] = $value;
+	}
+	return implode( ' / ', $parts );
+}
+
 function wcbp_product_barcode_svg( int $product_id, int $variation_id = 0, array $opts = array() ): string {
 	$value = wcbp_barcode_value( $product_id, $variation_id );
 	if ( '' === $value ) {
