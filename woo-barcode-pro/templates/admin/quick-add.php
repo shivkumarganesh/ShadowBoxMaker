@@ -40,6 +40,7 @@ defined( 'ABSPATH' ) || exit;
 	<div class="wcbp-qa-tabs">
 		<button class="wcbp-qa-tab-btn wcbp-active" data-tab="scan">📷 <?php esc_html_e( 'Scan &amp; Publish', 'woo-barcode-pro' ); ?></button>
 		<button class="wcbp-qa-tab-btn" data-tab="add">➕ <?php esc_html_e( 'Quick Add', 'woo-barcode-pro' ); ?></button>
+		<button class="wcbp-qa-tab-btn" data-tab="tally">🔢 <?php esc_html_e( 'Tally', 'woo-barcode-pro' ); ?></button>
 	</div>
 
 	<!-- ── Tab 1: Scan & Publish ── -->
@@ -236,6 +237,49 @@ defined( 'ABSPATH' ) || exit;
 
 	</div><!-- /#wcbp-tab-add -->
 
+	<!-- ── Tab 3: Tally (scan-to-count) ── -->
+	<div id="wcbp-tab-tally" class="wcbp-qa-tab-content">
+		<form id="wcbp-tally-form" class="wcbp-qa-scan-row" autocomplete="off">
+			<input id="wcbp-tally-input" type="text" inputmode="text" enterkeyhint="go"
+			       placeholder="<?php esc_attr_e( 'Scan any label…', 'woo-barcode-pro' ); ?>" />
+			<button type="submit" id="wcbp-tally-go" class="button"><?php esc_html_e( 'Go', 'woo-barcode-pro' ); ?></button>
+			<button type="button" id="wcbp-tally-camera" class="button" title="<?php esc_attr_e( 'Scan with camera', 'woo-barcode-pro' ); ?>">📷</button>
+		</form>
+
+		<div id="wcbp-tally-flash" class="wcbp-tally-flash" role="status" aria-live="polite"></div>
+
+		<div id="wcbp-tally-card" style="display:none">
+			<div class="wcbp-tally-head">
+				<img id="wcbp-tally-img" alt="" style="display:none" />
+				<div>
+					<div id="wcbp-tally-name" class="wcbp-tally-name"></div>
+					<div id="wcbp-tally-summary" class="wcbp-tally-summary"></div>
+				</div>
+			</div>
+			<table class="wcbp-tally-table">
+				<thead>
+					<tr>
+						<th><?php esc_html_e( 'Item', 'woo-barcode-pro' ); ?></th>
+						<th><?php esc_html_e( 'Stock', 'woo-barcode-pro' ); ?></th>
+						<th><?php esc_html_e( 'Scanned', 'woo-barcode-pro' ); ?></th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody id="wcbp-tally-rows"></tbody>
+			</table>
+			<div class="wcbp-tally-actions">
+				<button type="button" id="wcbp-tally-queue-missing" class="button button-primary"></button>
+				<button type="button" id="wcbp-tally-apply-all" class="button"></button>
+				<button type="button" id="wcbp-tally-reset" class="button-link"><?php esc_html_e( 'Reset counts', 'woo-barcode-pro' ); ?></button>
+			</div>
+			<div id="wcbp-tally-result"></div>
+		</div>
+
+		<p class="wcbp-tally-help">
+			<?php esc_html_e( 'Scan every item of a product once. Green = all counted. Orange = fewer scanned than in stock (missing labels or missing items). Red = more scanned than in stock. Check that the size shown matches the item\'s tag. ✏️ edits the stock count; 🏷 queues one more label.', 'woo-barcode-pro' ); ?>
+		</p>
+	</div><!-- /#wcbp-tab-tally -->
+
 </div>
 
 <script>
@@ -258,6 +302,29 @@ window.wcbpQuickAdd = <?php echo wp_json_encode( array(
 		'sizes_required'  => __( 'Enter units for at least one size.', 'woo-barcode-pro' ),
 		/* translators: %s: list of sizes */
 		'colors_required' => __( 'Add a color for %s, or remove the colors from every size.', 'woo-barcode-pro' ),
+		/* translators: 1: scanned count, 2: stock count */
+		't_of'            => __( '%1$d of %2$d', 'woo-barcode-pro' ),
+		't_more'          => __( 'more than in stock!', 'woo-barcode-pro' ),
+		't_untracked'     => __( 'stock not tracked', 'woo-barcode-pro' ),
+		't_parent_code'   => __( 'That is the main product barcode — scan a size label to count it.', 'woo-barcode-pro' ),
+		/* translators: 1: scanned total, 2: stock total */
+		't_summary'       => __( 'Scanned %1$d of %2$d in stock', 'woo-barcode-pro' ),
+		/* translators: %d: number of labels */
+		't_queue_missing' => __( '🏷 Queue missing labels (%d)', 'woo-barcode-pro' ),
+		't_apply_all'     => __( '✓ Set stock to counted', 'woo-barcode-pro' ),
+		/* translators: %d: number of labels */
+		't_confirm_queue' => __( 'Add %d labels to the print queue for the items that were not scanned?', 'woo-barcode-pro' ),
+		/* translators: %d: number of rows */
+		't_confirm_apply' => __( 'Set the stock of %d row(s) to the scanned count?', 'woo-barcode-pro' ),
+		't_confirm_reset' => __( 'Clear the scanned counts for this product?', 'woo-barcode-pro' ),
+		't_saved'         => __( 'Stock updated.', 'woo-barcode-pro' ),
+		't_in_queue'      => __( 'in queue', 'woo-barcode-pro' ),
+		't_edit'          => __( 'Edit stock', 'woo-barcode-pro' ),
+		't_reprint'       => __( 'Queue one more label', 'woo-barcode-pro' ),
+		't_undo_scan'     => __( 'Remove one scan', 'woo-barcode-pro' ),
+		't_use_counted'   => __( '= counted', 'woo-barcode-pro' ),
+		'save_btn'        => __( 'Save', 'woo-barcode-pro' ),
+		'cancel'          => __( 'Cancel', 'woo-barcode-pro' ),
 		'less'            => __( 'Less', 'woo-barcode-pro' ),
 		'more'            => __( 'More', 'woo-barcode-pro' ),
 		'view'            => __( 'Edit →', 'woo-barcode-pro' ),

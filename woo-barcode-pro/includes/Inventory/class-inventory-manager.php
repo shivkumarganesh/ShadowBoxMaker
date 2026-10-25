@@ -30,6 +30,9 @@ class InventoryManager {
 		add_action( 'wp_ajax_wcbp_inv_low_stock',     array( $this, 'ajax_low_stock' ) );
 		add_action( 'wp_ajax_wcbp_inv_log',           array( $this, 'ajax_get_log' ) );
 		add_action( 'wp_ajax_wcbp_inv_publish_draft', array( $this, 'ajax_publish_draft' ) );
+		add_action( 'wp_ajax_wcbp_tally_lookup',      array( $this, 'ajax_tally_lookup' ) );
+		add_action( 'wp_ajax_wcbp_tally_set_stock',   array( $this, 'ajax_tally_set_stock' ) );
+		add_action( 'wp_ajax_wcbp_tally_queue',       array( $this, 'ajax_tally_queue' ) );
 	}
 
 	// ── Core methods ─────────────────────────────────────────────────────────
@@ -72,18 +75,198 @@ class InventoryManager {
 			return null;
 		}
 
+		// A size/color label resolves to its variation; report the parent too so stock changes and the
+		// stock log are recorded against the right product.
+		$is_variation = $product->is_type( 'variation' );
+		$parent_id    = $is_variation ? $product->get_parent_id() : $product_id;
+
 		return array(
-			'product_id'    => $product_id,
-			'variation_id'  => 0,
+			'product_id'    => $parent_id,
+			'variation_id'  => $is_variation ? $product_id : 0,
 			'name'          => $product->get_name(),
 			'sku'           => $product->get_sku(),
 			'status'        => $product->get_status(),
 			'stock_qty'     => (int) $product->get_stock_quantity(),
 			'stock_status'  => $product->get_stock_status(),
 			'manage_stock'  => (bool) $product->get_manage_stock(),
-			'edit_url'      => get_edit_post_link( $product_id, 'raw' ),
-			'image_url'     => get_the_post_thumbnail_url( $product_id, 'thumbnail' ) ?: '',
+			'edit_url'      => get_edit_post_link( $parent_id, 'raw' ),
+			'image_url'     => get_the_post_thumbnail_url( $product_id, 'thumbnail' ) ?: ( get_the_post_thumbnail_url( $parent_id, 'thumbnail' ) ?: '' ),
 		);
+	}
+
+	// ── Tally (scan-to-count) ────────────────────────────────────────────────
+
+	/**
+	 * A product and every size/color it has (or itself, for a simple product), with stock and
+	 * labels still waiting in the print queue — what the Tally tab counts against.
+	 */
+	public function tally_product( int $product_id, int $scanned_id = 0 ): ?array {
+		$product = wc_get_product( $product_id );
+		if ( ! $product || $product->is_type( 'variation' ) ) {
+			return null;
+		}
+
+		global $wpdb;
+		$queued = array();
+		foreach ( (array) $wpdb->get_results( $wpdb->prepare( // phpcs:ignore WordPress.DB
+			"SELECT variation_id, SUM(quantity) AS qty FROM {$wpdb->prefix}wcbp_print_queue
+			 WHERE product_id = %d AND status = 'pending' GROUP BY variation_id",
+			$product_id
+		), ARRAY_A ) as $row ) {
+			$queued[ (int) $row['variation_id'] ] = (int) $row['qty'];
+		}
+
+		$items = array();
+		if ( $product->is_type( 'variable' ) ) {
+			foreach ( $product->get_children() as $vid ) {
+				$variation = wc_get_product( (int) $vid );
+				// Disabled variations are left out unless that is the label just scanned.
+				if ( ! $variation || ( 'publish' !== $variation->get_status() && (int) $vid !== $scanned_id ) ) {
+					continue;
+				}
+				$label   = \WCBarcodePro\wcbp_variation_label( $variation );
+				$items[] = $this->tally_item( $variation, '' !== $label ? $label : $variation->get_name(), $queued[ (int) $vid ] ?? 0 );
+			}
+		} else {
+			$items[] = $this->tally_item( $product, $product->get_name(), $queued[0] ?? 0 );
+		}
+
+		return array(
+			'product_id' => $product_id,
+			'name'       => $product->get_name(),
+			'type'       => $product->get_type(),
+			'image_url'  => get_the_post_thumbnail_url( $product_id, 'thumbnail' ) ?: '',
+			'edit_url'   => get_edit_post_link( $product_id, 'raw' ),
+			'scanned_id' => $scanned_id,
+			'items'      => $items,
+		);
+	}
+
+	private function tally_item( \WC_Product $item, string $label, int $queued ): array {
+		$id    = $item->get_id();
+		$codes = array_values( array_filter( array(
+			(string) get_post_meta( $id, '_sku', true ),
+			(string) get_post_meta( $id, \WCBarcodePro\Barcode\EanManager::META_KEY, true ),
+		) ) );
+		// Only its own count: a variation that borrows the parent's stock reports 'parent', not true.
+		$tracked = true === $item->managing_stock();
+		return array(
+			'id'      => $id,
+			'label'   => $label,
+			'sku'     => $item->get_sku(),
+			'codes'   => $codes,
+			'stock'   => $tracked ? (int) $item->get_stock_quantity() : null,
+			'queued'  => $queued,
+		);
+	}
+
+	/**
+	 * Is $item_id this product itself (simple) or one of its variations?
+	 */
+	private function tally_item_of( int $product_id, int $item_id ): ?\WC_Product {
+		$item = wc_get_product( $item_id );
+		if ( ! $item ) {
+			return null;
+		}
+		if ( $item_id === $product_id && ! $item->is_type( 'variable' ) && ! $item->is_type( 'variation' ) ) {
+			return $item;
+		}
+		return ( $item->is_type( 'variation' ) && $item->get_parent_id() === $product_id ) ? $item : null;
+	}
+
+	public function ajax_tally_lookup(): void {
+		check_ajax_referer( 'wcbp_inventory', 'nonce' );
+		if ( ! \WCBarcodePro\wcbp_current_user_can_manage() ) {
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'woo-barcode-pro' ) ) );
+		}
+		$barcode = sanitize_text_field( wp_unslash( $_POST['barcode'] ?? '' ) );
+		$found   = $this->lookup_by_barcode( $barcode );
+		$tally   = $found ? $this->tally_product( (int) $found['product_id'], (int) ( $found['variation_id'] ?: $found['product_id'] ) ) : null;
+		if ( ! $tally ) {
+			wp_send_json_error( array(
+				/* translators: %s: scanned barcode value */
+				'message' => sprintf( __( 'No product found for "%s".', 'woo-barcode-pro' ), $barcode ),
+			) );
+		}
+		wp_send_json_success( $tally );
+	}
+
+	/**
+	 * Set the stock of one or more sizes/colors of a product: items[] = [ id, qty ].
+	 */
+	public function ajax_tally_set_stock(): void {
+		check_ajax_referer( 'wcbp_inventory', 'nonce' );
+		if ( ! \WCBarcodePro\wcbp_current_user_can_manage() ) {
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'woo-barcode-pro' ) ) );
+		}
+		$product_id = (int) ( $_POST['product_id'] ?? 0 );
+		$items      = (array) ( $_POST['items'] ?? array() );
+
+		$changes = array();
+		foreach ( $items as $row ) {
+			$item = is_array( $row ) ? $this->tally_item_of( $product_id, (int) ( $row['id'] ?? 0 ) ) : null;
+			$qty  = is_array( $row ) ? (int) ( $row['qty'] ?? -1 ) : -1;
+			if ( ! $item || $qty < 0 || $qty > 99999 ) {
+				wp_send_json_error( array( 'message' => __( 'Invalid stock change.', 'woo-barcode-pro' ) ) );
+			}
+			$changes[] = array( $item, $qty );
+		}
+		if ( ! $changes ) {
+			wp_send_json_error( array( 'message' => __( 'Nothing to change.', 'woo-barcode-pro' ) ) );
+		}
+
+		foreach ( $changes as list( $item, $qty ) ) {
+			// A size that borrowed the parent's stock gets its own count from now on.
+			if ( true !== $item->managing_stock() ) {
+				$item->set_manage_stock( true );
+				$item->save();
+			}
+			$variation_id = $item->is_type( 'variation' ) ? $item->get_id() : 0;
+			$this->adjust_stock( $product_id, $variation_id, $qty, 'tally', __( 'Tally edit', 'woo-barcode-pro' ) );
+		}
+
+		wp_send_json_success( $this->tally_product( $product_id ) );
+	}
+
+	/**
+	 * Queue labels for sizes/colors of a product: items[] = [ id, qty ].
+	 */
+	public function ajax_tally_queue(): void {
+		check_ajax_referer( 'wcbp_inventory', 'nonce' );
+		if ( ! \WCBarcodePro\wcbp_current_user_can_manage() ) {
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'woo-barcode-pro' ) ) );
+		}
+		$product_id = (int) ( $_POST['product_id'] ?? 0 );
+		$label_id   = (int) get_post_meta( $product_id, '_wcbp_label_template_id', true );
+		$queue      = \WCBarcodePro\Admin\PrintQueue::get_instance();
+
+		$adds = array();
+		foreach ( (array) ( $_POST['items'] ?? array() ) as $row ) {
+			$item = is_array( $row ) ? $this->tally_item_of( $product_id, (int) ( $row['id'] ?? 0 ) ) : null;
+			$qty  = is_array( $row ) ? (int) ( $row['qty'] ?? 0 ) : 0;
+			if ( ! $item || $qty < 1 || $qty > 999 ) {
+				wp_send_json_error( array( 'message' => __( 'Invalid label request.', 'woo-barcode-pro' ) ) );
+			}
+			$adds[] = array( $item, $qty );
+		}
+		if ( ! $adds ) {
+			wp_send_json_error( array( 'message' => __( 'Nothing to queue.', 'woo-barcode-pro' ) ) );
+		}
+
+		$labels = 0;
+		foreach ( $adds as list( $item, $qty ) ) {
+			$queue->add( $product_id, $qty, $item->is_type( 'variation' ) ? $item->get_id() : 0, $label_id );
+			$labels += $qty;
+		}
+
+		$tally            = $this->tally_product( $product_id );
+		$tally['message'] = sprintf(
+			/* translators: %d: number of labels */
+			_n( '%d label added to the print queue.', '%d labels added to the print queue.', $labels, 'woo-barcode-pro' ),
+			$labels
+		);
+		$tally['queue_count'] = $queue->get_count();
+		wp_send_json_success( $tally );
 	}
 
 	public function adjust_stock( int $product_id, int $variation_id, int $new_qty, string $reason = 'manual', string $note = '' ): array {

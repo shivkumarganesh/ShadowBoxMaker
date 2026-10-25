@@ -527,16 +527,23 @@
 	// ── Live camera scanner ───────────────────────────────────────────────────
 	var _cameraStream = null;
 
-	function openCameraScanner(onDetected) {
+	// opts.status: element for messages; opts.continuous: keep scanning after each code (Tally).
+	function openCameraScanner(onDetected, opts) {
+		opts = opts || {};
+		var $status = $(opts.status || '#wcbp-scan-status');
 		if (!('BarcodeDetector' in window) || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-			$('#wcbp-scan-status').text(wcbpQuickAdd.strings.no_camera_api).addClass('wcbp-error');
-			$('#wcbp-barcode-input').focus();
+			$status.text(wcbpQuickAdd.strings.no_camera_api).addClass('wcbp-error');
+			$(opts.status ? '#wcbp-tally-input' : '#wcbp-barcode-input').trigger('focus');
 			return;
 		}
 
-		var video   = document.getElementById('wcbp-camera-video');
-		var $modal  = $('#wcbp-camera-modal');
+		var video    = document.getElementById('wcbp-camera-video');
+		var $modal   = $('#wcbp-camera-modal');
+		var $camMsg  = $('#wcbp-camera-status');
+		var camText  = $camMsg.data('default') || $camMsg.text();
+		$camMsg.data('default', camText).text(camText);
 		var scanning = true;
+		var lastValue = '', lastSeenAt = 0;
 
 		navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } } })
 			.then(function (stream) {
@@ -551,7 +558,14 @@
 					if (!scanning) return;
 					if (video.readyState < video.HAVE_ENOUGH_DATA) { requestAnimationFrame(tick); return; }
 					detector.detect(video).then(function (codes) {
-						if (codes.length && scanning) {
+						if (!scanning) return;
+						if (codes.length && opts.continuous) {
+							// The same label stays in view for many frames: count it again only after it has left the frame.
+							var v = codes[0].rawValue, now = Date.now();
+							if (v !== lastValue || now - lastSeenAt > 700) { onDetected(v); }
+							lastValue = v; lastSeenAt = now;
+							setTimeout(function () { requestAnimationFrame(tick); }, 120);
+						} else if (codes.length) {
 							scanning = false;
 							closeCamera();
 							onDetected(codes[0].rawValue);
@@ -563,17 +577,292 @@
 				requestAnimationFrame(tick);
 			})
 			.catch(function (err) {
-				$('#wcbp-scan-status').text(wcbpQuickAdd.strings.camera_error + ' ' + err.message).addClass('wcbp-error');
+				$status.text(wcbpQuickAdd.strings.camera_error + ' ' + err.message).addClass('wcbp-error');
 			});
 
 		function closeCamera() {
 			scanning = false;
 			if (_cameraStream) { _cameraStream.getTracks().forEach(function (t) { t.stop(); }); _cameraStream = null; }
 			if (video) { video.srcObject = null; }
+			$camMsg.text(camText);
 			$modal.hide();
 		}
 
 		$('#wcbp-camera-close').off('click').on('click', closeCamera);
 	}
+
+	// ── Tally (scan-to-count) ────────────────────────────────────────────────
+	var TS         = wcbpQuickAdd.strings;
+	var COUNTS_KEY = 'wcbp_tally_counts';
+	var tally      = { product: null, editing: 0 };
+	var tallyCounts = loadTallyCounts();
+	var audioCtx   = null;
+
+	// Counts live in this browser so a refresh mid-tally doesn't lose them.
+	function loadTallyCounts() {
+		try { return JSON.parse(window.localStorage.getItem(COUNTS_KEY) || '{}') || {}; } catch (e) { return {}; }
+	}
+	function saveTallyCounts() {
+		try { window.localStorage.setItem(COUNTS_KEY, JSON.stringify(tallyCounts)); } catch (e) { /* private mode: counts last for this page only */ }
+	}
+	// Per product: c = scans per item, q = labels already queued from this tally (so they aren't queued twice).
+	function tallyState(pid) {
+		var st = tallyCounts[pid];
+		if (!st || !st.c) { st = tallyCounts[pid] = { c: {}, q: {} }; }
+		return st;
+	}
+	function countsFor(pid) { return tallyState(pid).c; }
+	function queuedFor(pid) { return tallyState(pid).q; }
+	function missingFor(it, pid) {
+		if (it.stock === null) { return 0; }
+		return Math.max(0, it.stock - (countsFor(pid)[it.id] || 0) - (queuedFor(pid)[it.id] || 0));
+	}
+
+	function fmt(str) {
+		var args = arguments, next = 1;
+		return String(str).replace(/%(?:(\d+)\$)?d/g, function (m, pos) { return args[pos ? parseInt(pos, 10) : next++]; });
+	}
+
+	function beep(ok) {
+		try {
+			audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+			var osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+			osc.type = ok ? 'sine' : 'square';
+			osc.frequency.value = ok ? 1046 : 220;
+			gain.gain.value = 0.08;
+			osc.connect(gain); gain.connect(audioCtx.destination);
+			osc.start(); osc.stop(audioCtx.currentTime + (ok ? 0.09 : 0.3));
+		} catch (e) { /* no audio */ }
+		if (!ok && navigator.vibrate) { navigator.vibrate(200); }
+	}
+
+	function flash(kind, big, small) {
+		$('#wcbp-tally-flash').attr('class', 'wcbp-tally-flash is-' + kind)
+			.html('<strong>' + textHtml(big) + '</strong>' + (small ? '<span>' + textHtml(small) + '</span>' : ''));
+		if ($('#wcbp-camera-modal').is(':visible')) {
+			$('#wcbp-camera-status').text(big + (small ? ' — ' + small : ''));
+		}
+	}
+
+	function itemById(id) {
+		var p = tally.product;
+		if (!p) { return null; }
+		for (var i = 0; i < p.items.length; i++) { if (p.items[i].id === id) { return p.items[i]; } }
+		return null;
+	}
+
+	function itemByCode(code) {
+		var p = tally.product;
+		if (!p) { return null; }
+		for (var i = 0; i < p.items.length; i++) {
+			if (p.items[i].codes.indexOf(code) !== -1) { return p.items[i]; }
+		}
+		return null;
+	}
+
+	function tallyScan(code) {
+		code = $.trim(String(code));
+		if (!code) { return; }
+		// Labels of the product already on screen are counted without a round trip.
+		var local = itemByCode(code);
+		if (local) { countItem(local); return; }
+
+		flash('info', TS.looking_up, '');
+		$.post(wcbpQuickAdd.ajax_url, { action: 'wcbp_tally_lookup', nonce: wcbpQuickAdd.inv_nonce, barcode: code }, function (res) {
+			if (!res || !res.success) {
+				flash('err', (res && res.data && res.data.message) || TS.error, '');
+				beep(false);
+				return;
+			}
+			tally.product = res.data;
+			tally.editing = 0;
+			var item = itemById(res.data.scanned_id);
+			if (item) {
+				countItem(item);
+			} else {
+				renderTally();
+				flash('warn', res.data.name, TS.t_parent_code);
+				beep(false);
+			}
+		}).fail(function () { flash('err', TS.error, code); beep(false); });
+	}
+
+	function countItem(item) {
+		var counts = countsFor(tally.product.product_id);
+		var n = (counts[item.id] || 0) + 1;
+		counts[item.id] = n;
+		saveTallyCounts();
+		renderTally();
+		if (item.stock === null) {
+			flash('info', item.label, n + ' · ' + TS.t_untracked);
+			beep(true);
+		} else if (n > item.stock) {
+			flash('warn', item.label, fmt(TS.t_of, n, item.stock) + ' — ' + TS.t_more);
+			beep(false);
+		} else {
+			flash('ok', item.label, fmt(TS.t_of, n, item.stock));
+			beep(true);
+		}
+	}
+
+	function renderTally() {
+		var p = tally.product;
+		if (!p) { $('#wcbp-tally-card').hide(); return; }
+		var counts = countsFor(p.product_id);
+		var totalStock = 0, totalScanned = 0, missing = 0, applyRows = 0, html = '';
+
+		p.items.forEach(function (it) {
+			var n = counts[it.id] || 0;
+			var st = it.stock;
+			totalScanned += n;
+			if (st !== null) { totalStock += st; }
+			missing += missingFor(it, p.product_id);
+			if (st === null ? n > 0 : n !== st) { applyRows++; }
+			var cls = st === null ? '' : (n === st ? (st ? 'row-ok' : '') : (n < st ? 'row-short' : 'row-over'));
+			var sub = [];
+			if (it.sku) { sub.push(textHtml(it.sku)); }
+			if (it.queued) { sub.push('🏷 ' + it.queued + ' ' + textHtml(TS.t_in_queue)); }
+
+			html += '<tr class="' + cls + '" data-id="' + it.id + '">' +
+				'<td class="t-label">' + textHtml(it.label) + (sub.length ? '<div class="t-sub">' + sub.join(' · ') + '</div>' : '') + '</td>' +
+				'<td class="t-stock">' + (st === null ? '—' : st) + '</td>' +
+				'<td class="t-scan"><span class="t-n">' + n + '</span>' +
+					(n ? '<button type="button" class="t-undo" title="' + textHtml(TS.t_undo_scan) + '" aria-label="' + textHtml(TS.t_undo_scan) + '">−</button>' : '') + '</td>' +
+				'<td class="t-actions">' +
+					'<button type="button" class="t-edit" title="' + textHtml(TS.t_edit) + '" aria-label="' + textHtml(TS.t_edit) + '">✏️</button>' +
+					'<button type="button" class="t-reprint" title="' + textHtml(TS.t_reprint) + '" aria-label="' + textHtml(TS.t_reprint) + '">🏷</button>' +
+				'</td></tr>';
+
+			if (tally.editing === it.id) {
+				var start = st === null ? n : st;
+				html += '<tr class="t-editor" data-id="' + it.id + '"><td colspan="4">' +
+					'<div class="t-editor-row">' +
+					'<span class="wcbp-size-stepper">' +
+						'<button type="button" class="t-minus" aria-label="' + textHtml(TS.less) + '">−</button>' +
+						'<input type="number" class="t-qty" min="0" step="1" inputmode="numeric" value="' + start + '" />' +
+						'<button type="button" class="t-plus" aria-label="' + textHtml(TS.more) + '">+</button>' +
+					'</span>' +
+					'<button type="button" class="button t-use-counted">' + textHtml(TS.t_use_counted) + ' (' + n + ')</button>' +
+					'<button type="button" class="button button-primary t-save">' + textHtml(TS.save_btn) + '</button>' +
+					'<button type="button" class="button-link t-cancel">' + textHtml(TS.cancel) + '</button>' +
+					'</div></td></tr>';
+			}
+		});
+
+		$('#wcbp-tally-rows').html(html);
+		$('#wcbp-tally-name').text(p.name);
+		$('#wcbp-tally-img').toggle(!!p.image_url).attr('src', p.image_url || '');
+		$('#wcbp-tally-summary').text(fmt(TS.t_summary, totalScanned, totalStock));
+		$('#wcbp-tally-queue-missing').text(fmt(TS.t_queue_missing, missing)).prop('disabled', missing === 0).data('missing', missing);
+		$('#wcbp-tally-apply-all').text(TS.t_apply_all + (applyRows ? ' (' + applyRows + ')' : '')).prop('disabled', applyRows === 0);
+		$('#wcbp-tally-card').show();
+	}
+
+	function tallyPost(action, items, onDone) {
+		$.post(wcbpQuickAdd.ajax_url, { action: action, nonce: wcbpQuickAdd.inv_nonce, product_id: tally.product.product_id, items: items }, function (res) {
+			if (!res || !res.success) {
+				flash('err', (res && res.data && res.data.message) || TS.error, '');
+				beep(false);
+				return;
+			}
+			tally.product = $.extend(res.data, { scanned_id: tally.product.scanned_id });
+			if (res.data.queue_count !== undefined) { $('.wcbp-queue-count').text(res.data.queue_count); }
+			onDone(res.data);
+		}).fail(function () { flash('err', TS.error, ''); beep(false); });
+	}
+
+	$('#wcbp-tally-form').on('submit', function (e) {
+		e.preventDefault();
+		var $in = $('#wcbp-tally-input');
+		tallyScan($in.val());
+		$in.val('').trigger('focus'); // ready for the next scan from a keyboard-style scanner
+	});
+
+	$('#wcbp-tally-camera').on('click', function () {
+		openCameraScanner(tallyScan, { continuous: true, status: '#wcbp-tally-flash' });
+	});
+
+	$('.wcbp-qa-tab-btn[data-tab="tally"]').on('click', function () {
+		setTimeout(function () { $('#wcbp-tally-input').trigger('focus'); }, 50);
+	});
+
+	$('#wcbp-tally-rows').on('click', 'button', function () {
+		var $btn = $(this);
+		var id   = parseInt($btn.closest('tr').data('id'), 10);
+		var item = itemById(id);
+		if (!item) { return; }
+		var counts = countsFor(tally.product.product_id);
+
+		if ($btn.hasClass('t-undo')) {
+			counts[id] = Math.max(0, (counts[id] || 0) - 1);
+			saveTallyCounts();
+			renderTally();
+		} else if ($btn.hasClass('t-edit')) {
+			tally.editing = tally.editing === id ? 0 : id;
+			renderTally();
+			$('#wcbp-tally-rows .t-qty').trigger('focus').trigger('select');
+		} else if ($btn.hasClass('t-cancel')) {
+			tally.editing = 0;
+			renderTally();
+		} else if ($btn.hasClass('t-minus') || $btn.hasClass('t-plus')) {
+			var $q = $btn.siblings('.t-qty');
+			$q.val(Math.max(0, (parseInt($q.val(), 10) || 0) + ($btn.hasClass('t-plus') ? 1 : -1)));
+		} else if ($btn.hasClass('t-use-counted')) {
+			$btn.closest('tr').find('.t-qty').val(counts[id] || 0);
+		} else if ($btn.hasClass('t-save')) {
+			var qty = Math.max(0, parseInt($btn.closest('tr').find('.t-qty').val(), 10) || 0);
+			$btn.prop('disabled', true);
+			tallyPost('wcbp_tally_set_stock', [{ id: id, qty: qty }], function () {
+				tally.editing = 0;
+				renderTally();
+				flash('ok', item.label, TS.t_saved);
+			});
+		} else if ($btn.hasClass('t-reprint')) {
+			tallyPost('wcbp_tally_queue', [{ id: id, qty: 1 }], function (data) {
+				renderTally();
+				flash('ok', item.label, data.message);
+			});
+		}
+	});
+
+	$('#wcbp-tally-queue-missing').on('click', function () {
+		var pid = tally.product.product_id, items = [];
+		tally.product.items.forEach(function (it) {
+			var miss = missingFor(it, pid);
+			if (miss > 0) { items.push({ id: it.id, qty: miss }); }
+		});
+		var total = items.reduce(function (sum, i) { return sum + i.qty; }, 0);
+		if (!total || !window.confirm(fmt(TS.t_confirm_queue, total))) { return; }
+		tallyPost('wcbp_tally_queue', items, function (data) {
+			var queued = queuedFor(pid);
+			items.forEach(function (i) { queued[i.id] = (queued[i.id] || 0) + i.qty; });
+			saveTallyCounts();
+			renderTally();
+			flash('ok', tally.product.name, data.message);
+		});
+	});
+
+	$('#wcbp-tally-apply-all').on('click', function () {
+		var counts = countsFor(tally.product.product_id), items = [], lines = [];
+		tally.product.items.forEach(function (it) {
+			var n = counts[it.id] || 0;
+			if (it.stock === null ? n > 0 : n !== it.stock) {
+				items.push({ id: it.id, qty: n });
+				lines.push(it.label + ': ' + (it.stock === null ? '—' : it.stock) + ' → ' + n);
+			}
+		});
+		if (!items.length || !window.confirm(fmt(TS.t_confirm_apply, items.length) + '\n\n' + lines.join('\n'))) { return; }
+		tallyPost('wcbp_tally_set_stock', items, function () {
+			renderTally();
+			flash('ok', tally.product.name, TS.t_saved);
+		});
+	});
+
+	$('#wcbp-tally-reset').on('click', function () {
+		if (!tally.product || !window.confirm(TS.t_confirm_reset)) { return; }
+		delete tallyCounts[tally.product.product_id];
+		saveTallyCounts();
+		renderTally();
+	});
 
 }(jQuery));

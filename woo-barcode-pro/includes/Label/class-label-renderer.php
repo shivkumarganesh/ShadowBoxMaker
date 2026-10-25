@@ -115,7 +115,7 @@ class LabelRenderer {
 			}
 		}
 
-		$variant      = $variation_id && $product ? $this->variation_text( $product ) : '';
+		$variant      = $variation_id && $product ? \WCBarcodePro\wcbp_variation_label( $product ) : '';
 		$variant_html = '' !== $variant ? '<span class="wcbp-label-variant">' . esc_html( $variant ) . '</span>' : '';
 
 		// Attributes (product-level; variations get $variant_html instead).
@@ -260,25 +260,6 @@ class LabelRenderer {
 		</div>
 		<?php
 		return ob_get_clean();
-	}
-
-	/**
-	 * Attribute values of a variation, e.g. "Blue / M". "Any …" attributes (empty values) are skipped.
-	 */
-	private function variation_text( \WC_Product $variation ): string {
-		$parts = array();
-		foreach ( $variation->get_variation_attributes() as $key => $value ) {
-			if ( '' === (string) $value ) {
-				continue;
-			}
-			$taxonomy = substr( $key, strlen( 'attribute_' ) );
-			if ( taxonomy_exists( $taxonomy ) ) {
-				$term  = get_term_by( 'slug', $value, $taxonomy );
-				$value = ( $term && ! is_wp_error( $term ) ) ? $term->name : $value;
-			}
-			$parts[] = $value;
-		}
-		return implode( ' / ', $parts );
 	}
 
 	/**

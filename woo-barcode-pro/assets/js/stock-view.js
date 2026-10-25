@@ -70,7 +70,7 @@
 		});
 
 		if (categories.length === 0) {
-			$pills.parentElement.style.display = 'none';
+			$pills.style.display = 'none';
 		}
 	}
 
@@ -97,7 +97,7 @@
 		var query    = searchQuery.toLowerCase();
 		var filtered = allProducts.filter(function (p) {
 			if (activeCat !== 0 && p.categories.indexOf(activeCat) === -1) { return false; }
-			if (query && p.name.toLowerCase().indexOf(query) === -1)       { return false; }
+			if (query && searchText(p).indexOf(query) === -1)               { return false; }
 			return true;
 		});
 
@@ -141,8 +141,25 @@
 			card += '<span class="sv-badge in-stock">' + p.stock + ' ' + cfg.strings.in_stock + '</span>';
 		}
 
+		// Per size/color counts for variable products.
+		if (p.variants && p.variants.length) {
+			card += '<div class="sv-variants">';
+			p.variants.forEach(function (v) {
+				var cls = v.stock === null ? ' untracked' : (v.stock <= 0 ? ' out-of-stock' : '');
+				card += '<span class="sv-variant' + cls + '"><span class="sv-variant-label">' + escHtml(v.label) + '</span>' +
+					'<span class="sv-variant-qty">' + (v.stock === null ? '—' : v.stock) + '</span></span>';
+			});
+			card += '</div>';
+		}
+
 		card += '</div></div>';
 		return card;
+	}
+
+	function searchText(p) {
+		var text = p.name;
+		(p.variants || []).forEach(function (v) { text += ' ' + v.label; });
+		return text.toLowerCase();
 	}
 
 	// ── UI helpers ────────────────────────────────────────────────────────────
