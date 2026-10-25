@@ -33,6 +33,7 @@ class InventoryManager {
 		add_action( 'wp_ajax_wcbp_tally_lookup',      array( $this, 'ajax_tally_lookup' ) );
 		add_action( 'wp_ajax_wcbp_tally_set_stock',   array( $this, 'ajax_tally_set_stock' ) );
 		add_action( 'wp_ajax_wcbp_tally_queue',       array( $this, 'ajax_tally_queue' ) );
+		add_action( 'wp_ajax_wcbp_tally_unqueue',     array( $this, 'ajax_tally_unqueue' ) );
 	}
 
 	// ── Core methods ─────────────────────────────────────────────────────────
@@ -540,5 +541,45 @@ class InventoryManager {
 		}
 		$low_stock_threshold = (int) get_option( 'wcbp_low_stock_threshold', 5 );
 		include WCBP_PLUGIN_DIR . 'templates/admin/inventory.php';
+	}
+
+	/**
+	 * Remove not-yet-printed labels for some sizes/colors of a product (ids[]), or all of them when ids is empty.
+	 */
+	public function ajax_tally_unqueue(): void {
+		check_ajax_referer( 'wcbp_inventory', 'nonce' );
+		if ( ! \WCBarcodePro\wcbp_current_user_can_manage() ) {
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'woo-barcode-pro' ) ) );
+		}
+		$product_id = (int) ( $_POST['product_id'] ?? 0 );
+		if ( ! $this->tally_product( $product_id ) ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid product.', 'woo-barcode-pro' ) ) );
+		}
+
+		$variation_ids = null;
+		$ids           = array_filter( array_map( 'intval', (array) ( $_POST['ids'] ?? array() ) ) );
+		if ( $ids ) {
+			$variation_ids = array();
+			foreach ( $ids as $id ) {
+				$item = $this->tally_item_of( $product_id, $id );
+				if ( ! $item ) {
+					wp_send_json_error( array( 'message' => __( 'Invalid label request.', 'woo-barcode-pro' ) ) );
+				}
+				$variation_ids[] = $item->is_type( 'variation' ) ? $id : 0;
+			}
+		}
+
+		$queue   = \WCBarcodePro\Admin\PrintQueue::get_instance();
+		$removed = $queue->remove_pending( $product_id, $variation_ids );
+
+		$tally            = $this->tally_product( $product_id );
+		$tally['message'] = sprintf(
+			/* translators: %d: number of labels */
+			_n( '%d label removed from the print queue.', '%d labels removed from the print queue.', $removed, 'woo-barcode-pro' ),
+			$removed
+		);
+		$tally['removed']     = $removed;
+		$tally['queue_count'] = $queue->get_count();
+		wp_send_json_success( $tally );
 	}
 }

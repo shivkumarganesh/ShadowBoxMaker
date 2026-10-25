@@ -526,3 +526,18 @@ body.wcbp-quick-add-body {
 	cursor: pointer;
 }
 .t-editor-row .t-cancel { color: #50575e; }
+.wcbp-tally-table .t-queued { white-space: nowrap; }
+.wcbp-tally-table button.t-unqueue {
+	border: 1px solid #d63638;
+	border-radius: 50%;
+	background: #fff;
+	color: #d63638;
+	width: 20px;
+	height: 20px;
+	padding: 0;
+	font-size: 11px;
+	line-height: 1;
+	cursor: pointer;
+	vertical-align: middle;
+}
+#wcbp-tally-unqueue-all { border-color: #d63638; color: #d63638; }

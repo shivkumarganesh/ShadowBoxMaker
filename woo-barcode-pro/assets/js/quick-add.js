@@ -709,7 +709,7 @@
 		var p = tally.product;
 		if (!p) { $('#wcbp-tally-card').hide(); return; }
 		var counts = countsFor(p.product_id);
-		var totalStock = 0, totalScanned = 0, missing = 0, applyRows = 0, html = '';
+		var totalStock = 0, totalScanned = 0, missing = 0, applyRows = 0, totalQueued = 0, html = '';
 
 		p.items.forEach(function (it) {
 			var n = counts[it.id] || 0;
@@ -721,7 +721,11 @@
 			var cls = st === null ? '' : (n === st ? (st ? 'row-ok' : '') : (n < st ? 'row-short' : 'row-over'));
 			var sub = [];
 			if (it.sku) { sub.push(textHtml(it.sku)); }
-			if (it.queued) { sub.push('🏷 ' + it.queued + ' ' + textHtml(TS.t_in_queue)); }
+			if (it.queued) {
+				sub.push('<span class="t-queued">🏷 ' + it.queued + ' ' + textHtml(TS.t_in_queue) +
+					' <button type="button" class="t-unqueue" title="' + textHtml(TS.t_unqueue) + '" aria-label="' + textHtml(TS.t_unqueue) + '">✕</button></span>');
+			}
+			totalQueued += it.queued;
 
 			html += '<tr class="' + cls + '" data-id="' + it.id + '">' +
 				'<td class="t-label">' + textHtml(it.label) + (sub.length ? '<div class="t-sub">' + sub.join(' · ') + '</div>' : '') + '</td>' +
@@ -755,11 +759,14 @@
 		$('#wcbp-tally-summary').text(fmt(TS.t_summary, totalScanned, totalStock));
 		$('#wcbp-tally-queue-missing').text(fmt(TS.t_queue_missing, missing)).prop('disabled', missing === 0).data('missing', missing);
 		$('#wcbp-tally-apply-all').text(TS.t_apply_all + (applyRows ? ' (' + applyRows + ')' : '')).prop('disabled', applyRows === 0);
+		$('#wcbp-tally-unqueue-all').text(fmt(TS.t_unqueue_all, totalQueued)).toggle(totalQueued > 0);
 		$('#wcbp-tally-card').show();
 	}
 
-	function tallyPost(action, items, onDone) {
-		$.post(wcbpQuickAdd.ajax_url, { action: action, nonce: wcbpQuickAdd.inv_nonce, product_id: tally.product.product_id, items: items }, function (res) {
+	// payload: an items array, or an object of extra fields (e.g. { ids: [...] }).
+	function tallyPost(action, payload, onDone) {
+		var body = $.extend({ action: action, nonce: wcbpQuickAdd.inv_nonce, product_id: tally.product.product_id }, $.isArray(payload) ? { items: payload } : payload);
+		$.post(wcbpQuickAdd.ajax_url, body, function (res) {
 			if (!res || !res.success) {
 				flash('err', (res && res.data && res.data.message) || TS.error, '');
 				beep(false);
@@ -817,6 +824,9 @@
 				renderTally();
 				flash('ok', item.label, TS.t_saved);
 			});
+		} else if ($btn.hasClass('t-unqueue')) {
+			if (!window.confirm(TS.t_confirm_unq.replace('%1$d', item.queued).replace('%2$s', item.label))) { return; }
+			tallyUnqueue([item]);
 		} else if ($btn.hasClass('t-reprint')) {
 			tallyPost('wcbp_tally_queue', [{ id: id, qty: 1 }], function (data) {
 				renderTally();
@@ -856,6 +866,26 @@
 			renderTally();
 			flash('ok', tally.product.name, TS.t_saved);
 		});
+	});
+
+	// Removing queued labels also forgets that this tally queued them, so "missing" counts them again.
+	function tallyUnqueue(items) {
+		var pid = tally.product.product_id;
+		var ids = items.length === tally.product.items.length ? [] : items.map(function (i) { return i.id; });
+		tallyPost('wcbp_tally_unqueue', { ids: ids }, function (data) {
+			var queued = queuedFor(pid);
+			items.forEach(function (i) { queued[i.id] = Math.max(0, (queued[i.id] || 0) - i.queued); });
+			saveTallyCounts();
+			renderTally();
+			flash('ok', items.length === 1 ? items[0].label : tally.product.name, data.message);
+		});
+	}
+
+	$('#wcbp-tally-unqueue-all').on('click', function () {
+		var withLabels = tally.product.items.filter(function (it) { return it.queued > 0; });
+		var total = withLabels.reduce(function (sum, it) { return sum + it.queued; }, 0);
+		if (!total || !window.confirm(TS.t_confirm_unq.replace('%1$d', total).replace('%2$s', tally.product.name))) { return; }
+		tallyUnqueue(withLabels.length === tally.product.items.length ? tally.product.items : withLabels);
 	});
 
 	$('#wcbp-tally-reset').on('click', function () {

@@ -26,6 +26,7 @@ class PrintQueue {
 		add_action( 'wp_ajax_wcbp_add_to_queue',       array( $this, 'ajax_add' ) );
 		add_action( 'wp_ajax_wcbp_bulk_add_to_queue', array( $this, 'ajax_bulk_add' ) );
 		add_action( 'wp_ajax_wcbp_remove_from_queue', array( $this, 'ajax_remove' ) );
+		add_action( 'wp_ajax_wcbp_remove_product_from_queue', array( $this, 'ajax_remove_product' ) );
 		add_action( 'wp_ajax_wcbp_update_qty',        array( $this, 'ajax_update_qty' ) );
 		add_action( 'wp_ajax_wcbp_clear_queue',       array( $this, 'ajax_clear' ) );
 		add_action( 'wp_ajax_wcbp_mark_printed',      array( $this, 'ajax_mark_printed' ) );
@@ -207,6 +208,37 @@ class PrintQueue {
 		}
 	}
 
+	/**
+	 * Labels waiting to be printed for a product (all its variations included).
+	 */
+	public function pending_count( int $product_id ): int {
+		global $wpdb;
+		return (int) $wpdb->get_var( $wpdb->prepare( // phpcs:ignore WordPress.DB
+			"SELECT COALESCE(SUM(quantity), 0) FROM {$wpdb->prefix}wcbp_print_queue WHERE product_id=%d AND status='pending'",
+			$product_id
+		) );
+	}
+
+	/**
+	 * Remove not-yet-printed labels for a product — all of them, or only these variation IDs
+	 * (0 = the product itself). Printed history is kept. Returns the number of labels removed.
+	 */
+	public function remove_pending( int $product_id, ?array $variation_ids = null ): int {
+		global $wpdb;
+		$table = $wpdb->prefix . 'wcbp_print_queue';
+		$where = $wpdb->prepare( 'product_id=%d AND status=%s', $product_id, 'pending' );
+		if ( null !== $variation_ids ) {
+			$variation_ids = array_values( array_unique( array_map( 'intval', $variation_ids ) ) );
+			if ( ! $variation_ids ) {
+				return 0;
+			}
+			$where .= ' AND variation_id IN (' . implode( ',', $variation_ids ) . ')';
+		}
+		$labels = (int) $wpdb->get_var( "SELECT COALESCE(SUM(quantity), 0) FROM $table WHERE $where" ); // phpcs:ignore WordPress.DB
+		$wpdb->query( "DELETE FROM $table WHERE $where" ); // phpcs:ignore WordPress.DB
+		return $labels;
+	}
+
 	public function remove_by_product( int $product_id ): bool {
 		global $wpdb;
 		return (bool) $wpdb->delete( // phpcs:ignore WordPress.DB
@@ -265,6 +297,7 @@ class PrintQueue {
 			$result = $this->add_variations( $product_id, $variations, ! empty( $_POST['replace'] ), $qty, $label_id );
 			wp_send_json_success( array(
 				'count'       => $this->get_count(),
+				'pending'     => $this->pending_count( $product_id ),
 				'button_text' => sprintf(
 					/* translators: 1: number of variations, 2: number of labels */
 					_n( '✓ %1$d variation (%2$d labels)', '✓ %1$d variations (%2$d labels)', $result['rows'], 'woo-barcode-pro' ),
@@ -282,7 +315,31 @@ class PrintQueue {
 		$this->add( $product_id, $qty, $variation_id, $label_id );
 		wp_send_json_success( array(
 			'count'   => $this->get_count(),
+			'pending' => $this->pending_count( $product_id ),
 			'message' => __( 'Added to print queue.', 'woo-barcode-pro' ),
+		) );
+	}
+
+	/**
+	 * Remove every not-yet-printed label of a product (all variations) — the Products list / metabox button.
+	 */
+	public function ajax_remove_product(): void {
+		check_ajax_referer( 'wcbp_queue', 'nonce' );
+		if ( ! \WCBarcodePro\wcbp_current_user_can_manage() ) {
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'woo-barcode-pro' ) ) );
+		}
+		$product_id = (int) ( $_POST['product_id'] ?? 0 );
+		if ( ! $product_id ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid product.', 'woo-barcode-pro' ) ) );
+		}
+		$removed = $this->remove_pending( $product_id );
+		wp_send_json_success( array(
+			'count'       => $this->get_count(),
+			'removed'     => $removed,
+			'button_text' => $removed
+				/* translators: %d: number of labels */
+				? sprintf( _n( '✓ Removed %d label', '✓ Removed %d labels', $removed, 'woo-barcode-pro' ), $removed )
+				: __( 'Nothing queued', 'woo-barcode-pro' ),
 		) );
 	}
 
