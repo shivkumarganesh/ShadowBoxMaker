@@ -45,6 +45,7 @@
 			if (res.success) {
 				$btn.text(res.data.button_text || wcbpAdmin.strings.added);
 				$('.wcbp-queue-count').text(res.data.count);
+				updateRemoveButton($btn.data('product-id'), res.data.pending);
 			} else {
 				$btn.text(wcbpAdmin.strings.error);
 			}
@@ -66,10 +67,43 @@
 			if (res.success) {
 				$btn.text(res.data.button_text || wcbpAdmin.strings.added_one);
 				$('.wcbp-queue-count').text(res.data.count);
+				updateRemoveButton($btn.data('product-id'), res.data.pending);
 				setTimeout(function () { $btn.text(origText); }, res.data.button_text ? 3000 : 2000);
 			} else {
 				$btn.text(wcbpAdmin.strings.error);
 				setTimeout(function () { $btn.text(origText); }, 2000);
+			}
+		});
+	});
+
+	// ── "Remove from queue (n)" — drops this product's unprinted labels ───────
+	function updateRemoveButton(productId, pending) {
+		if (pending === undefined) { return; }
+		var $rm = $('.wcbp-remove-queue[data-product-id="' + productId + '"]');
+		$rm.data('pending', pending).text(wcbpAdmin.strings.remove_queue.replace('%d', pending)).toggle(pending > 0);
+	}
+
+	$('.wcbp-remove-queue').each(function () {
+		$(this).data('pending', parseInt(($(this).text().match(/\d+/) || [0])[0], 10));
+	});
+
+	$(document).on('click', '.wcbp-remove-queue', function () {
+		var $btn = $(this);
+		var pending = $btn.data('pending') || 0;
+		if (!window.confirm(wcbpAdmin.strings.confirm_remove.replace('%d', pending))) { return; }
+		$btn.prop('disabled', true).text(wcbpAdmin.strings.removing);
+		$.post(wcbpAdmin.ajax_url, {
+			action     : 'wcbp_remove_product_from_queue',
+			nonce      : wcbpAdmin.queue_nonce,
+			product_id : $btn.data('product-id'),
+		}, function (res) {
+			$btn.prop('disabled', false);
+			if (res.success) {
+				$btn.text(res.data.button_text);
+				$('.wcbp-queue-count').text(res.data.count);
+				setTimeout(function () { updateRemoveButton($btn.data('product-id'), 0); }, 2000);
+			} else {
+				$btn.text(wcbpAdmin.strings.error);
 			}
 		});
 	});

@@ -83,6 +83,11 @@ class Admin {
 					'adding'          => __( 'Adding…', 'woo-barcode-pro' ),
 					'added'           => __( 'Added!', 'woo-barcode-pro' ),
 					'added_one'       => __( '+1 Added!', 'woo-barcode-pro' ),
+					/* translators: %d: number of labels waiting in the print queue */
+					'remove_queue'    => __( '✕ Remove from queue (%d)', 'woo-barcode-pro' ),
+					/* translators: %d: number of labels */
+					'confirm_remove'  => __( 'Remove %d label(s) of this product from the print queue? Labels already printed are not affected.', 'woo-barcode-pro' ),
+					'removing'        => __( 'Removing…', 'woo-barcode-pro' ),
 					'error'           => __( 'Error', 'woo-barcode-pro' ),
 					'select_products' => __( 'Please select products first.', 'woo-barcode-pro' ),
 				),
@@ -332,12 +337,25 @@ class Admin {
 					data-product-id="<?php echo esc_attr( (string) $product_id ); ?>">
 					<?php esc_html_e( 'Add to Queue +1', 'woo-barcode-pro' ); ?>
 				</button>
+				<?php echo $this->remove_queue_button( $product_id, 'button' ); // phpcs:ignore WordPress.Security ?>
 			</p>
 			<?php if ( $product && $product->is_type( 'variable' ) ) : ?>
 				<p class="description"><?php esc_html_e( 'Variable product: each variation is queued with its own barcode, stock count and attributes.', 'woo-barcode-pro' ); ?></p>
 			<?php endif; ?>
 		</div>
 		<?php
+	}
+
+	/**
+	 * "Remove from queue (n)" — hidden until the product has labels waiting; admin.js shows/updates it.
+	 */
+	private function remove_queue_button( int $product_id, string $classes ): string {
+		$pending = PrintQueue::get_instance()->pending_count( $product_id );
+		return '<button type="button" class="' . esc_attr( $classes ) . ' wcbp-remove-queue"' .
+			' data-product-id="' . esc_attr( (string) $product_id ) . '"' .
+			( $pending ? '' : ' style="display:none"' ) . '>' .
+			/* translators: %d: number of labels waiting in the print queue */
+			esc_html( sprintf( __( '✕ Remove from queue (%d)', 'woo-barcode-pro' ), $pending ) ) . '</button>';
 	}
 
 	public function save_product_metabox( int $product_id ): void {
@@ -401,7 +419,8 @@ class Admin {
 				esc_html__( 'Add Stock To Print', 'woo-barcode-pro' ) . '</button>' .
 				'&nbsp;<button type="button" class="button button-small wcbp-add-one-queue"' .
 				' data-product-id="' . esc_attr( (string) $post_id ) . '">' .
-				esc_html__( '+1', 'woo-barcode-pro' ) . '</button>';
+				esc_html__( '+1', 'woo-barcode-pro' ) . '</button>' .
+				'<br>' . $this->remove_queue_button( $post_id, 'button button-small' ); // phpcs:ignore WordPress.Security
 		} else {
 			echo '<span class="wcbp-no-barcode">—</span>';
 		}

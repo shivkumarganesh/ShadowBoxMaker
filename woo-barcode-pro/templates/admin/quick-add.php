@@ -270,6 +270,7 @@ defined( 'ABSPATH' ) || exit;
 			<div class="wcbp-tally-actions">
 				<button type="button" id="wcbp-tally-queue-missing" class="button button-primary"></button>
 				<button type="button" id="wcbp-tally-apply-all" class="button"></button>
+				<button type="button" id="wcbp-tally-unqueue-all" class="button"></button>
 				<button type="button" id="wcbp-tally-reset" class="button-link"><?php esc_html_e( 'Reset counts', 'woo-barcode-pro' ); ?></button>
 			</div>
 			<div id="wcbp-tally-result"></div>
@@ -323,6 +324,11 @@ window.wcbpQuickAdd = <?php echo wp_json_encode( array(
 		't_reprint'       => __( 'Queue one more label', 'woo-barcode-pro' ),
 		't_undo_scan'     => __( 'Remove one scan', 'woo-barcode-pro' ),
 		't_use_counted'   => __( '= counted', 'woo-barcode-pro' ),
+		't_unqueue'       => __( 'Remove these labels from the print queue', 'woo-barcode-pro' ),
+		/* translators: %d: number of labels */
+		't_unqueue_all'   => __( '✕ Remove queued labels (%d)', 'woo-barcode-pro' ),
+		/* translators: 1: number of labels, 2: size/color or product name */
+		't_confirm_unq'   => __( 'Remove %1$d unprinted label(s) for %2$s from the print queue?', 'woo-barcode-pro' ),
 		'save_btn'        => __( 'Save', 'woo-barcode-pro' ),
 		'cancel'          => __( 'Cancel', 'woo-barcode-pro' ),
 		'less'            => __( 'Less', 'woo-barcode-pro' ),
